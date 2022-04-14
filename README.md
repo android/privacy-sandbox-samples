@@ -15,5 +15,8 @@ Samples
 
 * **[TopicsJava](TopicsJava)** (Java) - Demonstrates how to initialize and call the Topics API. 
 
+* **[PrivacySandboxKotlin](PrivacySandboxKotlin)** (Kotlin) - Demonstrates how to create an SDK that will run in a separate process. This sample contains both an app, and an SDK to show the interaction between them.
+
+* **[PrivacySandboxJava](PrivacySandboxJava)** (Java) - Demonstrates how to create an SDK that will run in a separate process. This sample contains both an app, and an SDK to show the interaction between them.
 
 
