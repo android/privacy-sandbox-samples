@@ -38,7 +38,8 @@ Example: `BA:4E:E2:0E:9C:AA:AA:58:50:F2:...:3F:83:B8:56:C0:08:98`
   installed to the target device.
 - Run the client app on the same target device from Android Studio or by running
   ```shell
-  ./gradlew client-app:runDebug
+  ./gradlew client-app:installDebug
+  adb shell am start -n com.example.privacysandbox.client/com.example.client.MainActivity
   ```
 - Click on the "load SDK" button, a toast should show that SDK loaded successfully.
 - Click on the "Request Webview", this should remote render a webview from the
