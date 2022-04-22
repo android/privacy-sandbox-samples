@@ -11,7 +11,4 @@
      limitations under the License.
 -->
 <resources>
-  <string name="app_name">TopicsClient</string>
-  <string name="app_description">Sample app for Topics API</string>
-  <string name="button_name">Topics Client Button</string>
 </resources>

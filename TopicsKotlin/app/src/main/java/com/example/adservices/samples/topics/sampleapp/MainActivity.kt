@@ -17,87 +17,82 @@ package com.example.adservices.samples.topics.sampleapp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.TextView
-import com.example.adservices.samples.topics.sampleapp.AdvertisingTopicsClient
 import android.os.Bundle
-import com.example.adservices.samples.topics.sampleapp.MainActivity
+import com.example.adservices.samples.topics.sampleapp.R
+import android.adservices.topics.TopicsManager
+import android.adservices.topics.GetTopicsRequest
+import android.os.OutcomeReceiver
 import android.adservices.topics.GetTopicsResponse
+import android.adservices.exceptions.GetTopicsException
+import android.util.Log
 import android.view.View
-import android.widget.Button
-import android.widget.Toast
-import com.example.adservices.samples.topics.sampleapp.databinding.ActivityMainBinding
-import java.lang.StringBuilder
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 /**
- * Android application activity for testing Topics API by providing a button in UI that initiate
- * user's interaction with Topics Manager in the background. Response from Topics API will be shown
- * in the app as text as well as toast message. In case anything goes wrong in this process, error
- * message will also be shown in toast to suggest the Exception encountered.
+ * Android application activity for testing Topics API by sending a call to
+ * the 'getTopics()' function onResume. When a result is received it will be displayed
+ * on screen in a text box, as well as displaying a text box showing what the current
+ * package name is for the application. This project can be build with 11 different
+ * flavors, each of which will assign a different package name corresponding to a
+ * different suite of possible Topics.
  */
 class MainActivity : AppCompatActivity() {
-  // Once click on this button, the call to AdServices will be triggered
-  private var mTopicsClientButton: Button? = null
+  //TextView to display results from getTopics call
+  private lateinit var results: TextView;
 
-  // Topics get from the call to AdServices will be shown here
-  private var mResultTextView: TextView? = null
+  //TextView to display current package name which influences returned topics
+  private lateinit var packageNameDisplay: TextView;
 
-  // Helper class which make call to AdService's TopicsManager
-  // and get Topics for this app
-  private var mAdvertisingTopicsClient: AdvertisingTopicsClient? = null
-
-  // View binding for MainActivity to ease interactions with views
-  private var binding: ActivityMainBinding? = null
+  //On app creation setup view as well as assign variables for TextViews to display results
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    binding = ActivityMainBinding.inflate(
-      layoutInflater)
-    val view: View = binding!!.root
-    setContentView(view)
-    mTopicsClientButton = binding!!.topicsClientButton
-    mResultTextView = binding!!.textView
-    mAdvertisingTopicsClient = AdvertisingTopicsClient.Builder()
-      .setContext(this)
-      .setSdkName(mSdkName)
-      .setExecutor(CALLBACK_EXECUTOR)
-      .build()
-    registerGetTopicsButton()
+    setContentView(R.layout.activity_main)
+    results = findViewById<View>(R.id.textView) as TextView
+    packageNameDisplay = findViewById<View>(R.id.textView2) as TextView
   }
 
-  // Register Topics Client Button so that every time people click on this
-  // button, a call call to AdService's TopicsManager will be triggered and
-  // app can get topics associated with it
-  private fun registerGetTopicsButton() {
-    mTopicsClientButton!!.setOnClickListener { v: View? ->
-      runOnUiThread(Runnable {
-        try {
-          val result = mAdvertisingTopicsClient!!.topics.get()
-          val topics = result!!.topics.joinToString(SPACE)
-          val text = "Topics are $topics"
-          mResultTextView!!.text = text
-          makeToast(text)
-        } catch (e: ExecutionException) {
-          makeToast(e.message)
-        } catch (e: InterruptedException) {
-          makeToast(e.message)
+  //On Application Resume, call getTopics code. This can be used to facilitate automating population of topics data
+  override fun onResume() {
+    super.onResume()
+    packageNameDisplay.text = baseContext.packageName
+    TopicGetter()
+  }
+
+  //TopicGetter holds all of the setup and code for creating a TopicsManager and getTopics call
+  fun TopicGetter() {
+    val mContext = baseContext
+    val mTopicsManager = mContext.getSystemService(
+      TopicsManager::class.java)
+    val mExecutor: Executor = Executors.newCachedThreadPool()
+    val mGetTopicsRequest = GetTopicsRequest.Builder().setSdkName("com.example.adtech")
+    mTopicsManager.getTopics(mGetTopicsRequest.build(), mExecutor,
+                             mCallback as OutcomeReceiver<GetTopicsResponse, GetTopicsException>)
+  }
+
+  //onResult is called when getTopics successfully comes back with an answer
+  var mCallback: OutcomeReceiver<*, *> =
+    object : OutcomeReceiver<GetTopicsResponse, GetTopicsException> {
+      override fun onResult(result: GetTopicsResponse) {
+        val topicsResult = result.topics
+        for (i in topicsResult.indices) {
+          Log.i("Topic", topicsResult[i])
+          if (results.isEnabled) {
+            results.text = topicsResult[i]
+          }
         }
-      })
+        if (topicsResult.size == 0) {
+          Log.i("Topic", "Returned Empty")
+          if (results.isEnabled) {
+            results.text = "Returned Empty"
+          }
+        }
+      }
+
+      //onError should not be returned, even invalid topics callers should simply return empty
+      override fun onError(error: GetTopicsException) {
+        // Handle error
+        Log.i("Topic", "Experienced an Error, and did not return successfully")
+      }
     }
-  }
-
-  private fun makeToast(message: String?) {
-    runOnUiThread { Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show() }
-  }
-
-  companion object {
-    // Executor to be used by AdvertisingTopicsClient
-    private val CALLBACK_EXECUTOR: Executor = Executors.newCachedThreadPool()
-
-    // String containing one space to be used to split topic results
-    private const val SPACE = " "
-
-    // Name of SDK used by this app. In reality one app can have several SDK
-    private const val mSdkName = "SdkName"
-  }
 }

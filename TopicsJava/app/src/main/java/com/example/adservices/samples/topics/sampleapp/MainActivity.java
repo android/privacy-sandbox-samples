@@ -15,101 +15,97 @@
  */
 package com.example.adservices.samples.topics.sampleapp;
 
+import android.adservices.exceptions.GetTopicsException;
+import android.adservices.topics.GetTopicsRequest;
 import android.adservices.topics.GetTopicsResponse;
-import android.os.Bundle;
+import android.adservices.topics.TopicsManager;
+import android.content.Context;
+import android.os.OutcomeReceiver;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.example.adservices.samples.topics.sampleapp.databinding.ActivityMainBinding;
-
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
+import android.os.Bundle;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 /**
- * Android application activity for testing Topics API by providing a button in UI that initiate
- * user's interaction with Topics Manager in the background. Response from Topics API will be shown
- * in the app as text as well as toast message. In case anything goes wrong in this process, error
- * message will also be shown in toast to suggest the Exception encountered.
+ * Android application activity for testing Topics API by sending a call to
+ * the 'getTopics()' function onResume. When a result is received it will be displayed
+ * on screen in a text box, as well as displaying a text box showing what the current
+ * package name is for the application. This project can be build with 11 different
+ * flavors, each of which will assign a different package name corresponding to a
+ * different suite of possible Topics.
  */
 public class MainActivity extends AppCompatActivity {
 
-    // Executor to be used by AdvertisingTopicsClient
-    private static final Executor CALLBACK_EXECUTOR = Executors.newCachedThreadPool();
+    //TextView to display results from getTopics call
+    TextView results;
+    //TextView to display current package name which influences returned topics
+    TextView packageNameDisplay;
 
-    // String containing one space to be used to split topic results
-    private static final String SPACE = " ";
-
-    // Name of SDK used by this app. In reality one app can have several SDK
-    private static String mSdkName = "SdkName";
-
-    // Once click on this button, the call to AdServices will be triggered
-    private Button mTopicsClientButton;
-
-    // Topics get from the call to AdServices will be shown here
-    private TextView mResultTextView;
-
-    // Helper class which make call to AdService's TopicsManager
-    // and get Topics for this app
-    private AdvertisingTopicsClient mAdvertisingTopicsClient;
-
-    // View binding for MainActivity to ease interactions with views
-    private ActivityMainBinding binding;
-
+    //On app creation setup view as well as assign variables for TextViews to display results
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        View view = binding.getRoot();
-        setContentView(view);
-        mTopicsClientButton = binding.topicsClientButton;
-        mResultTextView = binding.textView;
-        mAdvertisingTopicsClient = new AdvertisingTopicsClient.Builder()
-            .setContext(this)
-            .setSdkName(mSdkName)
-            .setExecutor(CALLBACK_EXECUTOR)
-            .build();
-        registerGetTopicsButton();
+        setContentView(R.layout.activity_main);
+        results = (TextView) findViewById(R.id.textView);
+        packageNameDisplay = (TextView) findViewById(R.id.textView2);
     }
 
-    // Register Topics Client Button so that every time people click on this
-    // button, a call call to AdService's TopicsManager will be triggered and
-    // app can get topics associated with it
-    private void registerGetTopicsButton() {
-        mTopicsClientButton.setOnClickListener(v -> {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        GetTopicsResponse result = mAdvertisingTopicsClient.getTopics().get();
-                        String topics = getTopics(result.getTopics()),
-                            text = "Topics are " + topics;
-                        mResultTextView.setText(text);
-                        makeToast(text);
-                    } catch (ExecutionException | InterruptedException e) {
-                        makeToast(e.getMessage());
-                    }
+    //On Application Resume, call getTopics code. This can be used to facilitate automating population of topics data
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        packageNameDisplay.setText(getBaseContext().getPackageName());
+        TopicGetter();
+    }
 
+    //TopicGetter holds all of the setup and code for creating a TopicsManager and getTopics call
+    public void TopicGetter()
+    {
+        Context mContext = getBaseContext();
+        TopicsManager mTopicsManager = mContext.getSystemService(TopicsManager.class);
+        Executor mExecutor = Executors.newCachedThreadPool();
+        GetTopicsRequest.Builder mGetTopicsRequest = new GetTopicsRequest.Builder().setSdkName("com.example.adtech");
+        mTopicsManager.getTopics(mGetTopicsRequest.build(),mExecutor,mCallback);
+    }
+
+    //onResult is called when getTopics successfully comes back with an answer
+    OutcomeReceiver mCallback = new OutcomeReceiver<GetTopicsResponse, GetTopicsException>() {
+        @Override
+        public void onResult(@NonNull GetTopicsResponse result)
+        {
+            List<String> topicsResult = result.getTopics();
+            for(int i = 0; i < topicsResult.size(); i++){
+                Log.i("Topic", topicsResult.get(i));
+                if(results.isEnabled())
+                {
+                    results.setText(topicsResult.get(i));
                 }
-            });
+            }
+            if(topicsResult.size() == 0)
+            {
+                Log.i("Topic", "Returned Empty");
+                if(results.isEnabled())
+                {
+                    results.setText("Returned Empty");
+                }
+            }
 
-        });
-    }
-
-    private String getTopics(List<String> arr) {
-        StringBuilder sb = new StringBuilder();
-        for (String s : arr) {
-            sb.append(s).append(SPACE);
         }
-        return sb.toString();
-    }
 
-    private void makeToast(String message) {
-        runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show());
-    }
+        //onError should not be returned, even invalid topics callers should simply return empty
+        @Override
+        public void onError(@NonNull GetTopicsException error)
+        {
+            // Handle error
+            Log.i("Topic", "Experienced an Error, and did not return successfully");
+        }
+    };
 }
