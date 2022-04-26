@@ -29,7 +29,7 @@ topics entries in a given epoch helps infer the user’s strongest interests.
 For a more complete explanation of the Topics API functionality, read the
 [design proposal]:
  
-# Testing
+## Testing
  
 To test functionality of the Topics API, you need to [set up your development
 environment]. This process involves installing the proper SDK and the device
@@ -96,7 +96,7 @@ test packages to better understand how the system determines which Topics to
 return based on overlapping popularity.
  
 To help automate the process of installing and running each of the application
-flavors, you can execute the following script from inside of the `TopicsKotlin`
+flavors, you can execute the following script from inside of the `sampleapp`
 directory, which will install and run each application once. After that, data
 should be populated after the following epoch begins, at which point you can
 observe the following:
@@ -115,20 +115,20 @@ reduce epoch length so that the batch run will quickly yield useful results.
 #!/bin/bash
 # Per Topics data/seed app
 for i in {0..10} # Number of apps to install
-do
-  # Build and install on device or emulator
-  echo "${installationString:= installSampleapp${i}_Debug}"
-  ./gradlew ${installationString}
-  unset installationString
-done
+  do
+    # Build and install on device or emulator
+    echo "${installationString:= installSampleapp${i}_Debug}"
+    ./gradlew ${installationString}
+    unset installationString
+  done
   # Run app 10 times
-   for j in {1..10}
-   do
-      echo "Running app $i, instance number $j"
-      # Start app's main Activity
-	adb shell am start -n "com.example.adservices.samples.topics.sampleapp$i/com.example.adservices.samples.topics.sampleapp.MainActivity" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
-      # "Press/Swipe" Home button
-     adb shell input keyevent KEYCODE_HOME
+  for j in {1..10}
+  do
+    echo "Running app $i, instance number $j"
+    # Start app's main Activity
+    adb shell am start -n "com.example.adservices.samples.topics.sampleapp$i/com.example.adservices.samples.topics.sampleapp.MainActivity" -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
+    # "Press/Swipe" Home button
+    adb shell input keyevent KEYCODE_HOME
   done
 done
 ```
