@@ -120,7 +120,6 @@ do
   echo "${installationString:= installSampleapp${i}_Debug}"
   ./gradlew ${installationString}
   unset installationString
-done
   # Run app 10 times
    for j in {1..10}
    do

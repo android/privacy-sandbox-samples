@@ -120,7 +120,6 @@ for i in {0..10} # Number of apps to install
     echo "${installationString:= installSampleapp${i}_Debug}"
     ./gradlew ${installationString}
     unset installationString
-  done
   # Run app 10 times
   for j in {1..10}
   do
