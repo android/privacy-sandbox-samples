@@ -1,0 +1,48 @@
+[
+  {
+    "ad_id": "1",
+    "event_response_headers": {
+      "Attribution-Reporting-Register-Source": {
+        "source_event_id": "12340873451",
+        "destination": "android-app://com.example.measurement.sampleapp",
+        "expiry": "1728000",
+        "priority": "10"
+      },
+      "Attribution-Reporting-Redirect": [
+        "https://127.0.0.1:8080/source?ad_id=2"
+      ]
+    },
+    "navigation_response_headers": {
+      "Attribution-Reporting-Register-Source": {
+        "source_event_id": "12340873452",
+        "destination": "android-app://com.example.measurement.sampleapp",
+        "expiry": "1728000",
+        "priority": "10"
+      },
+      "Attribution-Reporting-Redirect": [
+        "https://127.0.0.1:8080/source?ad_id=2"
+      ]
+    }
+  },
+  {
+    "ad_id": "2",
+    "event_response_headers": {
+      "Attribution-Reporting-Register-Source": {
+        "source_event_id": "12340873453",
+        "destination": "android-app://com.example.measurement.sampleapp",
+        "expiry": "1728000",
+        "priority": "10"
+      },
+      "Attribution-Reporting-Redirect": []
+    },
+    "navigation_response_headers": {
+      "Attribution-Reporting-Register-Source": {
+        "source_event_id": "12340873454",
+        "destination": "android-app://com.example.measurement.sampleapp",
+        "expiry": "1728000",
+        "priority": "10"
+      },
+      "Attribution-Reporting-Redirect": []
+    }
+  }
+]
