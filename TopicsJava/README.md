@@ -3,7 +3,7 @@
 The Topics sample app demonstrates how to initialize and call the Topics API in
 the following ways:
  
-* Constructs a topics request inside of the `AdvertisingTopicsClient` class.
+* Constructs a topics request inside of the `MainActivity` class.
   This request can be used to fetch a list of topics that have been assigned to
   a given user.
 * Creates a button inside of the `MainActivity` which, when pressed,
