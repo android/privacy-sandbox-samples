@@ -19,4 +19,5 @@ Samples
 
 * **[PrivacySandboxJava](PrivacySandboxJava)** (Java) - Demonstrates how to create an SDK that will run in a separate process. This sample contains both an app, and an SDK to show the interaction between them.
 
+* **[MeasurementAdTechServer](MeasurementAdTechServer)** (Kotlin) - Sample AdTech server to facilitate demonstration of Measurement APIs by the measurement sample app.
 

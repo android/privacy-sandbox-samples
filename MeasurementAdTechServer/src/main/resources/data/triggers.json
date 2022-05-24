@@ -1,0 +1,35 @@
+[
+  {
+    "conv_id": "1",
+    "response_headers": {
+      "Attribution-Reporting-Register-Event-Trigger": [{
+        "trigger_data": "1",
+        "priority": "20",
+        "deduplication_key": "5"
+      }],
+      "Attribution-Reporting-Redirect": [
+        "https://127.0.0.1:8080/trigger?conv_id=2"
+      ]
+    }
+  },
+  {
+    "conv_id": "2",
+    "response_headers": {
+      "Attribution-Reporting-Register-Event-Trigger": [{
+        "trigger_data": "0",
+        "priority": "21",
+        "deduplication_key": "17"
+      }]
+    }
+  },
+  {
+    "conv_id": "3",
+    "response_headers": {
+      "Attribution-Reporting-Register-Event-Trigger": [{
+        "trigger_data": "0",
+        "priority": "22",
+        "deduplication_key": "12"
+      }]
+    }
+  }
+]
