@@ -21,3 +21,5 @@ Samples
 
 * **[MeasurementAdTechServer](MeasurementAdTechServer)** (Kotlin) - Sample AdTech server to facilitate demonstration of Measurement APIs by the measurement sample app.
 
+* **[MeasurementAdTechServerSpec](MeasurementAdTechServerSpec)** (OpenApi 3.1) - Sample AdTech server spec that can be used generate a mock server for interaction with measurement sample app.
+
