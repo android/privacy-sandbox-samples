@@ -19,7 +19,10 @@ Samples
 
 * **[PrivacySandboxJava](PrivacySandboxJava)** (Java) - Demonstrates how to create an SDK that will run in a separate process. This sample contains both an app, and an SDK to show the interaction between them.
 
-* **[MeasurementAdTechServer](MeasurementAdTechServer)** (Kotlin) - Sample AdTech server to facilitate demonstration of Measurement APIs by the measurement sample app.
+* **[AttributionReporting](AttributionReporting)** - Contains components for demonstrating Attribution Reporting API.
+   * **[MeasurementAdTechServer](AttributionReporting/MeasurementAdTechServer)** (Kotlin) - Sample AdTech server to facilitate demonstration of Measurement APIs by the measurement sample app.
 
-* **[MeasurementAdTechServerSpec](MeasurementAdTechServerSpec)** (OpenApi 3.1) - Sample AdTech server spec that can be used generate a mock server for interaction with measurement sample app.
+   * **[MeasurementAdTechServerSpec](AttributionReporting/MeasurementAdTechServerSpec)** (OpenApi 3.1) - Sample AdTech server spec that can be used generate a mock server for interaction with measurement sample app.
+
+   * **[MeasurementSampleApp](AttributionReporting/MeasurementSampleApp)** (Kotlin) - Demonstrates how to initialize and use Attribution Reporting API
 
