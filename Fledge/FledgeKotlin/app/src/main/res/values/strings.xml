@@ -1,0 +1,25 @@
+<!--
+     Copyright (C) 2022 The Android Open Source Project
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+          http://www.apache.org/licenses/LICENSE-2.0
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+  <string name="app_name">FLEDGE Demo</string>
+  <string name="app_description">Sample app for FLEDGE API</string>
+  <string name="ad_space_text">Space for ad</string>
+  <string name="buyer_bidding_hint">https://buyer-js-url.example.com</string>
+  <string name="seller_scoring_hint">https://seller-js-url.example.com</string>
+  <string name="event_log_text">Event Log</string>
+  <string name="run_ads_button_text">Run Ad Selection</string>
+  <string name="join_shoes_button_text">Join Shoes Custom Audience</string>
+  <string name="leave_shoes_button_text">Leave Shoes Custom Audience</string>
+  <string name="join_shirts_button_text">Join Shirts Custom Audience</string>
+  <string name="leave_shirts_button_text">Leave Shirts Custom Audience</string>
+</resources>
