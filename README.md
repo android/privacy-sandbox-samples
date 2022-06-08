@@ -15,6 +15,13 @@ Samples
 
 * **[TopicsJava](TopicsJava)** (Java) - Demonstrates how to initialize and call the Topics API. 
 
+* **[Fledge](Fledge)** - Contains components for demonstrating FLEDGE APIs.
+  * **[FledgeKotlin](Fledge/FledgeKotlin)** (Kotlin) - Demonstrates how to initialize and call the FLEDGE APIs. 
+
+  * **[FledgeJava](Fledge/FledgeJava)** (Java) - Demonstrates how to initialize and call the FLEDGE API. 
+
+  * **[FledgeServerSpec](Fledge/FledgeServerSpec)** (OpenApi 3.1) - Sample FLEDGE server specs that can be used generate mock servers for delivering Javascript files to FLEDFE and receiving impression reports.  
+
 * **[PrivacySandboxKotlin](PrivacySandboxKotlin)** (Kotlin) - Demonstrates how to create an SDK that will run in a separate process. This sample contains both an app, and an SDK to show the interaction between them.
 
 * **[PrivacySandboxJava](PrivacySandboxJava)** (Java) - Demonstrates how to create an SDK that will run in a separate process. This sample contains both an app, and an SDK to show the interaction between them.
