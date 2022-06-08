@@ -4,7 +4,7 @@ The FLEDGE sample app demonstrates how to initialize and call the Custom Audienc
 and Ad Selection APIs in FLEDGE.
 
 The sample app has two client classes, `AdSelectionClient` and
-`CustomAudienceClient` to interact with the two FLEDGE APIs. CustomAudienceClient
+`CustomAudienceClient` that interact with the two FLEDGE APIs. CustomAudienceClient
 wraps the API calls that allow apps to join and leave custom audiences (CAs) while
 `AdSelectionClient` wraps the functionality that allows apps to run ad auctions
 and report impressions based on the results of those auctions.
@@ -17,28 +17,25 @@ For a full overview of how FLEDGE works, read the [design proposal]. Review the
 ## Set up development environment
 
 To test functionality of the FLEDGE API, you need to [set up your development
-environment]. This process involves installing the proper SDK and the device
-images needed to test functionality on an emulator.
+environment].
 
 ## Set up bidding code and impression reporting endpoints
 
-In order for ad selection and impression report to work you will need to set up
-4 HTTPS endpoints that your test device or emulator can access. This project 
-provides sample JavaScript code with trivial bidding logic that can be served 
-from these endpoints.
+In order for ad selection and impression reporting to work, you will need to set 
+up 4 HTTPS endpoints that your test device or emulator can access. They are:
 
-1. Buyer bidding logic endpoint that serves the sample `BiddingLogic.js` JavaScript
+1. A buyer bidding logic endpoint that serves the sample `BiddingLogic.js` JavaScript
    in this directory.
-2. Seller scoring logic endpoint that serves the sample `ScoringLogic.js` JavaScript
+2. A seller scoring logic endpoint that serves the sample `ScoringLogic.js` JavaScript
    in this directory.
-3. Winning buyer impression reporting endpoint. Modify the reporting_address  
+3. A winning buyer impression reporting endpoint. Modify the reporting_address  
    variable in the `BiddingLogic.js` file to match this endpoint.
-4. Seller impression reporting endpoint. Modify the  reporting_address variable in
+4. A seller impression reporting endpoint. Modify the reporting_address variable in
    the `ScoringLogic.js` file to match this endpoint.
 
 The impression reporting endpoints need only return a 200 status code -- the 
-response content does not matter. To verify impression report delivery, check 
-applicable server logs such as the mock server history or your custom system.
+response content does not matter. To verify that impressions were reported, check 
+the call logs for endpoints 3 and 4. 
 
 For convenience, we have provided OpenApi definitions for how these these endpoints 
 could be run in the files `js-server.json` and `reporting-server.json`. Where

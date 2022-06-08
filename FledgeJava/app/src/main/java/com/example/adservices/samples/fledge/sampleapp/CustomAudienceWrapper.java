@@ -17,16 +17,15 @@ package com.example.adservices.samples.fledge.sampleapp;
 
 import android.adservices.common.AdData;
 import android.adservices.customaudience.CustomAudience;
-import android.adservices.customaudience.CustomAudienceManager;
-import android.adservices.customaudience.JoinCustomAudienceRequest;
-import android.adservices.customaudience.LeaveCustomAudienceRequest;
 import android.adservices.customaudience.TrustedBiddingData;
-import android.adservices.exceptions.AdServicesException;
 import android.content.Context;
 import android.net.Uri;
-import android.os.OutcomeReceiver;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import com.example.adservices.samples.fledge.clients.CustomAudienceClient;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -36,29 +35,30 @@ import java.util.function.Consumer;
 import org.json.JSONObject;
 
 /**
- * Wrapper for the FLEDGE Custom Audience API. Creating the client locks the user into a given owner
- * and buyer. In order to interact with the client they will first need to call the create method
+ * Wrapper for the FLEDGE Custom Audience API. Creating the wrapper locks the user into a given owner
+ * and buyer. In order to interact with the wrapper they will first need to call the create method
  * to create a CA object. After that they can call joinCA and leaveCA.
  */
-public class CustomAudienceClient {
+@RequiresApi(api = 34)
+public class CustomAudienceWrapper {
   private final Executor mExecutor;
   private final String mOwner;
   private final String mBuyer;
-  private final CustomAudienceManager mCaManager;
+  private final CustomAudienceClient mCaClient;
 
   /**
-   * Initialize the CustomAudienceClient and set the owner and buyer.
+   * Initialize the custom audience wrapper and set the owner and buyer.
    *
-   * @param owner The owner field for custom audience created by this client.
-   * @param buyer The buyer field for custom audience created by this client.
+   * @param owner The owner field for custom audience created by this wrapper.
+   * @param buyer The buyer field for custom audience created by this wrapper.
    * @param context The application context.
    * @param executor An executor to use with the FLEDGE API calls.
    */
-  public CustomAudienceClient(String owner, String buyer, Context context, Executor executor) {
+  public CustomAudienceWrapper(String owner, String buyer, Context context, Executor executor) {
     mExecutor = executor;
     mOwner = owner;
     mBuyer = buyer;
-    mCaManager = context.getSystemService(CustomAudienceManager.class);
+    mCaClient = new CustomAudienceClient.Builder().setContext(context).setExecutor(executor).build();
   }
 
   /**
@@ -69,21 +69,6 @@ public class CustomAudienceClient {
    * string indicating the outcome of the call.
    */
   public void joinCa(String name, Uri biddingUrl, Uri renderUrl, Consumer<String> statusReceiver) {
-    OutcomeReceiver<Void, AdServicesException> joinCAReceiver
-        = new OutcomeReceiver<Void, AdServicesException>() {
-      @Override
-      public void onResult(@NonNull Void unused) {
-        statusReceiver.accept("Joined " + name + " custom audience");
-      }
-
-      @Override
-      public void onError(@NonNull AdServicesException e) {
-        statusReceiver.accept("Error when joining " + name + " custom audience: "
-            + e.getMessage());
-        Log.e(MainActivity.TAG, "Exception during CA join process ", e);
-      }
-    };
-
     try {
       CustomAudience ca = new CustomAudience.Builder()
           .setOwner(mOwner)
@@ -102,9 +87,19 @@ public class CustomAudienceClient {
               .setTrustedBiddingUrl(Uri.EMPTY).build())
           .setUserBiddingSignals(new JSONObject().toString())
           .build();
-      JoinCustomAudienceRequest joinRequest = (new JoinCustomAudienceRequest.Builder())
-          .setCustomAudience(ca).build();
-      mCaManager.joinCustomAudience(joinRequest, mExecutor, joinCAReceiver);
+
+      Futures.addCallback(mCaClient.joinCustomAudience(ca),
+          new FutureCallback<Void>() {
+            public void onSuccess(Void unused) {
+              statusReceiver.accept("Joined " + name + " custom audience");
+            }
+
+            public void onFailure(@NonNull Throwable e) {
+              statusReceiver.accept("Error when joining " + name + " custom audience: "
+                  + e.getMessage());
+              Log.e(MainActivity.TAG, "Exception during CA join process ", e);
+            }
+          }, mExecutor);
     } catch (Exception e) {
       statusReceiver.accept("Got the following exception when trying to join " + name
           + " custom audience: " + e);
@@ -120,25 +115,18 @@ public class CustomAudienceClient {
    * string indicating the outcome of the call.
    */
   public void leaveCa(String name, Consumer<String> statusReceiver) {
-    OutcomeReceiver<Void, AdServicesException> leaveCAReceiver
-        = new OutcomeReceiver<Void, AdServicesException>() {
-
-      @Override
-      public void onResult(@NonNull Void unused) {
-        statusReceiver.accept("Left " + name + " custom audience");
-      }
-
-      @Override
-      public void onError(@NonNull AdServicesException e) {
-        statusReceiver.accept("Error when leaving " + name
-            + " custom audience: " + e.getMessage());
-      }
-    };
-
     try {
-      LeaveCustomAudienceRequest leaveRequest = (new LeaveCustomAudienceRequest.Builder())
-          .setOwner(mOwner).setBuyer(mBuyer).setName(name).build();
-      mCaManager.leaveCustomAudience(leaveRequest, mExecutor, leaveCAReceiver);
+      Futures.addCallback(mCaClient.leaveCustomAudience(mOwner, mBuyer, name),
+          new FutureCallback<Void>() {
+            public void onSuccess(Void unused) {
+              statusReceiver.accept("Left " + name + " custom audience");
+            }
+
+            public void onFailure(@NonNull Throwable e) {
+              statusReceiver.accept("Error when leaving " + name
+                  + " custom audience: " + e.getMessage());
+            }
+          }, mExecutor);
     } catch (Exception e) {
       statusReceiver.accept("Got the following exception when trying to leave " + name
           + " custom audience: " + e);

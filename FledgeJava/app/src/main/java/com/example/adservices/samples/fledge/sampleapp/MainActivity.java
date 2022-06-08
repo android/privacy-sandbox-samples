@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import java.util.concurrent.Executors;
 /**
  * Android application activity for testing FLEDGE API
  */
+@RequiresApi(api = 34)
 public class MainActivity extends AppCompatActivity {
 
     // Log tag
@@ -54,10 +56,6 @@ public class MainActivity extends AppCompatActivity {
         "restart the activity using the directions in the README. The app will not be usable " +
         "until this is done";
 
-    // JS server URLs
-    private Uri mBiddingUrl;
-    private Uri mScoringUrl;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,28 +67,28 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             // Set URLS
-            mBiddingUrl = Uri.parse(getIntentOrError("biddingUrl", eventLog));
-            mScoringUrl = Uri.parse(getIntentOrError("scoringUrl", eventLog));
+            Uri biddingUrl = Uri.parse(getIntentOrError("biddingUrl", eventLog));
+            Uri scoringUrl = Uri.parse(getIntentOrError("scoringUrl", eventLog));
 
             // Set up ad selection
-            AdSelectionClient adClient = new AdSelectionClient(Collections.singletonList(BUYER),
-                SELLER, () -> mScoringUrl, context, EXECUTOR);
+            AdSelectionWrapper adWrapper = new AdSelectionWrapper(Collections.singletonList(BUYER),
+                SELLER, scoringUrl, context, EXECUTOR);
             binding.runAdsButton.setOnClickListener(v ->
-                adClient.runAdSelection(eventLog::writeEvent, binding.adSpace::setText));
+                adWrapper.runAdSelection(eventLog::writeEvent, binding.adSpace::setText));
 
             // Set up CAs
             String owner = context.getPackageName();
-            CustomAudienceClient caClient = new CustomAudienceClient(owner, BUYER, context, EXECUTOR);
+            CustomAudienceWrapper caWrapper = new CustomAudienceWrapper(owner, BUYER, context, EXECUTOR);
             binding.joinShoesButton.setOnClickListener(v ->
-                caClient.joinCa(SHOES_NAME, mBiddingUrl, SHOES_RENDER_URL,
+                caWrapper.joinCa(SHOES_NAME, biddingUrl, SHOES_RENDER_URL,
                     eventLog::writeEvent));
             binding.joinShirtsButton.setOnClickListener(v ->
-                caClient.joinCa(SHIRTS_NAME, mBiddingUrl, SHIRTS_RENDER_URL,
+                caWrapper.joinCa(SHIRTS_NAME, biddingUrl, SHIRTS_RENDER_URL,
                     eventLog::writeEvent));
             binding.leaveShoesButton.setOnClickListener(v ->
-                caClient.leaveCa(SHOES_NAME, eventLog::writeEvent));
+                caWrapper.leaveCa(SHOES_NAME, eventLog::writeEvent));
             binding.leaveShirtsButton.setOnClickListener(v ->
-                caClient.leaveCa(SHIRTS_NAME, eventLog::writeEvent));
+                caWrapper.leaveCa(SHIRTS_NAME, eventLog::writeEvent));
         } catch (Exception e) {
             Log.e(TAG, "Error when setting up app", e);
         }
