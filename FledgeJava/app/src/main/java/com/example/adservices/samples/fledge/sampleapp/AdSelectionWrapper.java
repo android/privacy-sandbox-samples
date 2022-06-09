@@ -16,54 +16,58 @@
 package com.example.adservices.samples.fledge.sampleapp;
 
 import android.adservices.adselection.AdSelectionConfig;
-import android.adservices.adselection.AdSelectionManager;
 import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.adselection.ReportImpressionRequest;
-import android.adservices.exceptions.AdServicesException;
 import android.content.Context;
 import android.net.Uri;
-import android.os.OutcomeReceiver;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import com.example.adservices.samples.fledge.clients.AdSelectionClient;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.json.JSONObject;
 
 /**
  * Wrapper for the FLEDGE Ad Selection API. This wrapper is opinionated and makes several
- * choices such as running impression report immediately after every successful ad auction or leaving
+ * choices such as running impression reporting immediately after every successful ad auction or leaving
  * the ad signals empty to limit the complexity that is exposed the user.
  */
-@RequiresApi(api = 33)
-public class AdSelectionClient {
+@RequiresApi(api = 34)
+public class AdSelectionWrapper {
 
-  private final List<String> mBuyers;
-  private final String mSeller;
-  private final Supplier<Uri> mDecisionUrlSupplier;
-  private final AdSelectionManager mAdManager;
+  private final AdSelectionConfig mAdSelectionConfig;
+  private final AdSelectionClient mAdClient;
   private final Executor mExecutor;
 
   /**
-   * Initializes the ad selection client with a specific seller, list of buyers, and decision
+   * Initializes the ad selection wrapper with a specific seller, list of buyers, and decision
    * endpoint.
    * @param buyers A list of buyers for the auction.
    * @param seller The name of the seller for the auction
-   * @param decisionUrlSupplier A supplier that gives theURL to retrieve the seller scoring and
-   * reporting logic from
+   * @param decisionUrl The URL to retrieve the seller scoring and reporting logic from
    * @param context The application context.
    * @param executor An executor to use with the FLEDGE API calls.
    */
-  public AdSelectionClient(List<String> buyers, String seller, Supplier<Uri> decisionUrlSupplier,
-      Context context, Executor executor) {
-    mBuyers = buyers;
-    mSeller = seller;
-    mDecisionUrlSupplier = decisionUrlSupplier;
-    mAdManager = context.getSystemService(AdSelectionManager.class);
+  public AdSelectionWrapper(List<String> buyers, String seller, Uri decisionUrl, Context context,
+      Executor executor) {
+
+    mAdSelectionConfig = new AdSelectionConfig.Builder()
+        .setSeller(seller)
+        .setDecisionLogicUrl(decisionUrl)
+        .setCustomAudienceBuyers(buyers)
+        .setAdSelectionSignals(new JSONObject().toString())
+        .setSellerSignals(new JSONObject().toString())
+        .setPerBuyerSignals(buyers.stream()
+            .collect(Collectors.toMap(buyer -> buyer, buyer -> new JSONObject().toString())))
+        .setContextualAds(new ArrayList<>())
+        .build();
+    mAdClient = new AdSelectionClient.Builder().setContext(context).setExecutor(executor).build();
     mExecutor = executor;
   }
 
@@ -77,49 +81,27 @@ public class AdSelectionClient {
    */
   public void runAdSelection(Consumer<String> statusReceiver, Consumer<String> renderUrlReceiver) {
     try {
-      AdSelectionConfig config = generateAdSelectionConfig();
-      OutcomeReceiver<AdSelectionOutcome, AdServicesException> adSelectionReceiver =
-          new OutcomeReceiver<AdSelectionOutcome, AdServicesException>() {
-            @Override
-            public void onResult(@NonNull AdSelectionOutcome adSelectionOutcome) {
+      Futures.addCallback(mAdClient.runAdSelection(mAdSelectionConfig),
+          new FutureCallback<AdSelectionOutcome>() {
+            public void onSuccess(AdSelectionOutcome adSelectionOutcome) {
               statusReceiver.accept("Ran ad selection");
               renderUrlReceiver.accept("Would display ad from " + adSelectionOutcome.getRenderUrl());
 
-
-              reportImpression(adSelectionOutcome.getAdSelectionId(), config, statusReceiver);
+              reportImpression(adSelectionOutcome.getAdSelectionId(), mAdSelectionConfig, statusReceiver);
             }
 
-            @Override
-            public void onError(@NonNull AdServicesException e) {
+            public void onFailure(@NonNull Throwable e) {
               statusReceiver.accept("Error when running ad selection: " + e.getMessage());
               renderUrlReceiver.accept("Ad selection failed -- no ad to display");
               Log.e(MainActivity.TAG, "Exception during ad selection", e);
             }
-          };
-      mAdManager.runAdSelection(config, mExecutor, adSelectionReceiver);
+          }, mExecutor);
     } catch (Exception e) {
       statusReceiver.accept("Got the following exception when trying to run ad selection: " + e);
       renderUrlReceiver.accept("Ad selection failed -- no ad to display");
       Log.e(MainActivity.TAG, "Exception calling runAdSelection", e);
     }
 
-  }
-
-  /**
-   * Generates an ad selection config based on the fields in this class.
-   * @return The generated ad selection config
-   */
-  private AdSelectionConfig generateAdSelectionConfig() {
-    return new AdSelectionConfig.Builder()
-        .setSeller(mSeller)
-        .setDecisionLogicUrl(mDecisionUrlSupplier.get())
-        .setCustomAudienceBuyers(mBuyers)
-        .setAdSelectionSignals(new JSONObject().toString())
-        .setSellerSignals(new JSONObject().toString())
-        .setPerBuyerSignals(mBuyers.stream()
-            .collect(Collectors.toMap(buyer -> buyer, buyer -> new JSONObject().toString())))
-        .setContextualAds(new ArrayList<>())
-        .build();
   }
 
   /**
@@ -134,19 +116,19 @@ public class AdSelectionClient {
         .setAdSelectionConfig(config)
         .setAdSelectionId(adSelectionId)
         .build();
-    OutcomeReceiver<Void, AdServicesException> impressionReceiver = new OutcomeReceiver<Void, AdServicesException>() {
-      @Override
-      public void onResult(@NonNull Void unused) {
-        statusReceiver.accept("Reported impressions from ad selection");
-      }
 
-      @Override
-      public void onError(@NonNull AdServicesException error) {
-        statusReceiver.accept("Error when reporting impressions: " + error.getMessage());
-        Log.e(MainActivity.TAG, error.toString(), error);
-      }
-    };
-    mAdManager.reportImpression(request, mExecutor, impressionReceiver);
+    Futures.addCallback(mAdClient.reportImpression(request),
+        new FutureCallback<Void>() {
+          public void onSuccess(Void unused) {
+            statusReceiver.accept("Reported impressions from ad selection");
+          }
+
+          public void onFailure(@NonNull Throwable e) {
+            statusReceiver.accept("Error when reporting impressions: " + e.getMessage());
+            Log.e(MainActivity.TAG, e.toString(), e);
+          }
+        }, mExecutor);
+    ;
   }
 
 }
