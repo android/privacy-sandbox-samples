@@ -35,15 +35,20 @@ import org.json.JSONObject
  * Wrapper for the FLEDGE Custom Audience (CA) API. Creating the wrapper locks the user into a given owner
  * and buyer. In order to interact with the wrapper they will first need to call the create method
  * to create a CA object. After that they can call joinCA and leaveCA.
+ *
+ * @param owner The owner field for custom audience created by this wrapper.
+ * @param buyer The buyer field for custom audience created by this wrapper.
+ * @param context The application context.
+ * @param executor An executor to use with the FLEDGE API calls.
  */
 @RequiresApi(api = 34)
 class CustomAudienceWrapper(
-  private val mOwner: String,
-  private val mBuyer: String,
-  context: Context?,
-  private val mExecutor: Executor
+  private val owner: String,
+  private val buyer: String,
+  private val executor: Executor,
+  context: Context
 ) {
-  private val mCaClient: CustomAudienceClient
+  private val caClient: CustomAudienceClient
 
   /**
    * Joins a CA.
@@ -52,16 +57,16 @@ class CustomAudienceWrapper(
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  fun joinCa(name: String, biddingUrl: Uri?, renderUrl: Uri?, statusReceiver: Consumer<String?>) {
+  fun joinCa(name: String, biddingUrl: Uri, renderUrl: Uri, statusReceiver: Consumer<String>) {
     try {
       val ca = CustomAudience.Builder()
-        .setOwner(mOwner)
-        .setBuyer(mBuyer)
+        .setOwner(owner)
+        .setBuyer(buyer)
         .setName(name)
         .setDailyUpdateUrl(Uri.EMPTY)
-        .setBiddingLogicUrl(biddingUrl!!)
+        .setBiddingLogicUrl(biddingUrl)
         .setAds(listOf(AdData.Builder()
-                         .setRenderUrl(renderUrl!!)
+                         .setRenderUrl(renderUrl)
                          .setMetadata(JSONObject().toString())
                          .build()))
         .setActivationTime(Instant.now())
@@ -71,7 +76,7 @@ class CustomAudienceWrapper(
                                  .setTrustedBiddingUrl(Uri.EMPTY).build())
         .setUserBiddingSignals(JSONObject().toString())
         .build()
-      Futures.addCallback(mCaClient.joinCustomAudience(ca),
+      Futures.addCallback(caClient.joinCustomAudience(ca),
                           object : FutureCallback<Void?> {
                             override fun onSuccess(unused: Void?) {
                               statusReceiver.accept("Joined $name custom audience")
@@ -80,13 +85,13 @@ class CustomAudienceWrapper(
                             override fun onFailure(e: Throwable) {
                               statusReceiver.accept("Error when joining " + name + " custom audience: "
                                                       + e.message)
-                              Log.e(MainActivity.TAG, "Exception during CA join process ", e)
+                              Log.e(TAG, "Exception during CA join process ", e)
                             }
-                          }, mExecutor)
+                          }, executor)
     } catch (e: Exception) {
       statusReceiver.accept("Got the following exception when trying to join " + name
                               + " custom audience: " + e)
-      Log.e(MainActivity.TAG, "Exception calling joinCustomAudience", e)
+      Log.e(TAG, "Exception calling joinCustomAudience", e)
     }
   }
 
@@ -97,9 +102,9 @@ class CustomAudienceWrapper(
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  fun leaveCa(name: String, statusReceiver: Consumer<String?>) {
+  fun leaveCa(name: String, statusReceiver: Consumer<String>) {
     try {
-      Futures.addCallback(mCaClient.leaveCustomAudience(mOwner, mBuyer, name),
+      Futures.addCallback(caClient.leaveCustomAudience(owner, buyer, name),
                           object : FutureCallback<Void?> {
                             override fun onSuccess(unused: Void?) {
                               statusReceiver.accept("Left $name custom audience")
@@ -109,23 +114,18 @@ class CustomAudienceWrapper(
                               statusReceiver.accept("Error when leaving " + name
                                                       + " custom audience: " + e.message)
                             }
-                          }, mExecutor)
+                          }, executor)
     } catch (e: Exception) {
       statusReceiver.accept("Got the following exception when trying to leave " + name
                               + " custom audience: " + e)
-      Log.e(MainActivity.TAG, "Exception calling leaveCustomAudience", e)
+      Log.e(TAG, "Exception calling leaveCustomAudience", e)
     }
   }
 
   /**
    * Initialize the custom audience wrapper and set the owner and buyer.
-   *
-   * @param owner The owner field for custom audience created by this wrapper.
-   * @param buyer The buyer field for custom audience created by this wrapper.
-   * @param context The application context.
-   * @param executor An executor to use with the FLEDGE API calls.
    */
   init {
-    mCaClient = CustomAudienceClient.Builder().setContext(context!!).setExecutor(mExecutor).build()
+    caClient = CustomAudienceClient.Builder().setContext(context).setExecutor(executor).build()
   }
 }

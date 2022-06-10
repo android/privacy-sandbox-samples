@@ -39,14 +39,12 @@ import java.util.concurrent.Executor;
  */
 @RequiresApi(api = 34)
 public class AdSelectionClient {
-  private AdSelectionManager mAdSelectionManager;
-  private Context mContext;
-  private Executor mExecutor;
+  private final AdSelectionManager mAdSelectionManager;
+  private final Executor mExecutor;
 
   private AdSelectionClient(@NonNull Context context, @NonNull Executor executor) {
-    mContext = context;
     mExecutor = executor;
-    mAdSelectionManager = mContext.getSystemService(AdSelectionManager.class);
+    mAdSelectionManager = context.getSystemService(AdSelectionManager.class);
   }
 
   /**

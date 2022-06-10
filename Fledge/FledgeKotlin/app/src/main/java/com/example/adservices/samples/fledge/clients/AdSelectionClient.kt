@@ -33,10 +33,10 @@ import java.util.concurrent.Executor
  */
 @RequiresApi(api = 34)
 class AdSelectionClient private constructor(
-  private val mContext: Context,
-  private val mExecutor: Executor
+  mContext: Context,
+  private val executor: Executor
 ) {
-  private val mAdSelectionManager: AdSelectionManager
+  private val adSelectionManager: AdSelectionManager
 
   /**
    * Invokes the `runAdSelection` method of [AdSelectionManager], and returns a future
@@ -46,9 +46,9 @@ class AdSelectionClient private constructor(
     adSelectionConfig: AdSelectionConfig
   ): ListenableFuture<AdSelectionOutcome?> {
     return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<AdSelectionOutcome?> ->
-      mAdSelectionManager.runAdSelection(
+      adSelectionManager.runAdSelection(
         adSelectionConfig,
-        mExecutor,
+        executor,
         object : OutcomeReceiver<AdSelectionOutcome, AdServicesException> {
           override fun onResult(result: AdSelectionOutcome) {
             completer.set(result)
@@ -70,9 +70,9 @@ class AdSelectionClient private constructor(
     input: ReportImpressionRequest
   ): ListenableFuture<Void?> {
     return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
-      mAdSelectionManager.reportImpression(
+      adSelectionManager.reportImpression(
         input,
-        mExecutor,
+        executor,
         object : NullableOutcomeReceiver<Void?, AdServicesException?> {
           override fun onResult(result: Void?) {
             completer.set(result)
@@ -124,6 +124,6 @@ class AdSelectionClient private constructor(
   }
 
   init {
-    mAdSelectionManager = mContext.getSystemService(AdSelectionManager::class.java)
+    adSelectionManager = mContext.getSystemService(AdSelectionManager::class.java)
   }
 }

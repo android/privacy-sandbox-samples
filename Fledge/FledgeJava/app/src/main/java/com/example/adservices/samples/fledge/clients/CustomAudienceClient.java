@@ -39,25 +39,11 @@ import java.util.concurrent.Executor;
 @RequiresApi(api = 34)
 public class CustomAudienceClient {
   private final CustomAudienceManager mCustomAudienceManager;
-  private final Context mContext;
   private final Executor mExecutor;
 
   private CustomAudienceClient(@NonNull Context context, @NonNull Executor executor) {
-    mContext = context;
     mExecutor = executor;
-    mCustomAudienceManager = mContext.getSystemService(CustomAudienceManager.class);
-  }
-
-  /** Gets the context. */
-  @NonNull
-  public Context getContext() {
-    return mContext;
-  }
-
-  /** Gets the worker executor. */
-  @NonNull
-  public Executor getExecutor() {
-    return mExecutor;
+    mCustomAudienceManager = context.getSystemService(CustomAudienceManager.class);
   }
 
   /** Join custom audience. */

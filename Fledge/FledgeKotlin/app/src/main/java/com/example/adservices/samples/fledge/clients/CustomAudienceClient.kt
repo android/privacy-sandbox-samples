@@ -32,12 +32,10 @@ import java.util.concurrent.Executor
  */
 @RequiresApi(api = 34)
 class CustomAudienceClient private constructor(
-  /** Gets the context.  */
-  private val context: Context,
-  /** Gets the worker executor.  */
+  context: Context,
   private val executor: Executor
 ) {
-  private val mCustomAudienceManager: CustomAudienceManager
+  private val customAudienceManager: CustomAudienceManager
 
   /** Join custom audience.  */
   fun joinCustomAudience(customAudience: CustomAudience?): ListenableFuture<Void?> {
@@ -45,7 +43,7 @@ class CustomAudienceClient private constructor(
       val request = JoinCustomAudienceRequest.Builder()
         .setCustomAudience(customAudience!!)
         .build()
-      mCustomAudienceManager.joinCustomAudience(
+      customAudienceManager.joinCustomAudience(
         request,
         executor,
         object : NullableOutcomeReceiver<Void?, AdServicesException?> {
@@ -72,7 +70,7 @@ class CustomAudienceClient private constructor(
         .setBuyer(buyer)
         .setName(name)
         .build()
-      mCustomAudienceManager.leaveCustomAudience(
+      customAudienceManager.leaveCustomAudience(
         request,
         executor,
         object : NullableOutcomeReceiver<Void?, AdServicesException?> {
@@ -122,7 +120,7 @@ class CustomAudienceClient private constructor(
   }
 
   init {
-    mCustomAudienceManager = context.getSystemService(
+    customAudienceManager = context.getSystemService(
       CustomAudienceManager::class.java)
   }
 }

@@ -27,7 +27,6 @@ import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 import java.util.concurrent.Executor
 import java.util.function.Consumer
-import java.util.function.Function
 import java.util.stream.Collectors
 import org.json.JSONObject
 
@@ -35,15 +34,21 @@ import org.json.JSONObject
  * Wrapper for the FLEDGE Ad Selection API. This wrapper is opinionated and makes several
  * choices such as running impression reporting immediately after every successful ad auction or leaving
  * the ad signals empty to limit the complexity that is exposed the user.
+ *
+ * @param buyers A list of buyers for the auction.
+ * @param seller The name of the seller for the auction
+ * @param decisionUrl The URL to retrieve the seller scoring and reporting logic from
+ * @param context The application context.
+ * @param executor An executor to use with the FLEDGE API calls.
  */
 @RequiresApi(api = 34)
 class AdSelectionWrapper(
-  buyers: List<String?>, seller: String?, decisionUrl: Uri?, context: Context?,
+  buyers: List<String>, seller: String, decisionUrl: Uri, context: Context,
   executor: Executor
 ) {
-  private val mAdSelectionConfig: AdSelectionConfig
-  private val mAdClient: AdSelectionClient
-  private val mExecutor: Executor
+  private val adSelectionConfig: AdSelectionConfig
+  private val adClient: AdSelectionClient
+  private val executor: Executor
 
   /**
    * Runs ad selection and passes a string describing its status to the input receivers. If ad
@@ -53,28 +58,28 @@ class AdSelectionWrapper(
    * @param renderUrlReceiver A consumer function that is run after ad selection with a message describing the render URL
    * or lack thereof.
    */
-  fun runAdSelection(statusReceiver: Consumer<String?>, renderUrlReceiver: Consumer<String?>) {
+  fun runAdSelection(statusReceiver: Consumer<String>, renderUrlReceiver: Consumer<String>) {
     try {
-      Futures.addCallback(mAdClient.runAdSelection(mAdSelectionConfig),
+      Futures.addCallback(adClient.runAdSelection(adSelectionConfig),
                           object : FutureCallback<AdSelectionOutcome?> {
                             override fun onSuccess(adSelectionOutcome: AdSelectionOutcome?) {
                               statusReceiver.accept("Ran ad selection")
                               renderUrlReceiver.accept("Would display ad from " + adSelectionOutcome!!.renderUrl)
                               reportImpression(adSelectionOutcome.adSelectionId,
-                                               mAdSelectionConfig,
+                                               adSelectionConfig,
                                                statusReceiver)
                             }
 
                             override fun onFailure(e: Throwable) {
                               statusReceiver.accept("Error when running ad selection: " + e.message)
                               renderUrlReceiver.accept("Ad selection failed -- no ad to display")
-                              Log.e(MainActivity.TAG, "Exception during ad selection", e)
+                              Log.e(TAG, "Exception during ad selection", e)
                             }
-                          }, mExecutor)
+                          }, executor)
     } catch (e: Exception) {
       statusReceiver.accept("Got the following exception when trying to run ad selection: $e")
       renderUrlReceiver.accept("Ad selection failed -- no ad to display")
-      Log.e(MainActivity.TAG, "Exception calling runAdSelection", e)
+      Log.e(TAG, "Exception calling runAdSelection", e)
     }
   }
 
@@ -88,13 +93,13 @@ class AdSelectionWrapper(
   private fun reportImpression(
     adSelectionId: Long,
     config: AdSelectionConfig,
-    statusReceiver: Consumer<String?>
+    statusReceiver: Consumer<String>
   ) {
     val request = ReportImpressionRequest.Builder()
       .setAdSelectionConfig(config)
       .setAdSelectionId(adSelectionId)
       .build()
-    Futures.addCallback(mAdClient.reportImpression(request),
+    Futures.addCallback(adClient.reportImpression(request),
                         object : FutureCallback<Void?> {
                           override fun onSuccess(unused: Void?) {
                             statusReceiver.accept("Reported impressions from ad selection")
@@ -102,34 +107,29 @@ class AdSelectionWrapper(
 
                           override fun onFailure(e: Throwable) {
                             statusReceiver.accept("Error when reporting impressions: " + e.message)
-                            Log.e(MainActivity.TAG, e.toString(), e)
+                            Log.e(TAG, e.toString(), e)
                           }
-                        }, mExecutor)
+                        }, executor)
   }
 
   /**
    * Initializes the ad selection wrapper with a specific seller, list of buyers, and decision
    * endpoint.
-   * @param buyers A list of buyers for the auction.
-   * @param seller The name of the seller for the auction
-   * @param decisionUrl The URL to retrieve the seller scoring and reporting logic from
-   * @param context The application context.
-   * @param executor An executor to use with the FLEDGE API calls.
    */
   init {
-    mAdSelectionConfig = AdSelectionConfig.Builder()
-      .setSeller(seller!!)
-      .setDecisionLogicUrl(decisionUrl!!)
+    adSelectionConfig = AdSelectionConfig.Builder()
+      .setSeller(seller)
+      .setDecisionLogicUrl(decisionUrl)
       .setCustomAudienceBuyers(buyers)
       .setAdSelectionSignals(JSONObject().toString())
       .setSellerSignals(JSONObject().toString())
       .setPerBuyerSignals(buyers.stream()
                             .collect(Collectors.toMap(
-                              Function { buyer: String? -> buyer },
-                              Function { buyer: String? -> JSONObject().toString() })))
+                              { buyer: String? -> buyer },
+                              { JSONObject().toString() })))
       .setContextualAds(ArrayList())
       .build()
-    mAdClient = AdSelectionClient.Builder().setContext(context!!).setExecutor(executor).build()
-    mExecutor = executor
+    adClient = AdSelectionClient.Builder().setContext(context).setExecutor(executor).build()
+    this.executor = executor
   }
 }
