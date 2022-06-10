@@ -37,8 +37,8 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = "FledgeSample";
 
     // The sample buyer and seller for the custom audiences
-    public static final String BUYER = "sample-buyer.sampleapp";
-    public static final String SELLER = "sample-seller.sampleapp";
+    private static final String BUYER = "sample-buyer.sampleapp";
+    private static final String SELLER = "sample-seller.sampleapp";
 
     // The names for the shirts and shoes custom audience
     private static final String SHOES_NAME = "shoes";

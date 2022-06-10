@@ -25,6 +25,30 @@ import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainB
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
+
+// Log tag
+const val TAG = "FledgeSample"
+
+// The sample buyer and seller for the custom audiences
+private const val BUYER = "sample-buyer.sampleapp"
+private const val SELLER = "sample-seller.sampleapp"
+
+// The names for the shirts and shoes custom audience
+private const val SHOES_NAME = "shoes"
+private const val SHIRTS_NAME = "shirts"
+
+// Shirts and shoes render URLS
+private val SHOES_RENDER_URL = Uri.parse("shoes-url.shoestld")
+private val SHIRTS_RENDER_URL = Uri.parse("shirts-url.shirtstld")
+
+// Executor to be used for API calls
+private val EXECUTOR: Executor = Executors.newCachedThreadPool()
+
+// String to inform user a field in missing
+private const val MISSING_FIELD_STRING_FORMAT = "ERROR: %s is missing, " +
+  "restart the activity using the directions in the README. The app will not be usable " +
+  "until this is done"
+
 /**
  * Android application activity for testing FLEDGE API
  */
@@ -51,39 +75,31 @@ class MainActivity : AppCompatActivity() {
       // Set up ad selection
       val adWrapper = AdSelectionWrapper(listOf(BUYER),
                                          SELLER, scoringUrl, context, EXECUTOR)
-      binding.runAdsButton.setOnClickListener { v: View? ->
+      binding.runAdsButton.setOnClickListener {
         adWrapper.runAdSelection(
-          { event: String? ->
-            eventLog.writeEvent(
-              event!!)
+          { event: String -> eventLog.writeEvent(event)
           }) { text: String? -> binding.adSpace.text = text }
       }
 
       // Set up Custom Audiences (CAs)
       val owner = context.packageName
-      val caWrapper = CustomAudienceWrapper(owner, BUYER, context, EXECUTOR)
-      binding.joinShoesButton.setOnClickListener { v: View? ->
-        caWrapper.joinCa(SHOES_NAME, biddingUrl, SHOES_RENDER_URL) { event: String? ->
-          eventLog.writeEvent(
-            event!!)
+      val caWrapper = CustomAudienceWrapper(owner, BUYER, EXECUTOR, context)
+      binding.joinShoesButton.setOnClickListener {
+        caWrapper.joinCa(SHOES_NAME, biddingUrl, SHOES_RENDER_URL) { event: String ->
+          eventLog.writeEvent(event)
         }
       }
-      binding.joinShirtsButton.setOnClickListener { v: View? ->
-        caWrapper.joinCa(SHIRTS_NAME, biddingUrl, SHIRTS_RENDER_URL) { event: String? ->
-          eventLog.writeEvent(
-            event!!)
+      binding.joinShirtsButton.setOnClickListener {
+        caWrapper.joinCa(SHIRTS_NAME, biddingUrl, SHIRTS_RENDER_URL) { event: String ->
+          eventLog.writeEvent(event)
         }
       }
-      binding.leaveShoesButton.setOnClickListener { v: View? ->
-        caWrapper.leaveCa(SHOES_NAME) { event: String? ->
-          eventLog.writeEvent(
-            event!!)
+      binding.leaveShoesButton.setOnClickListener {
+        caWrapper.leaveCa(SHOES_NAME) { event: String -> eventLog.writeEvent(event)
         }
       }
-      binding.leaveShirtsButton.setOnClickListener { v: View? ->
-        caWrapper.leaveCa(SHIRTS_NAME) { event: String? ->
-          eventLog.writeEvent(
-            event!!)
+      binding.leaveShirtsButton.setOnClickListener {
+        caWrapper.leaveCa(SHIRTS_NAME) { event: String -> eventLog.writeEvent(event)
         }
       }
     } catch (e: Exception) {
@@ -105,30 +121,5 @@ class MainActivity : AppCompatActivity() {
       throw RuntimeException(message)
     }
     return toReturn
-  }
-
-  companion object {
-    // Log tag
-    const val TAG = "FledgeSample"
-
-    // The sample buyer and seller for the custom audiences
-    const val BUYER = "sample-buyer.sampleapp"
-    const val SELLER = "sample-seller.sampleapp"
-
-    // The names for the shirts and shoes custom audience
-    private const val SHOES_NAME = "shoes"
-    private const val SHIRTS_NAME = "shirts"
-
-    // Shirts and shoes render URLS
-    private val SHOES_RENDER_URL = Uri.parse("shoes-url.shoestld")
-    private val SHIRTS_RENDER_URL = Uri.parse("shirts-url.shirtstld")
-
-    // Executor to be used for API calls
-    private val EXECUTOR: Executor = Executors.newCachedThreadPool()
-
-    // String to inform user a field in missing
-    private const val MISSING_FIELD_STRING_FORMAT = "ERROR: %s is missing, " +
-      "restart the activity using the directions in the README. The app will not be usable " +
-      "until this is done"
   }
 }

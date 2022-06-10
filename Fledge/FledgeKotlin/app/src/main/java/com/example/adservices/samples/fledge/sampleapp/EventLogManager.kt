@@ -20,37 +20,40 @@ import java.lang.StringBuilder
 import java.util.LinkedList
 
 /**
+ * Text that appears above the event log
+ */
+private const val TITLE = "Event Log"
+
+/**
+ * The number of events to display
+ */
+private const val HISTORY_LENGTH = 8
+
+/**
  * Class that manages a text view event log and shows the HISTORY_LENGTH most recent events
+ *
+ * @param display The TextView to manage.
  */
 class EventLogManager(
   /**
    * A text view to display the events
    */
-  private val mDisplay: TextView
+  private val display: TextView
 ) {
-  /**
-   * The number of events to display
-   */
-  private val HISTORY_LENGTH = 8
-
-  /**
-   * Text that appears above the event log
-   */
-  private val TITLE = "Event Log"
 
   /**
    * A queue of the HISTORY_LENGTH most recent events
    */
-  private val mEvents = LinkedList<String>()
+  private val events = LinkedList<String>()
 
   /**
    * Add an event string to the front of the event log.
    * @param event The events string to add.
    */
   fun writeEvent(event: String) {
-    mEvents.add(event)
-    if (mEvents.size > HISTORY_LENGTH) {
-      mEvents.remove()
+    events.add(event)
+    if (events.size > HISTORY_LENGTH) {
+      events.remove()
     }
     render()
   }
@@ -65,16 +68,15 @@ class EventLogManager(
   
   """.trimIndent())
     var eventNumber = 1
-    val it = mEvents.descendingIterator()
+    val it = events.descendingIterator()
     while (it.hasNext()) {
       output.append(eventNumber++).append(". ").append(it.next()).append("\n")
     }
-    mDisplay.text = output
+    display.text = output
   }
 
   /**
-   * Constructor takes only the TextView to manage.
-   * @param display The TextView to manage.
+   * Does the initial render.
    */
   init {
     render()

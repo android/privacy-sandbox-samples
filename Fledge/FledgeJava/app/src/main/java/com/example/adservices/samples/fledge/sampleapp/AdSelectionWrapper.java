@@ -128,7 +128,6 @@ public class AdSelectionWrapper {
             Log.e(MainActivity.TAG, e.toString(), e);
           }
         }, mExecutor);
-    ;
   }
 
 }
