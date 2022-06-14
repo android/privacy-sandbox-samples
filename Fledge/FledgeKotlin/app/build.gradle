@@ -25,7 +25,7 @@ android {
         applicationId "com.example.adservices.samples.fledge.sampleapp"
         minSdkPreview "TiramisuPrivacySandbox"
         targetSdkPreview "TiramisuPrivacySandbox"
-        versionCode 32
+        versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
