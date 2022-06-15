@@ -25,7 +25,7 @@ This server loads the json files located at `src/main/resources/data` for genera
 
 ### Local Run
 
-`gradlew bootRun`
+`./gradlew bootRun`
 
 ### Deploy to Google Cloud - App Engine
 
@@ -40,7 +40,7 @@ In `build.gradle.kts` :
 
 #### Deploy
 
-`gradlew appengineDeploy`
+`./gradlew appengineDeploy`
 
 ### Update Response Configuration
 

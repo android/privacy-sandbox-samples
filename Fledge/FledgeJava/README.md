@@ -50,7 +50,7 @@ if the phone is part of both CAs the shoes CA will outbid the shirts CA and win
 the auction.
 
 Once the ad auction is complete, the app with show the URL that would normally
-be used the render the ad in the top purple Textview. The app will them trigger
+be used the render the ad in the top purple Textview. The app will then trigger
 impression reporting which will run the reportWin and reportResults functions from the
 javascript files pulled down during the ad auction. These javascript files will
 instruct FLEDGE to send some data back to two additional endpoints
