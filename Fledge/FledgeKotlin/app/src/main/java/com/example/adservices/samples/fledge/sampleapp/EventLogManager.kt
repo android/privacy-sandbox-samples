@@ -51,9 +51,11 @@ class EventLogManager(
    * @param event The events string to add.
    */
   fun writeEvent(event: String) {
-    events.add(event)
-    if (events.size > HISTORY_LENGTH) {
-      events.remove()
+    synchronized(events) {
+      events.add(event)
+      if (events.size > HISTORY_LENGTH) {
+        events.remove()
+      }
     }
     render()
   }
@@ -68,11 +70,13 @@ class EventLogManager(
   
   """.trimIndent())
     var eventNumber = 1
-    val it = events.descendingIterator()
-    while (it.hasNext()) {
-      output.append(eventNumber++).append(". ").append(it.next()).append("\n")
+    synchronized(events) {
+      val it = events.descendingIterator()
+      while (it.hasNext()) {
+        output.append(eventNumber++).append(". ").append(it.next()).append("\n")
+      }
+      display.text = output
     }
-    display.text = output
   }
 
   /**

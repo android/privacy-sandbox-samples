@@ -57,9 +57,11 @@ public class EventLogManager {
    * @param event The events string to add.
    */
   public void writeEvent(String event) {
-    mEvents.add(event);
-    if (mEvents.size() > HISTORY_LENGTH) {
-      mEvents.remove();
+    synchronized (mEvents) {
+      mEvents.add(event);
+      if (mEvents.size() > HISTORY_LENGTH) {
+        mEvents.remove();
+      }
     }
     render();
   }
@@ -67,14 +69,16 @@ public class EventLogManager {
   /**
    * Re-renders the event log with the current events from {@link #mEvents}.
    */
-  private void render() {
+  private synchronized void render() {
     StringBuilder output = new StringBuilder();
     output.append(TITLE + "\n");
     int eventNumber = 1;
-    for (Iterator<String> it = mEvents.descendingIterator(); it.hasNext();) {
-      output.append(eventNumber++).append(". ").append(it.next()).append("\n");
+    synchronized (mEvents) {
+      for (Iterator<String> it = mEvents.descendingIterator(); it.hasNext(); ) {
+        output.append(eventNumber++).append(". ").append(it.next()).append("\n");
+      }
+      mDisplay.setText(output);
     }
-    mDisplay.setText(output);
   }
 
 }
