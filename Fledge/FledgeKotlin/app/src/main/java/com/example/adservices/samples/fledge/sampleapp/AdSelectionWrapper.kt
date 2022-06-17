@@ -17,6 +17,7 @@ package com.example.adservices.samples.fledge.sampleapp
 
 import android.adservices.adselection.AdSelectionConfig
 import android.adservices.adselection.AdSelectionOutcome
+import android.adservices.adselection.AddAdSelectionOverrideRequest
 import android.adservices.adselection.ReportImpressionRequest
 import android.content.Context
 import android.net.Uri
@@ -46,7 +47,7 @@ class AdSelectionWrapper(
   buyers: List<String>, seller: String, decisionUrl: Uri, context: Context,
   executor: Executor
 ) {
-  private val adSelectionConfig: AdSelectionConfig
+  private var adSelectionConfig: AdSelectionConfig
   private val adClient: AdSelectionClient
   private val executor: Executor
 
@@ -110,6 +111,69 @@ class AdSelectionWrapper(
                             Log.e(TAG, e.toString(), e)
                           }
                         }, executor)
+  }
+
+  /**
+   * Overrides remote info for an ad selection config.
+   *
+   * @param decisionLogicJS The overriding decision logic javascript
+   * @param statusReceiver A consumer function that is run after the API call and returns a
+   * string indicating the outcome of the call.
+   */
+  fun overrideAdSelection(statusReceiver: Consumer<String?>, decisionLogicJS: String?) {
+    val request = AddAdSelectionOverrideRequest.Builder()
+      .setAdSelectionConfig(adSelectionConfig)
+      .setDecisionLogicJs(decisionLogicJS!!)
+      .build()
+    Futures.addCallback(adClient.overrideAdSelectionConfigRemoteInfo(request),
+                        object : FutureCallback<Void?> {
+                          override fun onSuccess(unused: Void?) {
+                            statusReceiver.accept("Added override for ad selection")
+                          }
+
+                          override fun onFailure(e: Throwable) {
+                            statusReceiver.accept("Error when adding override for ad selection " + e.message)
+                            Log.e(TAG, e.toString(), e)
+                          }
+                        }, executor)
+  }
+
+  /**
+   * Resets all ad selection overrides.
+   *
+   * @param statusReceiver A consumer function that is run after the API call and returns a
+   * string indicating the outcome of the call.
+   */
+  fun resetAdSelectionOverrides(statusReceiver: Consumer<String?>) {
+    Futures.addCallback(adClient.resetAllAdSelectionConfigRemoteOverrides(),
+                        object : FutureCallback<Void?> {
+                          override fun onSuccess(unused: Void?) {
+                            statusReceiver.accept("Reset ad selection overrides")
+                          }
+
+                          override fun onFailure(e: Throwable) {
+                            statusReceiver.accept("Error when resetting all ad selection overrides " + e.message)
+                            Log.e(TAG, e.toString(), e)
+                          }
+                        }, executor)
+  }
+
+  /**
+   * Resets the {code adSelectionConfig} with the new decisionUrl associated with this `AdSelectionWrapper`.
+   * To be used when switching back and forth between dev overrides/mock server states.
+   *
+   * @param decisionUrl the new {@code Uri} to be used
+   */
+  fun resetAdSelectionConfig(decisionUrl: Uri?) {
+    adSelectionConfig = AdSelectionConfig.Builder()
+      .setSeller(adSelectionConfig.getSeller())
+      .setDecisionLogicUrl(decisionUrl!!)
+      .setCustomAudienceBuyers(adSelectionConfig.getCustomAudienceBuyers())
+      .setAdSelectionSignals(JSONObject().toString())
+      .setSellerSignals(JSONObject().toString())
+      .setPerBuyerSignals(adSelectionConfig.getPerBuyerSignals())
+      .setContextualAds(java.util.ArrayList())
+      .build()
   }
 
   /**

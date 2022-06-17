@@ -17,6 +17,7 @@ package com.example.adservices.samples.fledge.sampleapp;
 
 import android.adservices.adselection.AdSelectionConfig;
 import android.adservices.adselection.AdSelectionOutcome;
+import android.adservices.adselection.AddAdSelectionOverrideRequest;
 import android.adservices.adselection.ReportImpressionRequest;
 import android.content.Context;
 import android.net.Uri;
@@ -41,7 +42,7 @@ import org.json.JSONObject;
 @RequiresApi(api = 34)
 public class AdSelectionWrapper {
 
-  private final AdSelectionConfig mAdSelectionConfig;
+  private AdSelectionConfig mAdSelectionConfig;
   private final AdSelectionClient mAdClient;
   private final Executor mExecutor;
 
@@ -70,6 +71,25 @@ public class AdSelectionWrapper {
     mAdClient = new AdSelectionClient.Builder().setContext(context).setExecutor(executor).build();
     mExecutor = executor;
   }
+
+  /**
+   * Resets the {@code AdSelectionConfig} with the new decisionUrl associated with this {@code AdSelectionWrapper}.
+   * To be used when switching back and forth between dev overrides/mock server states.
+   *
+   * @param decisionUrl the new {@code Uri} to be used
+   */
+  public void resetAdSelectionConfig(Uri decisionUrl) {
+    mAdSelectionConfig = new AdSelectionConfig.Builder()
+        .setSeller(mAdSelectionConfig.getSeller())
+        .setDecisionLogicUrl(decisionUrl)
+        .setCustomAudienceBuyers(mAdSelectionConfig.getCustomAudienceBuyers())
+        .setAdSelectionSignals(new JSONObject().toString())
+        .setSellerSignals(new JSONObject().toString())
+        .setPerBuyerSignals(mAdSelectionConfig.getPerBuyerSignals())
+        .setContextualAds(new ArrayList<>())
+        .build();
+  }
+
 
   /**
    * Runs ad selection and passes a string describing its status to the input receivers. If ad
@@ -130,4 +150,57 @@ public class AdSelectionWrapper {
         }, mExecutor);
   }
 
+  /**
+   * Overrides remote info for an ad selection config.
+   *
+   * @param decisionLogicJS The overriding decision logic javascript
+   * @param statusReceiver A consumer function that is run after the API call and returns a
+   * string indicating the outcome of the call.
+   */
+  public void overrideAdSelection(Consumer<String> statusReceiver, String decisionLogicJS) {
+    AddAdSelectionOverrideRequest request =
+        new AddAdSelectionOverrideRequest.Builder()
+            .setAdSelectionConfig(mAdSelectionConfig)
+            .setDecisionLogicJs(decisionLogicJS)
+            .build();
+    try {
+      Futures.addCallback(mAdClient.overrideAdSelectionConfigRemoteInfo(request),
+          new FutureCallback<Void>() {
+            public void onSuccess(Void unused) {
+              statusReceiver.accept("Added override for ad selection");
+            }
+
+            public void onFailure(@NonNull Throwable e) {
+              statusReceiver.accept("Error when adding override for ad selection " + e.getMessage());
+            }
+          }, mExecutor);
+    } catch (Exception e) {
+      statusReceiver.accept("Got the following exception when trying to override remote info for ad selection: " + e);
+      Log.e(MainActivity.TAG, "Exception calling overrideAdSelectionConfigRemoteInfo", e);
+    }
+  }
+
+  /**
+   * Resets all ad selection overrides.
+   *
+   * @param statusReceiver A consumer function that is run after the API call and returns a
+   * string indicating the outcome of the call.
+   */
+  public void resetAdSelectionOverrides(Consumer<String> statusReceiver) {
+    try {
+      Futures.addCallback(mAdClient.resetAllAdSelectionConfigRemoteOverrides(),
+          new FutureCallback<Void>() {
+            public void onSuccess(Void unused) {
+              statusReceiver.accept("Reset ad selection overrides");
+            }
+
+            public void onFailure(@NonNull Throwable e) {
+              statusReceiver.accept("Error when resetting all ad selection overrides " + e.getMessage());
+            }
+          }, mExecutor);
+    } catch (Exception e) {
+      statusReceiver.accept("Got the following exception when trying to reset all ad selection overrides: " + e);
+      Log.e(MainActivity.TAG, "Exception calling resetAllAdSelectionConfigRemoteOverrides", e);
+    }
+  }
 }

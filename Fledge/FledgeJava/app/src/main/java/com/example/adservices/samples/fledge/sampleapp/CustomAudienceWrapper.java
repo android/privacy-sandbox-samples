@@ -16,6 +16,7 @@
 package com.example.adservices.samples.fledge.sampleapp;
 
 import android.adservices.common.AdData;
+import android.adservices.customaudience.AddCustomAudienceOverrideRequest;
 import android.adservices.customaudience.CustomAudience;
 import android.adservices.customaudience.TrustedBiddingData;
 import android.content.Context;
@@ -131,6 +132,67 @@ public class CustomAudienceWrapper {
       statusReceiver.accept("Got the following exception when trying to leave " + name
           + " custom audience: " + e);
       Log.e(MainActivity.TAG, "Exception calling leaveCustomAudience", e);
+    }
+  }
+
+  /**
+   * Overrides remote info for a CA.
+   *
+   * @param name The name of the CA to override remote info.
+   * @param biddingLogicJs The overriding bidding logic javascript
+   * @param trustedBiddingData The overriding trusted bidding data
+   * @param statusReceiver A consumer function that is run after the API call and returns a
+   * string indicating the outcome of the call.
+   */
+  public void addCAOverride(String name, String biddingLogicJs, String trustedBiddingData, Consumer<String> statusReceiver) {
+    try {
+      AddCustomAudienceOverrideRequest request =
+          new AddCustomAudienceOverrideRequest.Builder()
+              .setOwner(mOwner)
+              .setBuyer(mBuyer)
+              .setName(name)
+              .setBiddingLogicJs(biddingLogicJs)
+              .setTrustedBiddingData(trustedBiddingData)
+              .build();
+      Futures.addCallback(mCaClient.overrideCustomAudienceRemoteInfo(request),
+          new FutureCallback<Void>() {
+            public void onSuccess(Void unused) {
+              statusReceiver.accept("Added override for " + name + " custom audience");
+            }
+
+            public void onFailure(@NonNull Throwable e) {
+              statusReceiver.accept("Error adding override for " + name
+                  + " custom audience: " + e.getMessage());
+            }
+          }, mExecutor);
+    } catch (Exception e) {
+      statusReceiver.accept("Got the following exception when trying to add override for " + name
+          + " custom audience: " + e);
+      Log.e(MainActivity.TAG, "Exception calling overrideCustomAudienceRemoteInfo", e);
+    }
+  }
+
+  /**
+   * Resets all custom audience overrides.
+   *
+   * @param statusReceiver A consumer function that is run after the API call and returns a
+   * string indicating the outcome of the call.
+   */
+  public void resetCAOverrides(Consumer<String> statusReceiver) {
+    try {
+      Futures.addCallback(mCaClient.resetAllCustomAudienceOverrides(),
+          new FutureCallback<Void>() {
+            public void onSuccess(Void unused) {
+              statusReceiver.accept("Reset all CA overrides");
+            }
+
+            public void onFailure(@NonNull Throwable e) {
+              statusReceiver.accept("Error while resetting all CA overrides");
+            }
+          }, mExecutor);
+    } catch (Exception e) {
+      statusReceiver.accept("Got the following exception when trying to reset all CA overrides: " + e);
+      Log.e(MainActivity.TAG, "Exception calling resetAllCustomAudienceOverrides", e);
     }
   }
 }

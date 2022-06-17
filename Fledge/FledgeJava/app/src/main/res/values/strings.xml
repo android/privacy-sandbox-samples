@@ -22,4 +22,7 @@
   <string name="leave_shoes_button_text">Leave Shoes Custom Audience</string>
   <string name="join_shirts_button_text">Join Shirts Custom Audience</string>
   <string name="leave_shirts_button_text">Leave Shirts Custom Audience</string>
+  <string name="override_switch_text">Use Remote Overrides</string>
+  <string name="override_switch_on">ON</string>
+  <string name="override_switch_off">Off</string>
 </resources>

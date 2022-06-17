@@ -34,6 +34,21 @@
       android:layout_marginEnd="5dp"
       android:layout_marginTop="5dp"
       android:text="@string/event_log_text" />
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="50dp"
+      >
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/override_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="5dp"
+        android:checked="true"
+        android:text="@string/override_switch_text"
+        android:textOff="@string/override_switch_off"
+        android:textOn="@string/override_switch_on" />
+  </RelativeLayout>
   <Button
       android:id="@+id/run_ads_button"
       android:layout_width="match_parent"

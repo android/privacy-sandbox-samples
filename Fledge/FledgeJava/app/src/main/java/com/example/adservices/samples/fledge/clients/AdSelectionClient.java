@@ -19,6 +19,7 @@ package com.example.adservices.samples.fledge.clients;
 import android.adservices.adselection.AdSelectionConfig;
 import android.adservices.adselection.AdSelectionManager;
 import android.adservices.adselection.AdSelectionOutcome;
+import android.adservices.adselection.AddAdSelectionOverrideRequest;
 import android.adservices.adselection.ReportImpressionRequest;
 import android.adservices.exceptions.AdServicesException;
 import android.content.Context;
@@ -99,6 +100,56 @@ public class AdSelectionClient {
                 }
               });
           return "reportImpression";
+        });
+  }
+
+  /**
+   * Overrides remote info for a given {@code AdSelectionConfig}
+   */
+  @NonNull
+  public ListenableFuture<Void> overrideAdSelectionConfigRemoteInfo(
+      @NonNull AddAdSelectionOverrideRequest request) {
+    return CallbackToFutureAdapter.getFuture(
+        completer -> {
+          mAdSelectionManager.overrideAdSelectionConfigRemoteInfo(
+              request,
+              mExecutor,
+              new OutcomeReceiver<Void, AdServicesException>() {
+                @Override
+                public void onResult(Void result) {
+                  completer.set(result);
+                }
+
+                @Override
+                public void onError(@NonNull AdServicesException error) {
+                  completer.setException(error);
+                }
+              });
+          return "overrideAdSelectionConfigRemoteInfo";
+        });
+  }
+
+  /**
+   * Resets all ad selection config overrides.
+   */
+  @NonNull
+  public ListenableFuture<Void> resetAllAdSelectionConfigRemoteOverrides() {
+    return CallbackToFutureAdapter.getFuture(
+        completer -> {
+          mAdSelectionManager.resetAllAdSelectionConfigRemoteOverrides(
+              mExecutor,
+              new OutcomeReceiver<Void, AdServicesException>() {
+                @Override
+                public void onResult(Void result) {
+                  completer.set(result);
+                }
+
+                @Override
+                public void onError(@NonNull AdServicesException error) {
+                  completer.setException(error);
+                }
+              });
+          return "resetAllAdSelectionConfigRemoteOverrides";
         });
   }
 

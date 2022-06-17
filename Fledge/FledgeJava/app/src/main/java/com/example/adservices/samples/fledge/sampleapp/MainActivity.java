@@ -20,12 +20,17 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.CompoundButton;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * Android application activity for testing FLEDGE API
@@ -40,6 +45,14 @@ public class MainActivity extends AppCompatActivity {
     private static final String BUYER = "sample-buyer.sampleapp";
     private static final String SELLER = "sample-seller.sampleapp";
 
+    // Set dummy URLs
+    private static final String DUMMY_BIDDING_URL = "https://dummy_url.com/bidding";
+    private static final String DUMMY_SCORING_URL = "https://dummy_url.com/scoring";
+
+    // JS files
+    private static final String BIDDING_LOGIC_FILE = "BiddingLogic.js";
+    private static final String DECISION_LOGIC_FILE = "DecisionLogic.js";
+
     // The names for the shirts and shoes custom audience
     private static final String SHOES_NAME = "shoes";
     private static final String SHIRTS_NAME = "shirts";
@@ -51,10 +64,14 @@ public class MainActivity extends AppCompatActivity {
     // Executor to be used for API calls
     private static final Executor EXECUTOR = Executors.newCachedThreadPool();
 
-    // String to inform user a field in missing
-    private static final String MISSING_FIELD_STRING_FORMAT = "ERROR: %s is missing, " +
+    // Strings to inform user a field in missing
+    private static final String MISSING_FIELD_STRING_FORMAT_RESTART_APP = "ERROR: %s is missing, " +
         "restart the activity using the directions in the README. The app will not be usable " +
-        "until this is done";
+        "until this is done.";
+
+    private static final String MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES = "ERROR: %s is missing, " +
+        "restart the activity using the directions in the README. You may still use the dev overrides "
+        + "without restarting.";
 
     /**
      * Does the initial setup for the app. This includes reading the Javascript server URLs from the
@@ -71,9 +88,17 @@ public class MainActivity extends AppCompatActivity {
         EventLogManager eventLog = new EventLogManager(binding.eventLog);
 
         try {
-            // Set URLS
-            Uri biddingUrl = Uri.parse(getIntentOrError("biddingUrl", eventLog));
-            Uri scoringUrl = Uri.parse(getIntentOrError("scoringUrl", eventLog));
+            // Set dummy URLS since overrides are on by default
+            Uri biddingUrl = Uri.parse(DUMMY_BIDDING_URL);
+            Uri scoringUrl = Uri.parse(DUMMY_SCORING_URL);
+
+            // Get override reporting URL
+            String reportingUrl = getIntentOrError("reportingUrl", eventLog,
+                MISSING_FIELD_STRING_FORMAT_RESTART_APP);
+
+            // Replace dummy URLs in JS
+            String overrideDecisionJS = replaceReportingURL(assetFileToString(DECISION_LOGIC_FILE), reportingUrl);
+            String overrideBiddingJs = replaceReportingURL(assetFileToString(BIDDING_LOGIC_FILE), reportingUrl);
 
             // Set up ad selection
             AdSelectionWrapper adWrapper = new AdSelectionWrapper(Collections.singletonList(BUYER),
@@ -81,37 +106,103 @@ public class MainActivity extends AppCompatActivity {
             binding.runAdsButton.setOnClickListener(v ->
                 adWrapper.runAdSelection(eventLog::writeEvent, binding.adSpace::setText));
 
-            // Set up Custom Audiences (CAs)
+            // Set up Custom Audience Wrapper(CAs)
             String owner = context.getPackageName();
             CustomAudienceWrapper caWrapper = new CustomAudienceWrapper(owner, BUYER, context, EXECUTOR);
-            binding.joinShoesButton.setOnClickListener(v ->
-                caWrapper.joinCa(SHOES_NAME, biddingUrl, SHOES_RENDER_URL,
-                    eventLog::writeEvent));
-            binding.joinShirtsButton.setOnClickListener(v ->
-                caWrapper.joinCa(SHIRTS_NAME, biddingUrl, SHIRTS_RENDER_URL,
-                    eventLog::writeEvent));
-            binding.leaveShoesButton.setOnClickListener(v ->
-                caWrapper.leaveCa(SHOES_NAME, eventLog::writeEvent));
-            binding.leaveShirtsButton.setOnClickListener(v ->
-                caWrapper.leaveCa(SHIRTS_NAME, eventLog::writeEvent));
+
+            // Set up CA buttons
+            setupJoinCAButtons(caWrapper, eventLog, binding, biddingUrl);
+            setupLeaveCAButtons(caWrapper, eventLog, binding);
+
+            // Set up remote overrides by default
+            useOverrides(eventLog,adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs);
+
+            // Set up Override Switch
+            binding.overrideSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked) {
+                        useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs);
+                    } else {
+                        try {
+                            Uri biddingUrl = Uri.parse(getIntentOrError("biddingUrl", eventLog,
+                                MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
+                            Uri scoringUrl = Uri.parse(getIntentOrError("scoringUrl", eventLog,
+                                MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
+                            // Set with new scoring url
+                            adWrapper.resetAdSelectionConfig(scoringUrl);
+
+                            // Reset join custom audience buttons as they rely on different biddingUrl
+                            setupJoinCAButtons(caWrapper, eventLog, binding, biddingUrl);
+
+                            resetOverrides(eventLog, adWrapper, caWrapper);
+                        } catch (Exception e) {
+                            binding.overrideSwitch.setChecked(true);
+                            Log.e(TAG, "Error getting mock server urls", e);
+                        }
+                    }
+                }
+            });
         } catch (Exception e) {
             Log.e(TAG, "Error when setting up app", e);
         }
+    }
+
+    private void setupJoinCAButtons(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding, Uri biddingUrl) {
+        binding.joinShoesButton.setOnClickListener(v ->
+            caWrapper.joinCa(SHOES_NAME, biddingUrl, SHOES_RENDER_URL,
+                eventLog::writeEvent));
+        binding.joinShirtsButton.setOnClickListener(v ->
+            caWrapper.joinCa(SHIRTS_NAME, biddingUrl, SHIRTS_RENDER_URL,
+                eventLog::writeEvent));
+    }
+
+    private void setupLeaveCAButtons(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding) {
+        binding.leaveShoesButton.setOnClickListener(v ->
+            caWrapper.leaveCa(SHOES_NAME, eventLog::writeEvent));
+        binding.leaveShirtsButton.setOnClickListener(v ->
+            caWrapper.leaveCa(SHIRTS_NAME, eventLog::writeEvent));
+    }
+
+    private void useOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper, CustomAudienceWrapper customAudienceWrapper, String decisionLogicJs, String biddingLogicJs) {
+        adSelectionWrapper.overrideAdSelection(eventLog::writeEvent,decisionLogicJs);
+        customAudienceWrapper.addCAOverride(SHOES_NAME,biddingLogicJs,"",eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(SHIRTS_NAME,biddingLogicJs,"",eventLog::writeEvent);
+    }
+
+    private void resetOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper, CustomAudienceWrapper customAudienceWrapper) {
+        adSelectionWrapper.resetAdSelectionOverrides(eventLog::writeEvent);
+        customAudienceWrapper.resetCAOverrides(eventLog::writeEvent);
+    }
+
+    /**
+     * Replaces the dummy URL in the .js files with an actual reporting URL
+     */
+    private String replaceReportingURL(String js, String reportingUrl) {
+        return js.replace("https://reporting.example.com", reportingUrl);
     }
 
     /**
      * Gets a given intent extra or notifies the user that it is missing
      * @param intent The intent to get
      * @param eventLog An eventlog to write the error to
+     * @param errorMessage the error message to write to the eventlog
      * @return The string value of the intent specified.
      */
-    private String getIntentOrError(String intent, EventLogManager eventLog) {
+    private String getIntentOrError(String intent, EventLogManager eventLog, String errorMessage) {
         String toReturn = getIntent().getStringExtra(intent);
         if (toReturn == null) {
-            String message = String.format(MISSING_FIELD_STRING_FORMAT, intent);
+            String message = String.format(errorMessage, intent);
             eventLog.writeEvent(message);
             throw new RuntimeException(message);
         }
         return toReturn;
+    }
+
+    /**
+     * Reads a file into a string, to be used to read the .js files into a string.
+     */
+    private String assetFileToString(String location) throws IOException {
+        return new BufferedReader(new InputStreamReader(getApplicationContext().getAssets().open(location)))
+            .lines().collect(Collectors.joining("\n"));
     }
 }

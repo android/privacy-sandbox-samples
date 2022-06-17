@@ -18,6 +18,7 @@ package com.example.adservices.samples.fledge.clients
 import android.adservices.adselection.AdSelectionConfig
 import android.adservices.adselection.AdSelectionManager
 import android.adservices.adselection.AdSelectionOutcome
+import android.adservices.adselection.AddAdSelectionOverrideRequest
 import android.adservices.adselection.ReportImpressionRequest
 import android.adservices.exceptions.AdServicesException
 import android.content.Context
@@ -83,6 +84,49 @@ class AdSelectionClient private constructor(
           }
         })
       "reportImpression"
+    }
+  }
+
+  /**
+   * Overrides remote info for a given `AdSelectionConfig`
+   */
+  fun overrideAdSelectionConfigRemoteInfo(
+    request: AddAdSelectionOverrideRequest
+  ): ListenableFuture<Void?> {
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
+      adSelectionManager.overrideAdSelectionConfigRemoteInfo(
+        request,
+        executor,
+        object : NullableOutcomeReceiver<Void?, AdServicesException> {
+          override fun onResult(result: Void?) {
+            completer.set(result)
+          }
+
+          override fun onError(error: AdServicesException) {
+            completer.setException(error)
+          }
+        })
+      "overrideAdSelectionConfigRemoteInfo"
+    }
+  }
+
+  /**
+   * Resets all ad selection config overrides.
+   */
+  fun resetAllAdSelectionConfigRemoteOverrides(): ListenableFuture<Void?> {
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
+      adSelectionManager.resetAllAdSelectionConfigRemoteOverrides(
+        executor,
+        object : NullableOutcomeReceiver<Void?, AdServicesException> {
+          override fun onResult(result: Void?) {
+            completer.set(result)
+          }
+
+          override fun onError(error: AdServicesException) {
+            completer.setException(error)
+          }
+        })
+      "resetAllAdSelectionConfigRemoteOverrides"
     }
   }
 

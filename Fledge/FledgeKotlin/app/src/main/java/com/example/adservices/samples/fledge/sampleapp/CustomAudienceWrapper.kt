@@ -16,6 +16,7 @@
 package com.example.adservices.samples.fledge.sampleapp
 
 import android.adservices.common.AdData
+import android.adservices.customaudience.AddCustomAudienceOverrideRequest
 import android.adservices.customaudience.CustomAudience
 import android.adservices.customaudience.TrustedBiddingData
 import android.content.Context
@@ -120,6 +121,60 @@ class CustomAudienceWrapper(
                               + " custom audience: " + e)
       Log.e(TAG, "Exception calling leaveCustomAudience", e)
     }
+  }
+
+  /**
+   * Overrides remote info for a CA.
+   *
+   * @param name The name of the CA to override remote info.
+   * @param biddingLogicJs The overriding bidding logic javascript
+   * @param trustedBiddingData The overriding trusted bidding data
+   * @param statusReceiver A consumer function that is run after the API call and returns a
+   * string indicating the outcome of the call.
+   */
+  fun addCAOverride(
+    name: String,
+    biddingLogicJs: String?,
+    trustedBiddingData: String?,
+    statusReceiver: Consumer<String?>
+  ) {
+    val request = AddCustomAudienceOverrideRequest.Builder()
+      .setOwner(owner)
+      .setBuyer(buyer)
+      .setName(name)
+      .setBiddingLogicJs(biddingLogicJs!!)
+      .setTrustedBiddingData(trustedBiddingData!!)
+      .build()
+    Futures.addCallback(caClient.overrideCustomAudienceRemoteInfo(request),
+                        object : FutureCallback<Void?> {
+                          override fun onSuccess(unused: Void?) {
+                            statusReceiver.accept("Added override for $name custom audience")
+                          }
+
+                          override fun onFailure(e: Throwable) {
+                            statusReceiver.accept("Error adding override for " + name
+                                                    + " custom audience: " + e.message)
+                          }
+                        }, executor)
+  }
+
+  /**
+   * Resets all custom audience overrides.
+   *
+   * @param statusReceiver A consumer function that is run after the API call and returns a
+   * string indicating the outcome of the call.
+   */
+  fun resetCAOverrides(statusReceiver: Consumer<String?>) {
+    Futures.addCallback(caClient.resetAllCustomAudienceOverrides(),
+                        object : FutureCallback<Void?> {
+                          override fun onSuccess(unused: Void?) {
+                            statusReceiver.accept("Reset all CA overrides")
+                          }
+
+                          override fun onFailure(e: Throwable) {
+                            statusReceiver.accept("Error while resetting all CA overrides")
+                          }
+                        }, executor)
   }
 
   /**

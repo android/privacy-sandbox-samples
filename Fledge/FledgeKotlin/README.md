@@ -30,11 +30,18 @@ First install the app on your device by running
 ```shell
 ./gradlew installDebug
 ```
-Once the app is installed on your device, you must launch it with the command
+Once the app is installed on your device, you must launch it with these options:
+
+If you only wish to use the remote overrides you can run:
 ```shell
-adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity -e biddingUrl [bidding endpoint] -e scoringUrl [scoring endpoint]
+adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity -e reportingUrl [reporting endpoint]
 ```
-in order to inform the app where your server endpoints are running.
+
+Otherwise, to make use of both remote overrides and mock servers, run:
+```shell
+adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity -e reportingUrl [reporting endpoint] -e biddingUrl [bidding endpoint] -e scoringUrl [scoring endpoint]
+```
+These commands will inform the app where your server endpoints are running.
 
 ## Manage custom audiences and run ad selection
 

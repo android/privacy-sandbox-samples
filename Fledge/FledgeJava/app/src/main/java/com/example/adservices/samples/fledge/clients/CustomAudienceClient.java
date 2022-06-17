@@ -16,6 +16,7 @@
 
 package com.example.adservices.samples.fledge.clients;
 
+import android.adservices.customaudience.AddCustomAudienceOverrideRequest;
 import android.adservices.customaudience.CustomAudience;
 import android.adservices.customaudience.CustomAudienceManager;
 import android.adservices.customaudience.JoinCustomAudienceRequest;
@@ -102,6 +103,60 @@ public class CustomAudienceClient {
           // This value is used only for debug purposes: it will be used in toString()
           // of returned future or error cases.
           return "leaveCustomAudience";
+        });
+  }
+
+  /**
+   * Overrides Custom Audience remote info, such as {@code biddingLogicJS} and {@code trustedBiddingData}
+   */
+  @NonNull
+  public ListenableFuture<Void> overrideCustomAudienceRemoteInfo(
+      @NonNull AddCustomAudienceOverrideRequest request) {
+    return CallbackToFutureAdapter.getFuture(
+        completer -> {
+          mCustomAudienceManager.overrideCustomAudienceRemoteInfo(
+              request,
+              mExecutor,
+              new OutcomeReceiver<Void, AdServicesException>() {
+                @Override
+                public void onResult(Void result) {
+                  completer.set(null);
+                }
+
+                @Override
+                public void onError(AdServicesException error) {
+                  completer.setException(error);
+                }
+              });
+          // This value is used only for debug purposes: it will be used in toString()
+          // of returned future or error cases.
+          return "overrideCustomAudienceRemoteInfo";
+        });
+  }
+
+  /**
+   * Resets all custom audience overrides.
+   */
+  @NonNull
+  public ListenableFuture<Void> resetAllCustomAudienceOverrides() {
+    return CallbackToFutureAdapter.getFuture(
+        completer -> {
+          mCustomAudienceManager.resetAllCustomAudienceOverrides(
+              mExecutor,
+              new OutcomeReceiver<Void, AdServicesException>() {
+                @Override
+                public void onResult(Void result) {
+                  completer.set(null);
+                }
+
+                @Override
+                public void onError(AdServicesException error) {
+                  completer.setException(error);
+                }
+              });
+          // This value is used only for debug purposes: it will be used in toString()
+          // of returned future or error cases.
+          return "resetAllCustomAudienceOverrides";
         });
   }
 
