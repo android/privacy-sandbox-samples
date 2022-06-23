@@ -19,6 +19,7 @@ import android.adservices.measurement.MeasurementManager
 import android.net.Uri
 import android.util.Log
 import android.view.InputEvent
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import java.util.concurrent.Executors
 import javax.inject.Inject
@@ -37,7 +38,7 @@ class MeasurementViewModel @Inject constructor(private val measurementManager: M
    fun registerSource(inputEvent: InputEvent?, serverUrl: String, adId: String){
      Log.d("adservices", "registerSource")
      measurementManager.registerSource(Uri.parse("$serverUrl/source?ad_id=$adId"),
-                                       inputEvent)
+                                       inputEvent, /* executor = */ null, /* callback = */ null)
    }
 
   /*
@@ -46,7 +47,8 @@ class MeasurementViewModel @Inject constructor(private val measurementManager: M
   * */
   fun registerTrigger(serverUrl: String, convId: String){
     Log.d("adservices","registerTrigger")
-    measurementManager.registerTrigger(Uri.parse("$serverUrl/trigger?conv_id=$convId"))
+    measurementManager.registerTrigger(Uri.parse("$serverUrl/trigger?conv_id=$convId"),
+                                   /* executor = */ null, /* callback = */ null)
   }
 
 }
