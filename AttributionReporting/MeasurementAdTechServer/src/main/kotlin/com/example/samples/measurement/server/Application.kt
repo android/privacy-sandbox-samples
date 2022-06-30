@@ -15,6 +15,7 @@
  */
 package com.example.samples.measurement.server
 
+import com.example.samples.measurement.server.entities.AggregateReport
 import com.example.samples.measurement.server.entities.EventReport
 import com.example.samples.measurement.server.entities.Source
 import com.example.samples.measurement.server.entities.SourceResponseHeaders
@@ -41,6 +42,7 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter
 typealias SourceRepo = InMemoryRepo<Source, String>
 typealias TriggerRepo = InMemoryRepo<Trigger, String>
 typealias EventReportRepo = InMemoryRepo<EventReport, String>
+typealias AggregateReportRepo = InMemoryRepo<AggregateReport, String>
 
 /**
  * Main application for handling initialization and running the server.
@@ -78,6 +80,14 @@ class Application {
    */
   @Bean
   fun createEventReportRepo(): EventReportRepo {
+    return InMemoryRepo()
+  }
+
+  /**
+   * Repo for storing AggregateReport.
+   */
+  @Bean
+  fun createAggregateReportRepo(): AggregateReportRepo {
     return InMemoryRepo()
   }
 
@@ -126,6 +136,8 @@ class MainController(
   private val triggerRepo: TriggerRepo,
   @Autowired
   private val eventReportRepo: EventReportRepo,
+  @Autowired
+  private val aggregateReportRepo: AggregateReportRepo,
 ) {
   /**
    * Retrieve Source registration data.
@@ -149,6 +161,10 @@ class MainController(
     val headers = HttpHeaders()
     headers.add(SourceResponseHeaders.regKey,
                 ObjectMapper().writeValueAsString(responseHeader.registrationHeader))
+    if (responseHeader.aggregatableRegistrationHeader != null) {
+      headers.add(SourceResponseHeaders.aggRegKey,
+                  ObjectMapper().writeValueAsString(responseHeader.aggregatableRegistrationHeader))
+    }
     responseHeader.attributionReportingRedirect?.forEach { redirect ->
       headers.add(SourceResponseHeaders.redirectKey, redirect)
     }
@@ -172,6 +188,16 @@ class MainController(
     val headers = HttpHeaders()
     headers.add(TriggerResponseHeader.regKey,
                 ObjectMapper().writeValueAsString(trigger.responseHeader.registrationHeader))
+    if (trigger.responseHeader.aggregatableDataRegistrationHeader != null) {
+      headers.add(TriggerResponseHeader.aggDataRegKey,
+                  ObjectMapper().writeValueAsString(
+                              trigger.responseHeader.aggregatableDataRegistrationHeader))
+    }
+    if (trigger.responseHeader.aggregatableValuesRegistrationHeader != null) {
+      headers.add(TriggerResponseHeader.aggValuesRegKey,
+                  ObjectMapper().writeValueAsString(
+                              trigger.responseHeader.aggregatableValuesRegistrationHeader))
+    }
     trigger.responseHeader.attributionReportingRedirect?.forEach { redirect ->
       headers.add(TriggerResponseHeader.redirectKey, redirect)
     }
@@ -187,7 +213,7 @@ class MainController(
    * Request Body: EventReport
    */
   @PostMapping(value = ["/.well-known/attribution-reporting/report-attribution"])
-  fun saveReport(@RequestBody eventReport: EventReport): ResponseEntity<Void> {
+  fun saveEventReport(@RequestBody eventReport: EventReport): ResponseEntity<Void> {
     eventReportRepo.save(eventReport.reportId, eventReport)
     return ResponseEntity.accepted().build()
   }
@@ -198,4 +224,23 @@ class MainController(
    */
   @GetMapping(value = ["/event-reports"])
   fun getEventReports(): List<EventReport> = eventReportRepo.getAll().toList()
+
+  /**
+   * Save new aggregate reports.
+   * Reports are saved by report_id. Old report will be overwritten if same report_id is used.
+   * Endpoint: /.well-known/attribution-reporting/report-aggregate-attribution
+   * Request Body: AggregateReport
+   */
+  @PostMapping(value = ["/.well-known/attribution-reporting/report-aggregate-attribution"])
+  fun saveAggregateReport(@RequestBody aggregateReport: AggregateReport): ResponseEntity<Void> {
+    aggregateReportRepo.save(aggregateReport.sharedInfo.hashCode().toString(), aggregateReport)
+    return ResponseEntity.accepted().build()
+  }
+
+  /**
+   * Retrieving all AggregateReports.
+   * Endpoint: /aggregate-reports
+   */
+  @GetMapping(value = ["/aggregate-reports"])
+  fun getAggregateReports(): List<AggregateReport> = aggregateReportRepo.getAll().toList()
 }

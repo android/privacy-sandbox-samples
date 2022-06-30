@@ -39,12 +39,17 @@ data class SourceResponseHeaders(
   @get:JsonProperty(regKey)
   val registrationHeader: SourceRegistrationHeader,
 
+  @JsonProperty(aggRegKey)
+  @get:JsonProperty(aggRegKey)
+  val aggregatableRegistrationHeader: List<Map<String,String>>?,
+
   @JsonProperty(redirectKey)
   @get:JsonProperty(redirectKey)
   val attributionReportingRedirect: List<String>?,
 ) {
   companion object {
     const val regKey = "Attribution-Reporting-Register-Source"
+    const val aggRegKey = "Attribution-Reporting-Register-Aggregatable-Source"
     const val redirectKey = "Attribution-Reporting-Redirect"
   }
 }
@@ -65,4 +70,8 @@ data class SourceRegistrationHeader(
   @JsonProperty("priority")
   @get:JsonProperty("priority")
   val priority: String,
+
+  @JsonProperty("filter_data")
+  @get:JsonProperty("filter_data")
+  val filterData: Map<String,List<String>>?,
 )

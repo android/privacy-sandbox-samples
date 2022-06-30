@@ -16,6 +16,7 @@
 package com.example.samples.measurement.server.entities
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.JsonNode
 
 /**
  * Class for Trigger
@@ -33,12 +34,22 @@ data class TriggerResponseHeader(
   @get:JsonProperty(regKey)
   val registrationHeader: List<TriggerRegistrationHeader>,
 
+  @JsonProperty(aggDataRegKey)
+  @get:JsonProperty(aggDataRegKey)
+  val aggregatableDataRegistrationHeader: List<AggregatableTriggerData>?,
+
+  @JsonProperty(aggValuesRegKey)
+  @get:JsonProperty(aggValuesRegKey)
+  val aggregatableValuesRegistrationHeader: JsonNode?,
+
   @JsonProperty(redirectKey)
   @get:JsonProperty(redirectKey)
   val attributionReportingRedirect: List<String>?,
 ) {
   companion object {
     const val regKey = "Attribution-Reporting-Register-Event-Trigger"
+    const val aggDataRegKey = "Attribution-Reporting-Register-Aggregatable-Trigger-Data"
+    const val aggValuesRegKey = "Attribution-Reporting-Register-Aggregatable-Values"
     const val redirectKey = "Attribution-Reporting-Redirect"
   }
 }
@@ -53,5 +64,24 @@ data class TriggerRegistrationHeader(
   val priority: String,
 
   @JsonProperty("deduplication_key")
-  @get:JsonProperty("deduplication_key") val deduplicationKey: String?,
+  @get:JsonProperty("deduplication_key")
+  val deduplicationKey: String?,
+)
+
+data class AggregatableTriggerData(
+  @JsonProperty("key_piece")
+  @get:JsonProperty("key_piece")
+  val keyPiece: String,
+
+  @JsonProperty("source_keys")
+  @get:JsonProperty("source_keys")
+  val sourceKeys: List<String>,
+
+  @JsonProperty("filters")
+  @get:JsonProperty("filters")
+  val filters: Map<String,List<String>>?,
+
+  @JsonProperty("not_filters")
+  @get:JsonProperty("not_filters")
+  val notFilters: Map<String,List<String>>?,
 )

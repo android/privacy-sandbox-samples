@@ -47,7 +47,13 @@
                                 "schema": {
                                     "type": "string"
                                 },
-                                "example": "{\"source_event_id\":\"123001\",\"destination\":\"android-app://com.example.measurement.sampleapp\",\"expiry\":\"1728000\",\"priority\":\"10\"}"
+                                "example": "{\"source_event_id\":\"123001\",\"destination\":\"android-app://com.example.measurement.sampleapp\",\"expiry\":\"1728000\",\"priority\":\"10\",\"filter_data\":{\"conversion_subdomain\":[\"electronics.megastore\"],\"product\":[\"1234\",\"234\"],\"ctid\":[\"id\"]}}"
+                            },
+                            "Attribution-Reporting-Register-Aggregatable-Source": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": "[{\"id\":\"campaignCounts\",\"key_piece\":\"0x159\"},{\"id\":\"geoValue\",\"key_piece\":\"0x5\"}]"
                             }
                         }
                     }
@@ -79,6 +85,18 @@
                                     "type": "string"
                                 },
                                 "example": "[{\"trigger_data\":\"1\",\"priority\":\"20\",\"deduplication_key\":\"5\"}]"
+                            },
+                            "Attribution-Reporting-Register-Aggregatable-Trigger-Data": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": "[{\"key_piece\":\"0x400\",\"source_keys\":[\"campaignCounts\"],\"filters\":{\"product\":[\"1234\"],\"ctid\":[\"id\"]},\"not_filters\":{\"product\":[\"100\"]}},{\"key_piece\":\"0xA80\",\"source_keys\":[\"geoValue\",\"nonMatch\"]}]"
+                            },
+                            "Attribution-Reporting-Register-Aggregatable-Values": {
+                                "schema": {
+                                    "type": "string"
+                                },
+                                "example": "{\"campaignCounts\":32768,\"geoValue\":1664}"
                             }
                         }
                     }
@@ -93,6 +111,25 @@
                         "application/json": {
                             "schema": {
                                 "$ref": "#/components/schemas/EventReport"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "204": {
+                        "description": "Sample response"
+                    }
+                }
+            }
+        },
+        "/.well-known/attribution-reporting/report-aggregate-attribution": {
+            "post": {
+                "summary": "Aggregate Report delivery endpoint",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AggregateReport"
                             }
                         }
                     }
@@ -127,6 +164,31 @@
                     },
                     "randomized_trigger_data": {
                         "type": "number"
+                    }
+                }
+            },
+            "AggregateReport": {
+                "type": "object",
+                "properties": {
+                    "shared_info": {
+                        "type": "string"
+                    },
+                    "aggregation_service_payloads": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "payload": {
+                                    "type": "string"
+                                },
+                                "key_id": {
+                                    "type": "string"
+                                },
+                                "debug_cleartext_payload": {
+                                    "type": "string"
+                                }
+                            }
+                        }
                     }
                 }
             }

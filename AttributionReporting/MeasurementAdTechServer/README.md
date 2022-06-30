@@ -12,6 +12,9 @@ showcase the measurement workflow from AdTech perspective.
 - Event Report Receipt/View
    - POST: `/.well-known/attribution-reporting/report-attribution`
    - GET: `/event-reports`
+- Aggregate Report Receipt/View
+   - POST: `/.well-known/attribution-reporting/report-aggregate-attribution`
+   - GET: `/aggregate-reports`
 
 ## Response Configuration
 

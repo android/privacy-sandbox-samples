@@ -44,5 +44,56 @@
       },
       "Attribution-Reporting-Redirect": []
     }
+  },
+  {
+    "ad_id": "3",
+    "event_response_headers": {
+      "Attribution-Reporting-Register-Source": {
+        "source_event_id": "12340873455",
+        "destination": "android-app://com.example.measurement.sampleapp",
+        "expiry": "1728000",
+        "priority": "10",
+        "filter_data": {
+          "conversion_subdomain": ["electronics.megastore"],
+          "product": ["1234", "234"],
+          "ctid": ["id"]
+        }
+      },
+      "Attribution-Reporting-Register-Aggregatable-Source": [
+        {
+          "id": "campaignCounts",
+          "key_piece": "0x159"
+        },
+        {
+          "id": "geoValue",
+          "key_piece": "0x5"
+        }
+      ],
+      "Attribution-Reporting-Redirect": []
+    },
+    "navigation_response_headers": {
+      "Attribution-Reporting-Register-Source": {
+        "source_event_id": "12340873456",
+        "destination": "android-app://com.example.measurement.sampleapp",
+        "expiry": "1728000",
+        "priority": "10",
+        "filter_data": {
+          "conversion_subdomain": ["electronics.megastore"],
+          "product": ["1234", "234"],
+          "ctid": ["id"]
+        }
+      },
+      "Attribution-Reporting-Register-Aggregatable-Source": [
+        {
+          "id": "campaignCounts",
+          "key_piece": "0x159"
+        },
+        {
+          "id": "geoValue",
+          "key_piece": "0x5"
+        }
+      ],
+      "Attribution-Reporting-Redirect": []
+    }
   }
 ]

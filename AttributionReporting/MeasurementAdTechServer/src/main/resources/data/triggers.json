@@ -31,5 +31,36 @@
         "deduplication_key": "12"
       }]
     }
+  },
+  {
+    "conv_id": "4",
+    "response_headers": {
+      "Attribution-Reporting-Register-Event-Trigger": [{
+        "trigger_data": "0",
+        "priority": "22",
+        "deduplication_key": "12"
+      }],
+      "Attribution-Reporting-Register-Aggregatable-Trigger-Data": [
+        {
+          "key_piece": "0x400",
+          "source_keys": ["campaignCounts"],
+          "filters": {
+            "product": ["1234"],
+            "ctid": ["id"]
+          },
+          "not_filters":{
+            "product": ["100"]
+          }
+        },
+        {
+          "key_piece": "0xA80",
+          "source_keys": ["geoValue", "nonMatch"]
+        }
+      ],
+      "Attribution-Reporting-Register-Aggregatable-Values": {
+        "campaignCounts": 32768,
+        "geoValue": 1664
+      }
+    }
   }
 ]
