@@ -62,5 +62,23 @@
         "geoValue": 1664
       }
     }
+  },
+  {
+    "conv_id": "5",
+    "response_headers": {
+      "Attribution-Reporting-Register-Event-Trigger": [
+        {
+          "trigger_data": "0",
+          "priority": "22",
+          "deduplication_key": "12",
+          "filters": {"source_type": ["navigation"]}
+        },
+        {
+          "trigger_data": "1",
+          "priority": "56",
+          "not_filters": {"event_key_1": ["event_value_x"]}
+        }
+      ]
+    }
   }
 ]

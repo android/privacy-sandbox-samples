@@ -95,5 +95,32 @@
       ],
       "Attribution-Reporting-Redirect": []
     }
+  },
+  {
+    "ad_id": "4",
+    "event_response_headers": {
+      "Attribution-Reporting-Register-Source": {
+        "source_event_id": "12340873457",
+        "destination": "android-app://com.example.measurement.sampleapp",
+        "expiry": "1728000",
+        "priority": "10",
+        "filter_data": {
+          "event_key_1": ["event_value_1", "event_value_2"]
+        }
+      },
+      "Attribution-Reporting-Redirect": []
+    },
+    "navigation_response_headers": {
+      "Attribution-Reporting-Register-Source": {
+        "source_event_id": "12340873458",
+        "destination": "android-app://com.example.measurement.sampleapp",
+        "expiry": "1728000",
+        "priority": "10",
+        "filter_data": {
+          "event_key_1": ["event_value_1", "event_value_2"]
+        }
+      },
+      "Attribution-Reporting-Redirect": []
+    }
   }
 ]
