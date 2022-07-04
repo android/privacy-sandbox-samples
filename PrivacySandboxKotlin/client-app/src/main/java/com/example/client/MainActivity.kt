@@ -23,12 +23,13 @@ import androidx.annotation.RequiresApi
 import android.os.Bundle
 import com.example.privacysandbox.client.R
 import android.view.View
-import com.example.client.MainActivity.RemoteSdkCallbackImpl
 import com.example.client.MainActivity
 import java.util.concurrent.Executor
 import java.lang.Runnable
 import android.os.Looper
-import android.app.sdksandbox.SdkSandboxManager.RemoteSdkCallback
+import android.app.sdksandbox.SdkSandboxManager.LoadSdkCallback
+import android.app.sdksandbox.SdkSandboxManager.RequestSurfacePackageCallback
+import android.app.sdksandbox.SdkSandboxManager.SendDataCallback
 import android.annotation.SuppressLint
 import android.os.Handler
 import android.view.SurfaceControlViewHost.SurfacePackage
@@ -80,7 +81,7 @@ class MainActivity : AppCompatActivity() {
     private fun registerLoadCodeProviderButton() {
         mLoadSdkButton.setOnClickListener { v: View? ->
             log("Attempting to load sandbox SDK")
-            val callback = RemoteSdkCallbackImpl()
+            val callback = LoadSdkCallbackImpl()
             mSdkSandboxManager.loadSdk(
                 SDK_NAME, Bundle(), { obj: Runnable -> obj.run() }, callback
             )
@@ -100,19 +101,21 @@ class MainActivity : AppCompatActivity() {
             log("Getting SurfacePackage.")
             Handler(Looper.getMainLooper()).post {
                 val bundle = Bundle()
+                val callback = RequestSurfacePackageCallbackImpl()
                 mSdkSandboxManager.requestSurfacePackage(
                     SDK_NAME, display!!.displayId,
-                    mClientView.width, mClientView.height, bundle
+                    mClientView.width, mClientView.height, bundle,
+                    { obj: Runnable -> obj.run() }, callback
                 )
             }
         }
     }
 
     /**
-     * A callback for tracking events regarding loading and interacting with SDK.
+     * A callback for tracking events regarding loading an SDK.
      */
     @RequiresApi(api = 33)
-    private inner class RemoteSdkCallbackImpl() : RemoteSdkCallback {
+    private inner class LoadSdkCallbackImpl() : LoadSdkCallback {
         /**
          * This notifies client application that the requested SDK is successfully loaded.
          *
@@ -123,6 +126,10 @@ class MainActivity : AppCompatActivity() {
             log("onLoadSdkSuccess: $params")
             makeToast("Loaded successfully!")
             mSdkLoaded = true
+            // Send data to the SDK if needed
+            val callback = SendDataCallbackImpl()
+            mSdkSandboxManager.sendData(SDK_NAME, Bundle(), { obj: Runnable -> obj.run() },
+                                        callback)
         }
 
         /**
@@ -136,7 +143,13 @@ class MainActivity : AppCompatActivity() {
             log("onLoadSdkFailure($errorCode): $errorMessage")
             makeToast("Load SDK Failed!$errorMessage")
         }
+    }
 
+    /**
+     * A callback for tracking a request for a surface package from an SDK.
+     */
+    @RequiresApi(api = 33)
+    private inner class RequestSurfacePackageCallbackImpl() : RequestSurfacePackageCallback {
         /**
          * This notifies client application that [SurfacePackage]
          * is ready to remote render view from the SDK.
@@ -170,6 +183,36 @@ class MainActivity : AppCompatActivity() {
         override fun onSurfacePackageError(errorCode: Int, errorMessage: String) {
             log("onSurfacePackageError$errorCode): $errorMessage")
             makeToast("Surface Package Failed!$errorMessage")
+        }
+    }
+
+    /**
+     * A callback for tracking events regarding sending of data to an SDK.
+     */
+    @RequiresApi(api = 33)
+    private inner class SendDataCallbackImpl() : SendDataCallback {
+        /**
+         * This notifies the client application that sending data to the SDK has completed
+         * successfully.
+         *
+         * @param params list of params returned from Sdk to the App.
+         */
+        @SuppressLint("Override")
+        override fun onSendDataSuccess(params: Bundle) {
+            log("onSendDataSuccess: $params")
+            makeToast("Sent data successfully!")
+        }
+
+        /**
+         * This notifies client application that sending data to an SDK has failed.
+         *
+         * @param errorCode int code for the error
+         * @param errorMessage a String description of the error
+         */
+        @SuppressLint("Override")
+        override fun onSendDataError(errorCode: Int, errorMessage: String) {
+            log("onSendDataError($errorCode): $errorMessage")
+            makeToast("Send data to SDK Failed!$errorMessage")
         }
     }
 

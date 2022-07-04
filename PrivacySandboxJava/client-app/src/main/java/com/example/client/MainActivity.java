@@ -17,7 +17,9 @@ package com.example.client;
 
 import android.annotation.SuppressLint;
 import android.app.sdksandbox.SdkSandboxManager;
-import android.app.sdksandbox.SdkSandboxManager.RemoteSdkCallback;
+import android.app.sdksandbox.SdkSandboxManager.LoadSdkCallback;
+import android.app.sdksandbox.SdkSandboxManager.RequestSurfacePackageCallback;
+import android.app.sdksandbox.SdkSandboxManager.SendDataCallback;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -32,6 +34,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.example.privacysandbox.client.R;
+import java.util.concurrent.Executor;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -86,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
     private void registerLoadCodeProviderButton() {
         mLoadSdkButton.setOnClickListener(v -> {
           log("Attempting to load sandbox SDK");
-          final RemoteSdkCallbackImpl callback = new RemoteSdkCallbackImpl();
+          final LoadSdkCallbackImpl callback = new LoadSdkCallbackImpl();
           mSdkSandboxManager.loadSdk(
               SDK_NAME, new Bundle(), Runnable::run, callback);
         });
@@ -107,17 +110,18 @@ public class MainActivity extends AppCompatActivity {
             Bundle bundle = new Bundle();
             mSdkSandboxManager.requestSurfacePackage(
                 SDK_NAME, getDisplay().getDisplayId(),
-                mClientView.getWidth(), mClientView.getHeight(), bundle);
+                mClientView.getWidth(), mClientView.getHeight(), bundle,
+                Runnable::run, new RequestSurfacePackageCallbackImpl());
               });
         });
     }
 
     /**
-     * A callback for tracking events regarding loading and interacting with SDK.
+     * A callback for tracking events regarding loading of an SDK.
      */
     @RequiresApi(api = 33)
-    private class RemoteSdkCallbackImpl implements RemoteSdkCallback {
-        private RemoteSdkCallbackImpl() {}
+    private class LoadSdkCallbackImpl implements LoadSdkCallback {
+        private LoadSdkCallbackImpl() {}
 
         /**
          * This notifies client application that the requested SDK is successfully loaded.
@@ -130,6 +134,9 @@ public class MainActivity extends AppCompatActivity {
             log("onLoadSdkSuccess: " + params);
             makeToast("Loaded successfully!");
             mSdkLoaded = true;
+            // Send some data to the SDK if needed.
+            mSdkSandboxManager.sendData(SDK_NAME, new Bundle(), Runnable::run,
+                new SendDataCallbackImpl());
         }
 
         /**
@@ -144,13 +151,20 @@ public class MainActivity extends AppCompatActivity {
             log("onLoadSdkFailure(" + errorCode + "): " + errorMessage);
             makeToast("Load SDK Failed!" + errorMessage);
         }
+    }
 
+    /**
+     * A callback for tracking a request for a surface package from an SDK.
+     */
+    @RequiresApi(api = 33)
+    private class RequestSurfacePackageCallbackImpl implements RequestSurfacePackageCallback {
         /**
          * This notifies client application that {@link SurfacePackage}
          * is ready to remote render view from the SDK.
          *
          * @param surfacePackage the requested surface package by
-         *            {@link SdkSandboxManager#requestSurfacePackage(String, int, int, int, Bundle)}
+         *            {@link SdkSandboxManager#requestSurfacePackage(String, int, int, int, Bundle,
+         *                                              Executor, RequestSurfacePackageCallback)}
          * @param surfacePackageId a unique id for the {@link SurfacePackage} {@code surfacePackage}
          * @param params list of params returned from Sdk to the App.
          */
@@ -161,9 +175,9 @@ public class MainActivity extends AppCompatActivity {
             log("Surface package ready: " + params);
             makeToast("Surface Package Rendered!");
             new Handler(Looper.getMainLooper()).post(() -> {
-              log("Setting surface package in the client view");
-              mClientView.setChildSurfacePackage(surfacePackage);
-              mClientView.setVisibility(View.VISIBLE);
+                log("Setting surface package in the client view");
+                mClientView.setChildSurfacePackage(surfacePackage);
+                mClientView.setVisibility(View.VISIBLE);
             });
         }
 
@@ -178,6 +192,40 @@ public class MainActivity extends AppCompatActivity {
         public void onSurfacePackageError(int errorCode, String errorMessage) {
             log("onSurfacePackageError" + errorCode + "): " + errorMessage);
             makeToast("Surface Package Failed!" + errorMessage);
+        }
+    }
+
+    /**
+     * A callback for tracking sending of data to an SDK.
+     */
+    @RequiresApi(api = 33)
+    private class SendDataCallbackImpl implements SendDataCallback {
+        private SendDataCallbackImpl() {}
+
+        /**
+         * This notifies the client application that sending data to the SDK has completed
+         * successfully.
+         *
+         * @param params list of params returned from Sdk to the App.
+         */
+        @SuppressLint("Override")
+        @Override
+        public void onSendDataSuccess(Bundle params) {
+            log("onSendDataSuccess: " + params);
+            makeToast("Sent data successfully!");
+        }
+
+        /**
+         * This notifies client application that sending data to an SDK has failed.
+         *
+         * @param errorCode int code for the error
+         * @param errorMessage a String description of the error
+         */
+        @SuppressLint("Override")
+        @Override
+        public void onSendDataError(int errorCode, String errorMessage) {
+            log("onSendDataError(" + errorCode + "): " + errorMessage);
+            makeToast("Send data to SDK failed!" + errorMessage);
         }
     }
 

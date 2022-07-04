@@ -50,5 +50,7 @@ class SdkProviderImpl : SandboxedSdkProvider() {
     }
 
     @SuppressLint("Override")
-    override fun onExtraDataReceived(bundle: Bundle) {}
+    override fun onDataReceived(bundle: Bundle, dataReceivedCallback : DataReceivedCallback) {
+        dataReceivedCallback.onDataReceivedSuccess(Bundle())
+    }
 }

@@ -50,7 +50,9 @@ public class SdkProviderImpl extends SandboxedSdkProvider {
 
   @SuppressLint("Override")
   @Override
-  public void onExtraDataReceived(@NonNull Bundle bundle) {
+  public void onDataReceived(@NonNull Bundle bundle,
+      DataReceivedCallback dataReceivedCallback) {
+    dataReceivedCallback.onDataReceivedSuccess(new Bundle());
   }
 
 }
