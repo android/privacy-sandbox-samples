@@ -66,6 +66,14 @@ data class TriggerRegistrationHeader(
   @JsonProperty("deduplication_key")
   @get:JsonProperty("deduplication_key")
   val deduplicationKey: String?,
+
+  @JsonProperty("filters")
+  @get:JsonProperty("filters")
+  val filters: Map<String,List<String>>?,
+
+  @JsonProperty("not_filters")
+  @get:JsonProperty("not_filters")
+  val notFilters: Map<String,List<String>>?,
 )
 
 data class AggregatableTriggerData(
