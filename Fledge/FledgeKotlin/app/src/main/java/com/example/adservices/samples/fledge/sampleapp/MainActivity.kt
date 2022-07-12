@@ -41,9 +41,9 @@ private const val SELLER = "sample-seller.sampleapp"
 private const val SHOES_NAME = "shoes"
 private const val SHIRTS_NAME = "shirts"
 
-// Set dummy URLs
-private const val DUMMY_BIDDING_URL = "https://dummy_url.com/bidding"
-private const val DUMMY_SCORING_URL = "https://dummy_url.com/scoring"
+// Set override URLs
+private const val BIDDING_OVERRIDE_URL = "https://override_url.com/bidding"
+private const val SCORING_OVERRIDE_URL = "https://override_url.com/scoring"
 
 // JS files
 private const val BIDDING_LOGIC_FILE = "BiddingLogic.js"
@@ -83,14 +83,14 @@ class MainActivity : AppCompatActivity() {
     setContentView(view)
     val eventLog = EventLogManager(binding.eventLog)
     try {
-      // Set dummy URLS since overrides are on by default
-      var biddingUrl = Uri.parse(DUMMY_BIDDING_URL)
-      var scoringUrl = Uri.parse(DUMMY_SCORING_URL)
+      // Set override URLS since overrides are on by default
+      var biddingUrl = Uri.parse(BIDDING_OVERRIDE_URL)
+      var scoringUrl = Uri.parse(SCORING_OVERRIDE_URL)
 
       // Get override reporting URL
       val reportingUrl = getIntentOrError("reportingUrl", eventLog, MISSING_FIELD_STRING_FORMAT_RESTART_APP)
 
-      // Replace dummy URLs in JS
+      // Replace override URLs in JS
       val overrideDecisionJS =
         replaceReportingURL(assetFileToString(DECISION_LOGIC_FILE), reportingUrl)
       val overrideBiddingJs =
@@ -246,7 +246,7 @@ class MainActivity : AppCompatActivity() {
   }
 
   /**
-   * Replaces the dummy URL in the .js files with an actual reporting URL
+   * Replaces the override URL in the .js files with an actual reporting URL
    */
   private fun replaceReportingURL(js: String, reportingUrl: String): String {
     return js.replace("https://reporting.example.com", reportingUrl)

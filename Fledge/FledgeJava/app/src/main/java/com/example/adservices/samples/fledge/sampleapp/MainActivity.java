@@ -45,9 +45,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String BUYER = "sample-buyer.sampleapp";
     private static final String SELLER = "sample-seller.sampleapp";
 
-    // Set dummy URLs
-    private static final String DUMMY_BIDDING_URL = "https://dummy_url.com/bidding";
-    private static final String DUMMY_SCORING_URL = "https://dummy_url.com/scoring";
+    // Set override URLs
+    private static final String BIDDING_OVERRIDE_URL = "https://override_url.com/bidding";
+    private static final String SCORING_OVERRIDE_URL = "https://override_url.com/scoring";
 
     // JS files
     private static final String BIDDING_LOGIC_FILE = "BiddingLogic.js";
@@ -88,15 +88,15 @@ public class MainActivity extends AppCompatActivity {
         EventLogManager eventLog = new EventLogManager(binding.eventLog);
 
         try {
-            // Set dummy URLS since overrides are on by default
-            Uri biddingUrl = Uri.parse(DUMMY_BIDDING_URL);
-            Uri scoringUrl = Uri.parse(DUMMY_SCORING_URL);
+            // Set override URLS since overrides are on by default
+            Uri biddingUrl = Uri.parse(BIDDING_OVERRIDE_URL);
+            Uri scoringUrl = Uri.parse(SCORING_OVERRIDE_URL);
 
             // Get override reporting URL
             String reportingUrl = getIntentOrError("reportingUrl", eventLog,
                 MISSING_FIELD_STRING_FORMAT_RESTART_APP);
 
-            // Replace dummy URLs in JS
+            // Replace override URLs in JS
             String overrideDecisionJS = replaceReportingURL(assetFileToString(DECISION_LOGIC_FILE), reportingUrl);
             String overrideBiddingJs = replaceReportingURL(assetFileToString(BIDDING_LOGIC_FILE), reportingUrl);
 
@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Replaces the dummy URL in the .js files with an actual reporting URL
+     * Replaces the override URL in the .js files with an actual reporting URL
      */
     private String replaceReportingURL(String js, String reportingUrl) {
         return js.replace("https://reporting.example.com", reportingUrl);
