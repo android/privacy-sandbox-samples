@@ -36,6 +36,7 @@ import android.os.Bundle;
 import com.example.privacysandbox.client.R;
 import java.util.concurrent.Executor;
 
+@SuppressLint("NewApi")
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "SandboxClient";

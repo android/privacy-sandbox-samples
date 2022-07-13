@@ -36,6 +36,7 @@ import android.view.SurfaceControlViewHost.SurfacePackage
 import android.widget.Toast
 import android.util.Log
 
+@SuppressLint("NewApi")
 class MainActivity : AppCompatActivity() {
     /**
      * Button to load the SDK to the sandbox.
