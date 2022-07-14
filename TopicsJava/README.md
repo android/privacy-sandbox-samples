@@ -1,13 +1,9 @@
 ## Overview
  
-The Topics sample app demonstrates how to initialize and call the Topics API in
-the following ways:
- 
-* Constructs a topics request inside of the `MainActivity` class.
-  This request can be used to fetch a list of topics that have been assigned to
-  a given user.
-* Creates a button inside of the `MainActivity` which, when pressed,
-  initiates the call to retrieve those topics and to display them on screen.
+The Topics sample app demonstrates how to initialize and call the Topics API, 
+constructing a topics request inside of the `AdvertisingTopicsClient` class. 
+This request can be used to fetch a list of topics that have been assigned to 
+a given user.
  
 ## About the Topics API
  
@@ -15,31 +11,33 @@ The Topics API infers coarse-grained interest signals on-device based on a
 user's app usage. These signals, called _topics_, are shared with advertisers to
 support interest-based advertising (IBA) use cases without requiring tracking of
 individual users across apps.
- 
-Every package that makes a call to `getTopics()` is assigned a topic from a
-standardized [taxonomy].
- 
+
+Every package that makes a call to `getTopics()` is assigned a topic from an 
+open source standardized [taxonomy].
+
 In this sample, we have 11 different sample apps. When an app that’s already
 been assigned a topic from the taxonomy calls `getTopics()`, that topic is
 returned throughout the current epoch for that app, as well as other apps that
 represent overlapping interests. The end result is that, when a user runs many
 applications that call into the Topics API, the relative popularity of different
 topics entries in a given epoch helps infer the user’s strongest interests.
- 
+
 For a more complete explanation of the Topics API functionality, read the
-[design proposal]:
+[design proposal].
+
  
 # Testing
  
 To test functionality of the Topics API, you need to [set up your development
-environment]. This process involves installing the proper SDK and the device
+environment](https://developer.android.com/design-for-safety/privacy-sandbox/setup).
+This process involves installing the proper SDK and the device
 images needed to test functionality on either a physical device or an emulator.
- 
+
 Install and launch the Topics sample app on your device with the Privacy Sandbox
 on Android image installed. `getTopics()` is called each time the `onResume()`
 function is executed and the Topics sample app can be interacted with in the
 foreground.
- 
+
 To receive a non-empty result, you must wait for a specific length of time,
 called an _epoch_, before the topics are recalculated. By default, an epoch is 7
 days. For testing purposes, you can modify the epoch length to get a result more
@@ -71,8 +69,12 @@ more than once per epoch.
  
 Now you should again launch the Topics sample app on your device. A `TextView`
 object should now appear, which displays either a returned Topic result or a
-message that it has been "Returned Empty". If you expect a result and it is
-still displaying "Returned Empty", try the following:
+message that it has been "Returned Empty". The `getTopics()` request returns 
+an integer ID value for the Topics that are associated with your app. For 
+these samples we’ve additionally added an array of the taxonomy string values 
+so that they can be clearly displayed.  If you expect a result and it is still 
+displaying "Returned Empty", try the following:
+
  
 * Wait a moment for the epoch calculation to propagate.
 * Close and relaunch the app, which will invoke `getTopics()` via
@@ -80,21 +82,19 @@ still displaying "Returned Empty", try the following:
   another epoch.
  
 This sample project is built with 11 different build flavors, each of which
-modifies the package name, representing 11 test package names included in the
-taxonomy. This setup demonstrates a variety of installed apps that are assigned
-various topic values. Selecting a different build flavor will have the Topics
-API treat the application as a different entry in the taxonomy, and therefore
-eligible for a different set of topics results (This functionality is specific
-to Developer Preview 1, with future releases slated to include on-device
-classification so that the package will not need to be included in the
-classification table in order to receive a result). The current results will be
-based on the [taxonomy for Chrome][taxonomy]. In a future release this will be
-updated to a Taxonomy specific to Android.
- 
+modifies the package name and title. This setup demonstrates a variety of 
+installed apps that are assigned various topic values. Selecting a different 
+build flavor will have the Topics API evaluate the app differently using the 
+on-device classifier and therefore be eligible for a different set of topics 
+results. The current results will be based on the [taxonomy for Chrome][taxonomy], 
+and are specifically determined based on the apps title and description 
+information. In a future release this will be updated to a Taxonomy specific 
+to Android.
+
 When testing, you may find it useful to try running different combinations of
 test packages to better understand how the system determines which Topics to
 return based on overlapping popularity.
- 
+
 To help automate the process of installing and running each of the application
 flavors, you can execute the following script from inside of the `TopicsJava`
 directory, which will install and run each application once. After that, data
@@ -143,7 +143,10 @@ do
   unset uninstallString
 done
 ```
- 
+Once you’ve finished testing using the sample apps provided, try changing the 
+app title and description when building in order to see different results 
+returned from the on-device classifier.
+ 
 [design proposal]: https://developer.android.com/design-for-safety/privacy-sandbox/topics#how-it-works
 [set up your development environment]: https://developer.android.com/design-for-safety/privacy-sandbox/setup
 [taxonomy]: https://github.com/patcg-individual-drafts/topics/blob/main/taxonomy_v1.md
