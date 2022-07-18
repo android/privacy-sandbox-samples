@@ -6,6 +6,29 @@ need to set up a reporting HTTPS endpoint that your test device or emulator
 can access. This endpoint will serve both the sample `BiddingLogic.js` 
 and `ScoringLogic.js` Javascript in this directory.
 
+In addition, 'trustedScoringSignals' will be added to the 'adSelectionOverride' and
+'trustedBiddingSignals' will be added to each 'customAudienceOverride'.
+
+These signals will be JSON string objets and will be used during ad selection.
+
+This is what the signals will look like:
+```
+    private static final String TRUSTED_SCORING_SIGNALS =
+        "{\n"
+            + "\t\"render_uri_1\": \"signals_for_1\",\n"
+            + "\t\"render_uri_2\": \"signals_for_2\"\n"
+            + "}";
+
+    private static final String TRUSTED_BIDDING_SIGNALS =
+        "{\n"
+            + "\t\"example\": \"example\",\n"
+            + "\t\"valid\": \"Also valid\",\n"
+            + "\t\"list\": \"list\",\n"
+            + "\t\"of\": \"of\",\n"
+            + "\t\"keys\": \"trusted bidding signal Values\"\n"
+            + "}";
+```
+
 ### OpenApi Definitions
 For convenience, we have provided OpenApi definitions for how these this endpoint
 could be run in `reporting-server.json`.

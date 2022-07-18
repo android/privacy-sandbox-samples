@@ -58,16 +58,16 @@ class CustomAudienceWrapper(
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  fun joinCa(name: String, biddingUrl: Uri, renderUrl: Uri, statusReceiver: Consumer<String>) {
+  fun joinCa(name: String, biddingUri: Uri, renderUri: Uri, statusReceiver: Consumer<String>) {
     try {
       val ca = CustomAudience.Builder()
         .setOwner(owner)
         .setBuyer(buyer)
         .setName(name)
         .setDailyUpdateUrl(Uri.EMPTY)
-        .setBiddingLogicUrl(biddingUrl)
+        .setBiddingLogicUrl(biddingUri)
         .setAds(listOf(AdData.Builder()
-                         .setRenderUrl(renderUrl)
+                         .setRenderUri(renderUri)
                          .setMetadata(JSONObject().toString())
                          .build()))
         .setActivationTime(Instant.now())

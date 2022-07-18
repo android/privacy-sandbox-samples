@@ -38,13 +38,14 @@ import org.json.JSONObject
  *
  * @param buyers A list of buyers for the auction.
  * @param seller The name of the seller for the auction
- * @param decisionUrl The URL to retrieve the seller scoring and reporting logic from
+ * @param decisionUri The URI to retrieve the seller scoring and reporting logic from
+ * @param trustedScoringUri The URI to retrieve the trusted scoring signals
  * @param context The application context.
  * @param executor An executor to use with the FLEDGE API calls.
  */
 @RequiresApi(api = 34)
 class AdSelectionWrapper(
-  buyers: List<String>, seller: String, decisionUrl: Uri, context: Context,
+  buyers: List<String>, seller: String, decisionUri: Uri, trustedScoringUri: Uri, context: Context,
   executor: Executor
 ) {
   private var adSelectionConfig: AdSelectionConfig
@@ -56,16 +57,16 @@ class AdSelectionWrapper(
    * selection succeeds, also report impressions.
    * @param statusReceiver A consumer function that is run after ad selection and impression reporting
    * with a string describing how the auction and reporting went.
-   * @param renderUrlReceiver A consumer function that is run after ad selection with a message describing the render URL
+   * @param renderUriReceiver A consumer function that is run after ad selection with a message describing the render URI
    * or lack thereof.
    */
-  fun runAdSelection(statusReceiver: Consumer<String>, renderUrlReceiver: Consumer<String>) {
+  fun runAdSelection(statusReceiver: Consumer<String>, renderUriReceiver: Consumer<String>) {
     try {
       Futures.addCallback(adClient.runAdSelection(adSelectionConfig),
                           object : FutureCallback<AdSelectionOutcome?> {
                             override fun onSuccess(adSelectionOutcome: AdSelectionOutcome?) {
                               statusReceiver.accept("Ran ad selection")
-                              renderUrlReceiver.accept("Would display ad from " + adSelectionOutcome!!.renderUrl)
+                              renderUriReceiver.accept("Would display ad from " + adSelectionOutcome!!.renderUri)
                               reportImpression(adSelectionOutcome.adSelectionId,
                                                adSelectionConfig,
                                                statusReceiver)
@@ -73,13 +74,13 @@ class AdSelectionWrapper(
 
                             override fun onFailure(e: Throwable) {
                               statusReceiver.accept("Error when running ad selection: " + e.message)
-                              renderUrlReceiver.accept("Ad selection failed -- no ad to display")
+                              renderUriReceiver.accept("Ad selection failed -- no ad to display")
                               Log.e(TAG, "Exception during ad selection", e)
                             }
                           }, executor)
     } catch (e: Exception) {
       statusReceiver.accept("Got the following exception when trying to run ad selection: $e")
-      renderUrlReceiver.accept("Ad selection failed -- no ad to display")
+      renderUriReceiver.accept("Ad selection failed -- no ad to display")
       Log.e(TAG, "Exception calling runAdSelection", e)
     }
   }
@@ -120,11 +121,8 @@ class AdSelectionWrapper(
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  fun overrideAdSelection(statusReceiver: Consumer<String?>, decisionLogicJS: String?) {
-    val request = AddAdSelectionOverrideRequest.Builder()
-      .setAdSelectionConfig(adSelectionConfig)
-      .setDecisionLogicJs(decisionLogicJS!!)
-      .build()
+  fun overrideAdSelection(statusReceiver: Consumer<String?>, decisionLogicJS: String?, trustedScoringSignals: String?) {
+    val request = AddAdSelectionOverrideRequest(adSelectionConfig, decisionLogicJS!!, trustedScoringSignals!!);
     Futures.addCallback(adClient.overrideAdSelectionConfigRemoteInfo(request),
                         object : FutureCallback<Void?> {
                           override fun onSuccess(unused: Void?) {
@@ -159,15 +157,15 @@ class AdSelectionWrapper(
   }
 
   /**
-   * Resets the {code adSelectionConfig} with the new decisionUrl associated with this `AdSelectionWrapper`.
+   * Resets the {code adSelectionConfig} with the new decisionUri associated with this `AdSelectionWrapper`.
    * To be used when switching back and forth between dev overrides/mock server states.
    *
-   * @param decisionUrl the new {@code Uri} to be used
+   * @param decisionUri the new {@code Uri} to be used
    */
-  fun resetAdSelectionConfig(decisionUrl: Uri?) {
+  fun resetAdSelectionConfig(decisionUri: Uri?) {
     adSelectionConfig = AdSelectionConfig.Builder()
       .setSeller(adSelectionConfig.getSeller())
-      .setDecisionLogicUrl(decisionUrl!!)
+      .setDecisionLogicUri(decisionUri!!)
       .setCustomAudienceBuyers(adSelectionConfig.getCustomAudienceBuyers())
       .setAdSelectionSignals(JSONObject().toString())
       .setSellerSignals(JSONObject().toString())
@@ -183,7 +181,7 @@ class AdSelectionWrapper(
   init {
     adSelectionConfig = AdSelectionConfig.Builder()
       .setSeller(seller)
-      .setDecisionLogicUrl(decisionUrl)
+      .setDecisionLogicUri(decisionUri)
       .setCustomAudienceBuyers(buyers)
       .setAdSelectionSignals(JSONObject().toString())
       .setSellerSignals(JSONObject().toString())
@@ -192,6 +190,7 @@ class AdSelectionWrapper(
                               { buyer: String? -> buyer },
                               { JSONObject().toString() })))
       .setContextualAds(ArrayList())
+      .setTrustedScoringSignalsUri(trustedScoringUri)
       .build()
     adClient = AdSelectionClient.Builder().setContext(context).setExecutor(executor).build()
     this.executor = executor
