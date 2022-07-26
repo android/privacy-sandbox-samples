@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.provider;
+package com.example.sdk_implementation;
 
 import android.annotation.SuppressLint;
 import android.app.sdksandbox.SandboxedSdkContext;
@@ -22,9 +22,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.WebView;
-
 import androidx.annotation.NonNull;
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;

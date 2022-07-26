@@ -13,20 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.provider
+package com.example.sdk_implementation;
 
 import android.annotation.SuppressLint
 import android.app.sdksandbox.SandboxedSdkProvider
 import android.app.sdksandbox.SandboxedSdkContext
 import android.os.Bundle
-import android.app.sdksandbox.SandboxedSdkProvider.InitSdkCallback
 import android.content.Context
 import android.view.View
 import android.webkit.WebView
-
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.Runnable
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;

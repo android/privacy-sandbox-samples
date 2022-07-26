@@ -1,0 +1,19 @@
+plugins {
+    id 'com.android.privacy-sandbox-sdk'
+}
+
+android {
+    compileSdkPreview 'TiramisuPrivacySandbox'
+    minSdkPreview 'TiramisuPrivacySandbox'
+    namespace = "com.example.example-sdk"
+
+    bundle {
+        packageName = "com.example.privacysandbox.provider"
+        sdkProviderClassName = "com.example.sdk_implementation.SdkProviderImpl"
+        setVersion(1, 0, 0)
+    }
+}
+
+dependencies {
+    include project(':sdk-implementation')
+}

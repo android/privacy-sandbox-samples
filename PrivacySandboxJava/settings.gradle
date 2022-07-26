@@ -15,3 +15,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "PrivacySandboxSample"
 include ':client-app', ':sdk-app'
+include ':sdk-implementation'
+include ':example-sdk'

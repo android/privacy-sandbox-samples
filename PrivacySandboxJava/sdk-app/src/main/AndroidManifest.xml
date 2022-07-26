@@ -21,7 +21,7 @@
     <sdk-library android:name="com.example.privacysandbox.provider" android:versionMajor="1" />
     <property
         android:name="android.sdksandbox.PROPERTY_SDK_PROVIDER_CLASS_NAME"
-        android:value="com.example.provider.SdkProviderImpl"/>
+        android:value="com.example.sdk_implementation.SdkProviderImpl"/>
     
   </application>
 
