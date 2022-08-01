@@ -36,6 +36,12 @@
           android:layout_width="wrap_content"
           style="?android:attr/buttonBarButtonStyle"
           android:text="Request WebView" />
+      <Button
+          android:id="@+id/create_file_button"
+          style="?android:attr/buttonBarButtonStyle"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Create File" />
   </LinearLayout>
 
   <SurfaceView

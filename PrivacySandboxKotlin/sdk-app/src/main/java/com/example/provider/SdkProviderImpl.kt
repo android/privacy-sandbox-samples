@@ -19,12 +19,18 @@ import android.annotation.SuppressLint
 import android.app.sdksandbox.SandboxedSdkProvider
 import android.app.sdksandbox.SandboxedSdkContext
 import android.os.Bundle
-import java.util.concurrent.Executor
 import android.app.sdksandbox.SandboxedSdkProvider.InitSdkCallback
 import android.content.Context
-import java.lang.Runnable
 import android.view.View
 import android.webkit.WebView
+
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.lang.Runnable
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.concurrent.Executor
 
 /*
  * This class works as an entry point for the sandbox to interact with the SDK.
@@ -34,11 +40,14 @@ import android.webkit.WebView
 @SuppressLint("NewApi")
 class SdkProviderImpl : SandboxedSdkProvider() {
 
+    private lateinit var mContext: SandboxedSdkContext
+
     @SuppressLint("Override")
     override fun initSdk(
         sandboxedSdkContext: SandboxedSdkContext, params: Bundle,
         executor: Executor, initSdkCallback: InitSdkCallback
     ) {
+        mContext = sandboxedSdkContext
         executor.execute { initSdkCallback.onInitSdkFinished(Bundle()) }
     }
 
@@ -50,7 +59,36 @@ class SdkProviderImpl : SandboxedSdkProvider() {
     }
 
     @SuppressLint("Override")
-    override fun onDataReceived(bundle: Bundle, dataReceivedCallback : DataReceivedCallback) {
-        dataReceivedCallback.onDataReceivedSuccess(Bundle())
+    override fun onDataReceived(bundle: Bundle, dataReceivedCallback: DataReceivedCallback) {
+        if (bundle.isEmpty()) {
+            dataReceivedCallback.onDataReceivedSuccess(Bundle())
+            return
+        }
+        try {
+            val methodName: String = bundle.getString("method", "")
+            when (methodName) {
+                "createFile" -> {
+                    val sizeInMb: Int = bundle.getInt("sizeInMb")
+                    val result: Bundle = createFile(sizeInMb)
+                    return dataReceivedCallback.onDataReceivedSuccess(result)
+                }
+                else -> {
+                    dataReceivedCallback.onDataReceivedError("Unknown method name")
+                }
+            }
+        } catch (e: Throwable) {
+            dataReceivedCallback.onDataReceivedError("Failed process data: " + e.message)
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun createFile(sizeInMb: Int): Bundle {
+        val path: Path = Paths.get(mContext.getDataDir()?.getPath(), "file.txt")
+        Files.deleteIfExists(path)
+        Files.createFile(path)
+        RandomAccessFile(path.toString(), "rw").use { file -> file.setLength(sizeInMb * 1024L * 1024L) }
+        val result: Bundle = Bundle();
+        result.putString("message", "Created " + sizeInMb + " MB file successfully");
+        return result
     }
 }

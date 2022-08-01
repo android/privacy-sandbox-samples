@@ -15,26 +15,33 @@
  */
 package com.example.client
 
-import androidx.appcompat.app.AppCompatActivity
-import android.widget.Button
+import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.app.sdksandbox.SdkSandboxManager
-import android.view.SurfaceView
-import androidx.annotation.RequiresApi
-import android.os.Bundle
-import com.example.privacysandbox.client.R
-import android.view.View
-import com.example.client.MainActivity
-import java.util.concurrent.Executor
-import java.lang.Runnable
-import android.os.Looper
 import android.app.sdksandbox.SdkSandboxManager.LoadSdkCallback
 import android.app.sdksandbox.SdkSandboxManager.RequestSurfacePackageCallback
 import android.app.sdksandbox.SdkSandboxManager.SendDataCallback
-import android.annotation.SuppressLint
+import android.content.DialogInterface
+import android.os.Bundle
 import android.os.Handler
-import android.view.SurfaceControlViewHost.SurfacePackage
-import android.widget.Toast
+import android.os.Looper
+import android.text.InputType
 import android.util.Log
+import android.view.SurfaceView
+import android.view.SurfaceControlViewHost.SurfacePackage
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
+
+import com.example.client.MainActivity
+import com.example.privacysandbox.client.R
+
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
+
+import java.util.concurrent.Executor
+import java.lang.Runnable
 
 @SuppressLint("NewApi")
 class MainActivity : AppCompatActivity() {
@@ -47,6 +54,11 @@ class MainActivity : AppCompatActivity() {
      * Button to request a SurfacePackage from sandbox which remotely render a webview.
      */
     private lateinit var mRequestWebViewButton: Button
+
+    /**
+     * Button to create a file inside sandbox.
+     */
+    private lateinit var mCreateFileButton: Button
 
     /**
      * An instance of SdkSandboxManager which contains APIs to communicate with the sandbox.
@@ -71,8 +83,10 @@ class MainActivity : AppCompatActivity() {
         mClientView.setZOrderOnTop(true)
         mLoadSdkButton = findViewById(R.id.load_sdk_button)
         mRequestWebViewButton = findViewById(R.id.request_webview_button)
+        mCreateFileButton = findViewById(R.id.create_file_button)
         registerLoadCodeProviderButton()
         registerRequestWebViewButton()
+        registerCreateFileButton()
     }
 
     /**
@@ -80,7 +94,7 @@ class MainActivity : AppCompatActivity() {
      */
     @RequiresApi(api = 33)
     private fun registerLoadCodeProviderButton() {
-        mLoadSdkButton.setOnClickListener { v: View? ->
+        mLoadSdkButton.setOnClickListener { _: View? ->
             log("Attempting to load sandbox SDK")
             val callback = LoadSdkCallbackImpl()
             mSdkSandboxManager.loadSdk(
@@ -109,6 +123,65 @@ class MainActivity : AppCompatActivity() {
                     { obj: Runnable -> obj.run() }, callback
                 )
             }
+        }
+    }
+
+    /**
+     * Register the callback action after once mCreateFileButton got clicked.
+     */
+    @RequiresApi(api = 33)
+    private fun registerCreateFileButton() {
+        mCreateFileButton.setOnClickListener { _ ->
+            if (!mSdkLoaded) {
+                makeToast("Please load the SDK first!")
+                return@setOnClickListener
+            }
+            log("Creating file inside sandbox.")
+
+            // Show dialog to collect the size of storage
+            val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+            builder.setTitle("Set size in MB")
+            val input = EditText(this)
+            input.setInputType(InputType.TYPE_CLASS_NUMBER)
+            builder.setView(input)
+            builder.setPositiveButton("Create", object : DialogInterface.OnClickListener {
+
+                override fun onClick(dialog: DialogInterface?, which: Int) {
+                    var sizeInMb = -1
+                    try {
+                        sizeInMb = Integer.parseInt(input.getText().toString())
+                    } catch (ignore: Exception) {
+                    }
+                    if (sizeInMb <= 0) {
+                        makeToast("Please provide positive integer value")
+                        return
+                    }
+
+                    // Let SDK know the size of file we want it to create.
+                    val params = Bundle()
+                    params.putString("method", "createFile")
+                    params.putInt("sizeInMb", sizeInMb)
+                    mSdkSandboxManager.sendData(SDK_NAME, params, Runnable::run,
+                                                object : SendDataCallback {
+                                                    override fun onSendDataSuccess(params: Bundle) {
+                                                         makeToast(params.getString(
+                                                             "message", "Something went wrong"));
+                                                    }
+                                                    override fun onSendDataError(
+                                                        errorCode: Int,errorMessage: String) {
+                                                        makeToast("File creation failed: " +
+                                                                    "$errorMessage")
+                                                    }
+                                                })
+                }
+            })
+            builder.setNegativeButton("Cancel", object : DialogInterface.OnClickListener {
+
+                override fun onClick(dialog: DialogInterface, which: Int) {
+                    dialog.cancel()
+                }
+            })
+            builder.show()
         }
     }
 

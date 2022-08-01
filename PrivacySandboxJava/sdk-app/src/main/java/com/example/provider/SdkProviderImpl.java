@@ -22,7 +22,14 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.WebView;
+
 import androidx.annotation.NonNull;
+
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.Executor;
 
 /*
@@ -33,10 +40,13 @@ import java.util.concurrent.Executor;
 @SuppressLint("NewApi")
 public class SdkProviderImpl extends SandboxedSdkProvider {
 
+  SandboxedSdkContext mContext;
+
   @SuppressLint("Override")
   @Override
   public void initSdk(SandboxedSdkContext sandboxedSdkContext, Bundle params,
       Executor executor, InitSdkCallback initSdkCallback) {
+      mContext = sandboxedSdkContext;
       executor.execute(() -> initSdkCallback.onInitSdkFinished(new Bundle()));
   }
 
@@ -52,7 +62,36 @@ public class SdkProviderImpl extends SandboxedSdkProvider {
   @Override
   public void onDataReceived(@NonNull Bundle bundle,
       DataReceivedCallback dataReceivedCallback) {
-    dataReceivedCallback.onDataReceivedSuccess(new Bundle());
+    if (bundle.isEmpty()) {
+       dataReceivedCallback.onDataReceivedSuccess(new Bundle());
+       return;
+    }
+
+    try {
+      final String methodName = bundle.getString("method", "");
+      switch (methodName) {
+        case "createFile":
+          final int sizeInMb = bundle.getInt("sizeInMb");
+          final Bundle result = createFile(sizeInMb);
+          dataReceivedCallback.onDataReceivedSuccess(result);
+          break;
+        default:
+          dataReceivedCallback.onDataReceivedError("Unknown method name");
+      }
+    } catch (Throwable e) {
+       dataReceivedCallback.onDataReceivedError("Failed process data: " + e.getMessage());
+    }
   }
 
+  private Bundle createFile(int sizeInMb) throws IOException {
+    final Path path = Paths.get(mContext.getDataDir().getPath(), "file.txt");
+    Files.deleteIfExists(path);
+    Files.createFile(path);
+    try (RandomAccessFile file = new RandomAccessFile(path.toString(), "rw")){
+      file.setLength(sizeInMb * 1024 * 1024);
+    }
+    final Bundle result = new Bundle();
+    result.putString("message", "Created " + sizeInMb + " MB file successfully");
+    return result;
+  }
 }

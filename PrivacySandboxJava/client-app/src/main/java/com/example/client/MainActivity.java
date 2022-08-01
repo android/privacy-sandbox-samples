@@ -16,17 +16,21 @@
 package com.example.client;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.sdksandbox.SdkSandboxManager;
 import android.app.sdksandbox.SdkSandboxManager.LoadSdkCallback;
 import android.app.sdksandbox.SdkSandboxManager.RequestSurfacePackageCallback;
 import android.app.sdksandbox.SdkSandboxManager.SendDataCallback;
+import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.InputType;
 import android.util.Log;
 import android.view.SurfaceControlViewHost.SurfacePackage;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
@@ -53,6 +57,10 @@ public class MainActivity extends AppCompatActivity {
      */
     private Button mRequestWebViewButton;
     /**
+     * Button to create a file inside sandbox.
+     */
+    private Button mCreateFileButton;
+    /**
      * An instance of SdkSandboxManager which contains APIs to communicate with the sandbox.
      */
     private SdkSandboxManager mSdkSandboxManager;
@@ -78,9 +86,11 @@ public class MainActivity extends AppCompatActivity {
 
         mLoadSdkButton = findViewById(R.id.load_sdk_button);
         mRequestWebViewButton = findViewById(R.id.request_webview_button);
+        mCreateFileButton = findViewById(R.id.create_file_button);
 
         registerLoadCodeProviderButton();
         registerRequestWebViewButton();
+        registerCreateFileButton();
     }
 
     /**
@@ -114,6 +124,65 @@ public class MainActivity extends AppCompatActivity {
                 mClientView.getWidth(), mClientView.getHeight(), bundle,
                 Runnable::run, new RequestSurfacePackageCallbackImpl());
               });
+        });
+    }
+
+    /**
+     * Register the callback action after once mCreateFileButton got clicked.
+     */
+    @RequiresApi(api = 33)
+    private void registerCreateFileButton() {
+        mCreateFileButton.setOnClickListener(v -> {
+            if (!mSdkLoaded) {
+                makeToast("Please load the SDK first!");
+                return;
+            }
+            log("Creating a file inside sandbox.");
+
+            // Show dialog to collect the size of storage
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Set size in MB");
+            final EditText input = new EditText(this);
+            input.setInputType(InputType.TYPE_CLASS_NUMBER);
+            builder.setView(input);
+
+            builder.setPositiveButton("Create", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    int sizeInMb = -1;
+                    try {
+                        sizeInMb = Integer.parseInt(input.getText().toString());
+                    } catch (Exception ignore) {}
+                    if (sizeInMb <= 0) {
+                        makeToast("Please provide positive integer value");
+                        return;
+                    }
+
+                    // Let SDK know the size of file we want it to create.
+                    final Bundle params = new Bundle();
+                    params.putString("method", "createFile");
+                    params.putInt("sizeInMb", sizeInMb);
+                    mSdkSandboxManager.sendData(SDK_NAME, params, Runnable::run,
+                        new SendDataCallback() {
+                            @Override
+                            public void onSendDataSuccess(Bundle params) {
+                                makeToast(params.getString("message", "Something went wrong"));
+                            }
+
+                            @Override
+                            public void onSendDataError(int errorCode, String errorMessage) {
+                                makeToast("File creation failed: " + errorMessage);
+                            }
+                        });
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            builder.show();
         });
     }
 
