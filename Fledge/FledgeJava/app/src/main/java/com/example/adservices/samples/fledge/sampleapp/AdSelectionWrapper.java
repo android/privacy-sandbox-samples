@@ -51,38 +51,37 @@ public class AdSelectionWrapper {
    * endpoint.
    * @param buyers A list of buyers for the auction.
    * @param seller The name of the seller for the auction
-   * @param decisionUri The URI to retrieve the seller scoring and reporting logic from
+   * @param decisionUrl The URL to retrieve the seller scoring and reporting logic from
    * @param context The application context.
    * @param executor An executor to use with the FLEDGE API calls.
    */
-  public AdSelectionWrapper(List<String> buyers, String seller, Uri decisionUri, Uri trustedDataUri, Context context,
+  public AdSelectionWrapper(List<String> buyers, String seller, Uri decisionUrl, Context context,
       Executor executor) {
 
     mAdSelectionConfig = new AdSelectionConfig.Builder()
         .setSeller(seller)
-        .setDecisionLogicUri(decisionUri)
+        .setDecisionLogicUrl(decisionUrl)
         .setCustomAudienceBuyers(buyers)
         .setAdSelectionSignals(new JSONObject().toString())
         .setSellerSignals(new JSONObject().toString())
         .setPerBuyerSignals(buyers.stream()
             .collect(Collectors.toMap(buyer -> buyer, buyer -> new JSONObject().toString())))
         .setContextualAds(new ArrayList<>())
-        .setTrustedScoringSignalsUri(trustedDataUri)
         .build();
     mAdClient = new AdSelectionClient.Builder().setContext(context).setExecutor(executor).build();
     mExecutor = executor;
   }
 
   /**
-   * Resets the {@code AdSelectionConfig} with the new decisionUri associated with this {@code AdSelectionWrapper}.
+   * Resets the {@code AdSelectionConfig} with the new decisionUrl associated with this {@code AdSelectionWrapper}.
    * To be used when switching back and forth between dev overrides/mock server states.
    *
-   * @param decisionUri the new {@code Uri} to be used
+   * @param decisionUrl the new {@code Uri} to be used
    */
-  public void resetAdSelectionConfig(Uri decisionUri) {
+  public void resetAdSelectionConfig(Uri decisionUrl) {
     mAdSelectionConfig = new AdSelectionConfig.Builder()
         .setSeller(mAdSelectionConfig.getSeller())
-        .setDecisionLogicUri(decisionUri)
+        .setDecisionLogicUrl(decisionUrl)
         .setCustomAudienceBuyers(mAdSelectionConfig.getCustomAudienceBuyers())
         .setAdSelectionSignals(new JSONObject().toString())
         .setSellerSignals(new JSONObject().toString())
@@ -97,29 +96,29 @@ public class AdSelectionWrapper {
    * selection succeeds, also report impressions.
    * @param statusReceiver A consumer function that is run after ad selection and impression reporting
    * with a string describing how the auction and reporting went.
-   * @param renderUriReceiver A consumer function that is run after ad selection with a message describing the render URI
+   * @param renderUrlReceiver A consumer function that is run after ad selection with a message describing the render URL
    * or lack thereof.
    */
-  public void runAdSelection(Consumer<String> statusReceiver, Consumer<String> renderUriReceiver) {
+  public void runAdSelection(Consumer<String> statusReceiver, Consumer<String> renderUrlReceiver) {
     try {
       Futures.addCallback(mAdClient.runAdSelection(mAdSelectionConfig),
           new FutureCallback<AdSelectionOutcome>() {
             public void onSuccess(AdSelectionOutcome adSelectionOutcome) {
               statusReceiver.accept("Ran ad selection");
-              renderUriReceiver.accept("Would display ad from " + adSelectionOutcome.getRenderUri());
+              renderUrlReceiver.accept("Would display ad from " + adSelectionOutcome.getRenderUrl());
 
               reportImpression(adSelectionOutcome.getAdSelectionId(), mAdSelectionConfig, statusReceiver);
             }
 
             public void onFailure(@NonNull Throwable e) {
               statusReceiver.accept("Error when running ad selection: " + e.getMessage());
-              renderUriReceiver.accept("Ad selection failed -- no ad to display");
+              renderUrlReceiver.accept("Ad selection failed -- no ad to display");
               Log.e(MainActivity.TAG, "Exception during ad selection", e);
             }
           }, mExecutor);
     } catch (Exception e) {
       statusReceiver.accept("Got the following exception when trying to run ad selection: " + e);
-      renderUriReceiver.accept("Ad selection failed -- no ad to display");
+      renderUrlReceiver.accept("Ad selection failed -- no ad to display");
       Log.e(MainActivity.TAG, "Exception calling runAdSelection", e);
     }
 
@@ -158,9 +157,12 @@ public class AdSelectionWrapper {
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  public void overrideAdSelection(Consumer<String> statusReceiver, String decisionLogicJS, String trustedScoringSignals) {
+  public void overrideAdSelection(Consumer<String> statusReceiver, String decisionLogicJS) {
     AddAdSelectionOverrideRequest request =
-        new AddAdSelectionOverrideRequest(mAdSelectionConfig, decisionLogicJS, trustedScoringSignals);
+        new AddAdSelectionOverrideRequest.Builder()
+            .setAdSelectionConfig(mAdSelectionConfig)
+            .setDecisionLogicJs(decisionLogicJS)
+            .build();
     try {
       Futures.addCallback(mAdClient.overrideAdSelectionConfigRemoteInfo(request),
           new FutureCallback<Void>() {
