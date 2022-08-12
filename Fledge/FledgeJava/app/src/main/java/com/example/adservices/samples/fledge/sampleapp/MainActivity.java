@@ -42,28 +42,12 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = "FledgeSample";
 
     // The sample buyer and seller for the custom audiences
-    private static final String BUYER = "sample-buyer.com";
-    private static final String SELLER = "sample-seller.com";
+    private static final String BUYER = "sample-buyer.sampleapp";
+    private static final String SELLER = "sample-seller.sampleapp";
 
-    // Set override URIs
-    private static final String BIDDING_LOGIC_OVERRIDE_URI = "https://sample-buyer.com/bidding";
-    private static final String SCORING_LOGIC_OVERRIDE_URI = "https://sample-seller.com/scoring/js";
-    private static final String TRUSTED_SCORING_OVERRIDE_URI = "https://sample-seller.com/scoring/trusted";
-
-    // JSON string objects that will be used during ad selection
-    private static final String TRUSTED_SCORING_SIGNALS =
-        "{\n"
-            + "\t\"render_uri_1\": \"signals_for_1\",\n"
-            + "\t\"render_uri_2\": \"signals_for_2\"\n"
-            + "}";
-    private static final String TRUSTED_BIDDING_SIGNALS =
-        "{\n"
-            + "\t\"example\": \"example\",\n"
-            + "\t\"valid\": \"Also valid\",\n"
-            + "\t\"list\": \"list\",\n"
-            + "\t\"of\": \"of\",\n"
-            + "\t\"keys\": \"trusted bidding signal Values\"\n"
-            + "}";
+    // Set override URLs
+    private static final String BIDDING_OVERRIDE_URL = "https://override_url.com/bidding";
+    private static final String SCORING_OVERRIDE_URL = "https://override_url.com/scoring";
 
     // JS files
     private static final String BIDDING_LOGIC_FILE = "BiddingLogic.js";
@@ -73,9 +57,9 @@ public class MainActivity extends AppCompatActivity {
     private static final String SHOES_NAME = "shoes";
     private static final String SHIRTS_NAME = "shirts";
 
-    // Shirts and shoes render URIS
-    private static final Uri SHOES_RENDER_URI = Uri.parse("shoes-uri.shoestld");
-    private static final Uri SHIRTS_RENDER_URI = Uri.parse("shirts-uri.shirtstld");
+    // Shirts and shoes render URLS
+    private static final Uri SHOES_RENDER_URL = Uri.parse("shoes-url.shoestld");
+    private static final Uri SHIRTS_RENDER_URL = Uri.parse("shirts-url.shirtstld");
 
     // Executor to be used for API calls
     private static final Executor EXECUTOR = Executors.newCachedThreadPool();
@@ -90,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         + "without restarting.";
 
     /**
-     * Does the initial setup for the app. This includes reading the Javascript server URIs from the
+     * Does the initial setup for the app. This includes reading the Javascript server URLs from the
      * start intent, creating the ad selection and custom audience wrappers to wrap the APIs, and
      * tying the UI elements to the wrappers so that button clicks trigger the appropriate methods.
      */
@@ -104,22 +88,21 @@ public class MainActivity extends AppCompatActivity {
         EventLogManager eventLog = new EventLogManager(binding.eventLog);
 
         try {
-            // Set override URIS since overrides are on by default
-            Uri biddingLogicUri = Uri.parse(BIDDING_LOGIC_OVERRIDE_URI);
-            Uri scoringLogicUri = Uri.parse(SCORING_LOGIC_OVERRIDE_URI);
-            Uri trustedScoringUri = Uri.parse(TRUSTED_SCORING_OVERRIDE_URI);
+            // Set override URLS since overrides are on by default
+            Uri biddingUrl = Uri.parse(BIDDING_OVERRIDE_URL);
+            Uri scoringUrl = Uri.parse(SCORING_OVERRIDE_URL);
 
-            // Get override reporting URI
-            String reportingUri = getIntentOrError("reportingUrl", eventLog,
+            // Get override reporting URL
+            String reportingUrl = getIntentOrError("reportingUrl", eventLog,
                 MISSING_FIELD_STRING_FORMAT_RESTART_APP);
 
-            // Replace override URIs in JS
-            String overrideDecisionJS = replaceReportingURI(assetFileToString(DECISION_LOGIC_FILE), reportingUri);
-            String overrideBiddingJs = replaceReportingURI(assetFileToString(BIDDING_LOGIC_FILE), reportingUri);
+            // Replace override URLs in JS
+            String overrideDecisionJS = replaceReportingURL(assetFileToString(DECISION_LOGIC_FILE), reportingUrl);
+            String overrideBiddingJs = replaceReportingURL(assetFileToString(BIDDING_LOGIC_FILE), reportingUrl);
 
             // Set up ad selection
             AdSelectionWrapper adWrapper = new AdSelectionWrapper(Collections.singletonList(BUYER),
-                SELLER, scoringLogicUri, trustedScoringUri, context, EXECUTOR);
+                SELLER, scoringUrl, context, EXECUTOR);
             binding.runAdsButton.setOnClickListener(v ->
                 adWrapper.runAdSelection(eventLog::writeEvent, binding.adSpace::setText));
 
@@ -128,33 +111,33 @@ public class MainActivity extends AppCompatActivity {
             CustomAudienceWrapper caWrapper = new CustomAudienceWrapper(owner, BUYER, context, EXECUTOR);
 
             // Set up CA buttons
-            setupJoinCAButtons(caWrapper, eventLog, binding, biddingLogicUri);
+            setupJoinCAButtons(caWrapper, eventLog, binding, biddingUrl);
             setupLeaveCAButtons(caWrapper, eventLog, binding);
 
             // Set up remote overrides by default
-            useOverrides(eventLog,adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs,TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS);
+            useOverrides(eventLog,adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs);
 
             // Set up Override Switch
             binding.overrideSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if (isChecked) {
-                        useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS);
+                        useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs);
                     } else {
                         try {
-                            Uri biddingLogicUri = Uri.parse(getIntentOrError("biddingUrl", eventLog,
+                            Uri biddingUrl = Uri.parse(getIntentOrError("biddingUrl", eventLog,
                                 MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
-                            Uri scoringLogicUri = Uri.parse(getIntentOrError("scoringUrl", eventLog,
+                            Uri scoringUrl = Uri.parse(getIntentOrError("scoringUrl", eventLog,
                                 MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
-                            // Set with new scoring uri
-                            adWrapper.resetAdSelectionConfig(scoringLogicUri);
+                            // Set with new scoring url
+                            adWrapper.resetAdSelectionConfig(scoringUrl);
 
-                            // Reset join custom audience buttons as they rely on different biddingLogicUri
-                            setupJoinCAButtons(caWrapper, eventLog, binding, biddingLogicUri);
+                            // Reset join custom audience buttons as they rely on different biddingUrl
+                            setupJoinCAButtons(caWrapper, eventLog, binding, biddingUrl);
 
                             resetOverrides(eventLog, adWrapper, caWrapper);
                         } catch (Exception e) {
                             binding.overrideSwitch.setChecked(true);
-                            Log.e(TAG, "Error getting mock server uris", e);
+                            Log.e(TAG, "Error getting mock server urls", e);
                         }
                     }
                 }
@@ -164,12 +147,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setupJoinCAButtons(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding, Uri biddingUri) {
+    private void setupJoinCAButtons(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding, Uri biddingUrl) {
         binding.joinShoesButton.setOnClickListener(v ->
-            caWrapper.joinCa(SHOES_NAME, biddingUri, SHOES_RENDER_URI,
+            caWrapper.joinCa(SHOES_NAME, biddingUrl, SHOES_RENDER_URL,
                 eventLog::writeEvent));
         binding.joinShirtsButton.setOnClickListener(v ->
-            caWrapper.joinCa(SHIRTS_NAME, biddingUri, SHIRTS_RENDER_URI,
+            caWrapper.joinCa(SHIRTS_NAME, biddingUrl, SHIRTS_RENDER_URL,
                 eventLog::writeEvent));
     }
 
@@ -180,10 +163,10 @@ public class MainActivity extends AppCompatActivity {
             caWrapper.leaveCa(SHIRTS_NAME, eventLog::writeEvent));
     }
 
-    private void useOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper, CustomAudienceWrapper customAudienceWrapper, String decisionLogicJs, String biddingLogicJs, String trustedScoringSignals, String trustedBiddingSignals) {
-        adSelectionWrapper.overrideAdSelection(eventLog::writeEvent,decisionLogicJs, trustedScoringSignals);
-        customAudienceWrapper.addCAOverride(SHOES_NAME,biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
-        customAudienceWrapper.addCAOverride(SHIRTS_NAME,biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
+    private void useOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper, CustomAudienceWrapper customAudienceWrapper, String decisionLogicJs, String biddingLogicJs) {
+        adSelectionWrapper.overrideAdSelection(eventLog::writeEvent,decisionLogicJs);
+        customAudienceWrapper.addCAOverride(SHOES_NAME,biddingLogicJs,"",eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(SHIRTS_NAME,biddingLogicJs,"",eventLog::writeEvent);
     }
 
     private void resetOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper, CustomAudienceWrapper customAudienceWrapper) {
@@ -192,10 +175,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Replaces the override URI in the .js files with an actual reporting URI
+     * Replaces the override URL in the .js files with an actual reporting URL
      */
-    private String replaceReportingURI(String js, String reportingUri) {
-        return js.replace("https://reporting.example.com", reportingUri);
+    private String replaceReportingURL(String js, String reportingUrl) {
+        return js.replace("https://reporting.example.com", reportingUrl);
     }
 
     /**
