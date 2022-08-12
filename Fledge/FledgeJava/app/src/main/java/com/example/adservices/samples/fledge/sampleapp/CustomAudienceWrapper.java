@@ -69,16 +69,16 @@ public class CustomAudienceWrapper {
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  public void joinCa(String name, Uri biddingUrl, Uri renderUrl, Consumer<String> statusReceiver) {
+  public void joinCa(String name, Uri biddingUri, Uri renderUri, Consumer<String> statusReceiver) {
     try {
       CustomAudience ca = new CustomAudience.Builder()
           .setOwner(mOwner)
           .setBuyer(mBuyer)
           .setName(name)
           .setDailyUpdateUrl(Uri.EMPTY)
-          .setBiddingLogicUrl(biddingUrl)
+          .setBiddingLogicUrl(biddingUri)
           .setAds(Collections.singletonList(new AdData.Builder()
-              .setRenderUrl(renderUrl)
+              .setRenderUri(renderUri)
               .setMetadata(new JSONObject().toString())
               .build()))
           .setActivationTime(Instant.now())

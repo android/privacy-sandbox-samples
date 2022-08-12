@@ -34,24 +34,38 @@ import java.util.stream.Collectors
 const val TAG = "FledgeSample"
 
 // The sample buyer and seller for the custom audiences
-private const val BUYER = "sample-buyer.sampleapp"
-private const val SELLER = "sample-seller.sampleapp"
+private const val BUYER = "sample-buyer.com"
+private const val SELLER = "sample-seller.com"
 
 // The names for the shirts and shoes custom audience
 private const val SHOES_NAME = "shoes"
 private const val SHIRTS_NAME = "shirts"
 
-// Set override URLs
-private const val BIDDING_OVERRIDE_URL = "https://override_url.com/bidding"
-private const val SCORING_OVERRIDE_URL = "https://override_url.com/scoring"
+// Set override URIs
+private const val BIDDING_LOGIC_OVERRIDE_URI = "https://sample-buyer.com/bidding"
+private const val SCORING_LOGIC_OVERRIDE_URI = "https://sample-seller.com/scoring/js"
+private const val TRUSTED_SCORING_OVERRIDE_URI = "https://sample-seller.com/scoring/trusted"
+
+// JSON string objects that will be used during ad selection
+private const val TRUSTED_SCORING_SIGNALS = ("{\n"
+  + "\t\"render_uri_1\": \"signals_for_1\",\n"
+  + "\t\"render_uri_2\": \"signals_for_2\"\n"
+  + "}")
+private const val TRUSTED_BIDDING_SIGNALS = ("{\n"
+  + "\t\"example\": \"example\",\n"
+  + "\t\"valid\": \"Also valid\",\n"
+  + "\t\"list\": \"list\",\n"
+  + "\t\"of\": \"of\",\n"
+  + "\t\"keys\": \"trusted bidding signal Values\"\n"
+  + "}")
 
 // JS files
 private const val BIDDING_LOGIC_FILE = "BiddingLogic.js"
 private const val DECISION_LOGIC_FILE = "DecisionLogic.js"
 
-// Shirts and shoes render URLS
-private val SHOES_RENDER_URL = Uri.parse("shoes-url.shoestld")
-private val SHIRTS_RENDER_URL = Uri.parse("shirts-url.shirtstld")
+// Shirts and shoes render URIS
+private val SHOES_RENDER_URI = Uri.parse("shoes-uri.shoestld")
+private val SHIRTS_RENDER_URI = Uri.parse("shirts-uri.shirtstld")
 
 // Executor to be used for API calls
 private val EXECUTOR: Executor = Executors.newCachedThreadPool()
@@ -70,7 +84,7 @@ private const val MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES = ("ERROR: %s is mis
 @RequiresApi(api = 34)
 class MainActivity : AppCompatActivity() {
   /**
-   * Does the initial setup for the app. This includes reading the Javascript server URLs from the
+   * Does the initial setup for the app. This includes reading the Javascript server URIs from the
    * start intent, creating the ad selection and custom audience wrappers to wrap the APIs, and
    * tying the UI elements to the wrappers so that button clicks trigger the appropriate methods.
    */
@@ -83,22 +97,24 @@ class MainActivity : AppCompatActivity() {
     setContentView(view)
     val eventLog = EventLogManager(binding.eventLog)
     try {
-      // Set override URLS since overrides are on by default
-      var biddingUrl = Uri.parse(BIDDING_OVERRIDE_URL)
-      var scoringUrl = Uri.parse(SCORING_OVERRIDE_URL)
+      // Set override URIS since overrides are on by default
+      var biddingLogicUri = Uri.parse(BIDDING_LOGIC_OVERRIDE_URI)
+      var scoringLogicUri = Uri.parse(SCORING_LOGIC_OVERRIDE_URI)
+      val trustedScoringUri = Uri.parse(TRUSTED_SCORING_OVERRIDE_URI)
 
-      // Get override reporting URL
-      val reportingUrl = getIntentOrError("reportingUrl", eventLog, MISSING_FIELD_STRING_FORMAT_RESTART_APP)
 
-      // Replace override URLs in JS
+      // Get override reporting URI
+      val reportingUri = getIntentOrError("reportingUrl", eventLog, MISSING_FIELD_STRING_FORMAT_RESTART_APP)
+
+      // Replace override URIs in JS
       val overrideDecisionJS =
-        replaceReportingURL(assetFileToString(DECISION_LOGIC_FILE), reportingUrl)
+        replaceReportingURI(assetFileToString(DECISION_LOGIC_FILE), reportingUri)
       val overrideBiddingJs =
-        replaceReportingURL(assetFileToString(BIDDING_LOGIC_FILE), reportingUrl)
+        replaceReportingURI(assetFileToString(BIDDING_LOGIC_FILE), reportingUri)
 
       // Set up ad selection
       val adWrapper = AdSelectionWrapper(listOf(BUYER),
-                                         SELLER, scoringUrl, context, EXECUTOR)
+                                         SELLER, scoringLogicUri, trustedScoringUri, context, EXECUTOR)
       binding.runAdsButton.setOnClickListener {
         adWrapper.runAdSelection(
           { event: String -> eventLog.writeEvent(event)
@@ -110,31 +126,31 @@ class MainActivity : AppCompatActivity() {
       val caWrapper = CustomAudienceWrapper(owner, BUYER, EXECUTOR, context)
 
       // Set up CA buttons
-      setupJoinCAButtons(caWrapper, eventLog, binding, biddingUrl)
+      setupJoinCAButtons(caWrapper, eventLog, binding, biddingLogicUri)
       setupLeaveCAButtons(caWrapper, eventLog, binding)
 
       // Set up remote overrides by default
-      useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs)
+      useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS)
 
       // Set up Override Switch
       binding.overrideSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
         if (isChecked) {
-          useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs)
+          useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS)
         } else {
           try {
-            biddingUrl = Uri.parse(getIntentOrError("biddingUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES))
-            scoringUrl = Uri.parse(getIntentOrError("scoringUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES))
-            // Set with new scoring url
-            adWrapper.resetAdSelectionConfig(scoringUrl)
+            biddingLogicUri = Uri.parse(getIntentOrError("biddingUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES))
+            scoringLogicUri = Uri.parse(getIntentOrError("scoringUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES))
+            // Set with new scoring uri
+            adWrapper.resetAdSelectionConfig(scoringLogicUri)
 
-            // Reset join custom audience buttons as they rely on different biddingUrl
-            setupJoinCAButtons(caWrapper, eventLog, binding, biddingUrl)
+            // Reset join custom audience buttons as they rely on different biddingUri
+            setupJoinCAButtons(caWrapper, eventLog, binding, biddingLogicUri)
 
             // Resetting overrides
             resetOverrides(eventLog, adWrapper, caWrapper)
           } catch (e: java.lang.Exception) {
             binding.overrideSwitch.isChecked = true
-            Log.e(TAG,"Error getting mock server urls", e)
+            Log.e(TAG,"Error getting mock server uris", e)
           }
         }
       }
@@ -165,16 +181,16 @@ class MainActivity : AppCompatActivity() {
     caWrapper: CustomAudienceWrapper,
     eventLog: EventLogManager,
     binding: ActivityMainBinding,
-    biddingUrl: Uri,
+    biddingUri: Uri,
   ) {
     binding.joinShoesButton.setOnClickListener { v: View? ->
-      caWrapper.joinCa(SHOES_NAME, biddingUrl, SHOES_RENDER_URL) { event: String? ->
+      caWrapper.joinCa(SHOES_NAME, biddingUri, SHOES_RENDER_URI) { event: String? ->
         eventLog.writeEvent(
           event!!)
       }
     }
     binding.joinShirtsButton.setOnClickListener { v: View? ->
-      caWrapper.joinCa(SHIRTS_NAME, biddingUrl, SHIRTS_RENDER_URL) { event: String? ->
+      caWrapper.joinCa(SHIRTS_NAME, biddingUri, SHIRTS_RENDER_URI) { event: String? ->
         eventLog.writeEvent(
           event!!)
       }
@@ -206,16 +222,18 @@ class MainActivity : AppCompatActivity() {
     customAudienceWrapper: CustomAudienceWrapper,
     decisionLogicJs: String,
     biddingLogicJs: String,
+    trustedScoringSignals: String,
+    trustedBiddingSignals: String,
   ) {
     adSelectionWrapper.overrideAdSelection({ event: String? ->
                                              eventLog.writeEvent(
                                                event!!)
-                                           }, decisionLogicJs)
-    customAudienceWrapper.addCAOverride(SHOES_NAME, biddingLogicJs, "") { event: String? ->
+                                           }, decisionLogicJs, trustedScoringSignals)
+    customAudienceWrapper.addCAOverride(SHOES_NAME, biddingLogicJs, trustedScoringSignals) { event: String? ->
       eventLog.writeEvent(
         event!!)
     }
-    customAudienceWrapper.addCAOverride(SHIRTS_NAME, biddingLogicJs, "") { event: String? ->
+    customAudienceWrapper.addCAOverride(SHIRTS_NAME, biddingLogicJs, trustedBiddingSignals) { event: String? ->
       eventLog.writeEvent(
         event!!)
     }
@@ -246,9 +264,9 @@ class MainActivity : AppCompatActivity() {
   }
 
   /**
-   * Replaces the override URL in the .js files with an actual reporting URL
+   * Replaces the override URI in the .js files with an actual reporting URI
    */
-  private fun replaceReportingURL(js: String, reportingUrl: String): String {
-    return js.replace("https://reporting.example.com", reportingUrl)
+  private fun replaceReportingURI(js: String, reportingUri: String): String {
+    return js.replace("https://reporting.example.com", reportingUri)
   }
 }
