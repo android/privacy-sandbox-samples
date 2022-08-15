@@ -32,48 +32,34 @@ data class Trigger(
 data class TriggerResponseHeader(
   @JsonProperty(regKey)
   @get:JsonProperty(regKey)
-  val registrationHeader: List<TriggerRegistrationHeader>,
-
-  @JsonProperty(aggDataRegKey)
-  @get:JsonProperty(aggDataRegKey)
-  val aggregatableDataRegistrationHeader: List<AggregatableTriggerData>?,
-
-  @JsonProperty(aggValuesRegKey)
-  @get:JsonProperty(aggValuesRegKey)
-  val aggregatableValuesRegistrationHeader: JsonNode?,
+  val registrationHeader: TriggerRegistrationHeader,
 
   @JsonProperty(redirectKey)
   @get:JsonProperty(redirectKey)
   val attributionReportingRedirect: List<String>?,
 ) {
   companion object {
-    const val regKey = "Attribution-Reporting-Register-Event-Trigger"
-    const val aggDataRegKey = "Attribution-Reporting-Register-Aggregatable-Trigger-Data"
-    const val aggValuesRegKey = "Attribution-Reporting-Register-Aggregatable-Values"
+    const val regKey = "Attribution-Reporting-Register-Trigger"
     const val redirectKey = "Attribution-Reporting-Redirect"
   }
 }
 
 data class TriggerRegistrationHeader(
-  @JsonProperty("trigger_data")
-  @get:JsonProperty("trigger_data")
-  val triggerData: String,
+  @JsonProperty("event_trigger_data")
+  @get:JsonProperty("event_trigger_data")
+  val eventTriggerData: List<EventTriggerData>?,
 
-  @JsonProperty("priority")
-  @get:JsonProperty("priority")
-  val priority: String,
+  @JsonProperty("aggregatable_trigger_data")
+  @get:JsonProperty("aggregatable_trigger_data")
+  val aggregatableTriggerData: List<AggregatableTriggerData>?,
 
-  @JsonProperty("deduplication_key")
-  @get:JsonProperty("deduplication_key")
-  val deduplicationKey: String?,
+  @JsonProperty("aggregatable_values")
+  @get:JsonProperty("aggregatable_values")
+  val aggregatableValues: JsonNode?,
 
   @JsonProperty("filters")
   @get:JsonProperty("filters")
-  val filters: Map<String,List<String>>?,
-
-  @JsonProperty("not_filters")
-  @get:JsonProperty("not_filters")
-  val notFilters: Map<String,List<String>>?,
+  val filters: Map<String, List<String>>?,
 )
 
 data class AggregatableTriggerData(
@@ -87,9 +73,31 @@ data class AggregatableTriggerData(
 
   @JsonProperty("filters")
   @get:JsonProperty("filters")
-  val filters: Map<String,List<String>>?,
+  val filters: Map<String, List<String>>?,
 
   @JsonProperty("not_filters")
   @get:JsonProperty("not_filters")
-  val notFilters: Map<String,List<String>>?,
+  val notFilters: Map<String, List<String>>?,
+)
+
+data class EventTriggerData(
+  @JsonProperty("trigger_data")
+  @get:JsonProperty("trigger_data")
+  val triggerData: String,
+
+  @JsonProperty("priority")
+  @get:JsonProperty("priority")
+  val priority: String,
+  
+  @JsonProperty("deduplication_key")
+  @get:JsonProperty("deduplication_key")
+  val deduplicationKey: String?,
+  
+  @JsonProperty("filters")
+  @get:JsonProperty("filters")
+  val filters: Map<String, List<String>>?,
+  
+  @JsonProperty("not_filters")
+  @get:JsonProperty("not_filters")
+  val notFilters: Map<String, List<String>>?,
 )

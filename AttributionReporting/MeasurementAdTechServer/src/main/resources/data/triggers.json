@@ -2,11 +2,13 @@
   {
     "conv_id": "1",
     "response_headers": {
-      "Attribution-Reporting-Register-Event-Trigger": [{
-        "trigger_data": "1",
-        "priority": "20",
-        "deduplication_key": "5"
-      }],
+      "Attribution-Reporting-Register-Trigger": {
+        "event_trigger_data": [{
+          "trigger_data": "1",
+          "priority": "20",
+          "deduplication_key": "5"
+        }]
+      },
       "Attribution-Reporting-Redirect": [
         "https://127.0.0.1:8080/trigger?conv_id=2"
       ]
@@ -15,70 +17,78 @@
   {
     "conv_id": "2",
     "response_headers": {
-      "Attribution-Reporting-Register-Event-Trigger": [{
-        "trigger_data": "0",
-        "priority": "21",
-        "deduplication_key": "17"
-      }]
+      "Attribution-Reporting-Register-Trigger": {
+          "event_trigger_data": [{
+          "trigger_data": "0",
+          "priority": "21",
+          "deduplication_key": "17"
+        }]
+      }
     }
   },
   {
     "conv_id": "3",
     "response_headers": {
-      "Attribution-Reporting-Register-Event-Trigger": [{
-        "trigger_data": "0",
-        "priority": "22",
-        "deduplication_key": "12"
-      }]
+      "Attribution-Reporting-Register-Trigger": {
+        "event_trigger_data": [{
+          "trigger_data": "0",
+          "priority": "22",
+          "deduplication_key": "12"
+        }]
+      }
     }
   },
   {
     "conv_id": "4",
     "response_headers": {
-      "Attribution-Reporting-Register-Event-Trigger": [{
-        "trigger_data": "0",
-        "priority": "22",
-        "deduplication_key": "12"
-      }],
-      "Attribution-Reporting-Register-Aggregatable-Trigger-Data": [
-        {
-          "key_piece": "0x400",
-          "source_keys": ["campaignCounts"],
-          "filters": {
-            "product": ["1234"],
-            "ctid": ["id"]
+      "Attribution-Reporting-Register-Trigger": {
+        "event_trigger_data": [{
+          "trigger_data": "0",
+          "priority": "22",
+          "deduplication_key": "12"
+        }],
+        "aggregatable_trigger_data": [
+          {
+            "key_piece": "0x400",
+            "source_keys": ["campaignCounts"],
+            "filters": {
+              "product": ["1234"],
+              "ctid": ["id"]
+            },
+            "not_filters":{
+              "product": ["100"]
+            }
           },
-          "not_filters":{
-            "product": ["100"]
+          {
+            "key_piece": "0xA80",
+            "source_keys": ["geoValue", "nonMatch"]
           }
-        },
-        {
-          "key_piece": "0xA80",
-          "source_keys": ["geoValue", "nonMatch"]
+        ],
+        "aggregatable_values": {
+          "campaignCounts": 32768,
+          "geoValue": 1664
         }
-      ],
-      "Attribution-Reporting-Register-Aggregatable-Values": {
-        "campaignCounts": 32768,
-        "geoValue": 1664
       }
     }
   },
   {
     "conv_id": "5",
     "response_headers": {
-      "Attribution-Reporting-Register-Event-Trigger": [
-        {
-          "trigger_data": "0",
-          "priority": "22",
-          "deduplication_key": "12",
-          "filters": {"source_type": ["navigation"]}
-        },
-        {
-          "trigger_data": "1",
-          "priority": "56",
-          "not_filters": {"event_key_1": ["event_value_x"]}
-        }
-      ]
+      "Attribution-Reporting-Register-Trigger": {
+        "event_trigger_data": [
+          {
+            "trigger_data": "0",
+            "priority": "22",
+            "deduplication_key": "12",
+            "filters": {"source_type": ["navigation"]}
+          },
+          {
+            "trigger_data": "1",
+            "priority": "56",
+            "not_filters": {"event_key_1": ["event_value_x"]}
+          }
+        ]
+      }
     }
   }
 ]

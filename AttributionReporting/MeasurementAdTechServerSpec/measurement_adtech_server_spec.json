@@ -47,13 +47,7 @@
                                 "schema": {
                                     "type": "string"
                                 },
-                                "example": "{\"source_event_id\":\"123001\",\"destination\":\"android-app://com.example.measurement.sampleapp\",\"expiry\":\"1728000\",\"priority\":\"10\",\"filter_data\":{\"conversion_subdomain\":[\"electronics.megastore\"],\"product\":[\"1234\",\"234\"],\"ctid\":[\"id\"],\"event_key_1\":[\"event_value_1\",\"event_value_2\"]}}"
-                            },
-                            "Attribution-Reporting-Register-Aggregatable-Source": {
-                                "schema": {
-                                    "type": "string"
-                                },
-                                "example": "[{\"id\":\"campaignCounts\",\"key_piece\":\"0x159\"},{\"id\":\"geoValue\",\"key_piece\":\"0x5\"}]"
+                                "example": "{\"source_event_id\":\"123001\",\"destination\":\"android-app://com.example.measurement.sampleapp\",\"expiry\":\"1728000\",\"priority\":\"10\",\"filter_data\":{\"conversion_subdomain\":[\"electronics.megastore\"],\"product\":[\"1234\",\"234\"],\"ctid\":[\"id\"],\"event_key_1\":[\"event_value_1\",\"event_value_2\"]},\"aggregation_key\":[{\"id\":\"campaignCounts\",\"key_piece\":\"0x159\"},{\"id\":\"geoValue\",\"key_piece\":\"0x5\"}]}"
                             }
                         }
                     }
@@ -80,23 +74,11 @@
                     "200": {
                         "description": "Sample response",
                         "headers": {
-                            "Attribution-Reporting-Register-Event-Trigger": {
+                            "Attribution-Reporting-Register-Trigger": {
                                 "schema": {
                                     "type": "string"
                                 },
-                                "example": "[{\"trigger_data\":\"1\",\"priority\":\"20\",\"deduplication_key\":\"5\",\"filters\":{\"event_key_1\":[\"event_value_1\"]}},{\"trigger_data\":\"2\",\"priority\":\"25\",\"filters\":{\"event_key_1\":[\"event_value_x\"]},\"not_filters\":{\"source_type\":[\"event\"]}}]"
-                            },
-                            "Attribution-Reporting-Register-Aggregatable-Trigger-Data": {
-                                "schema": {
-                                    "type": "string"
-                                },
-                                "example": "[{\"key_piece\":\"0x400\",\"source_keys\":[\"campaignCounts\"],\"filters\":{\"product\":[\"1234\"],\"ctid\":[\"id\"]},\"not_filters\":{\"product\":[\"100\"]}},{\"key_piece\":\"0xA80\",\"source_keys\":[\"geoValue\",\"nonMatch\"]}]"
-                            },
-                            "Attribution-Reporting-Register-Aggregatable-Values": {
-                                "schema": {
-                                    "type": "string"
-                                },
-                                "example": "{\"campaignCounts\":32768,\"geoValue\":1664}"
+                                "example": "{\"event_trigger_data\": [{\"trigger_data\":\"1\",\"priority\":\"20\",\"deduplication_key\":\"5\",\"filters\":{\"event_key_1\":[\"event_value_1\"]}},{\"trigger_data\":\"2\",\"priority\":\"25\",\"filters\":{\"event_key_1\":[\"event_value_x\"]},\"not_filters\":{\"source_type\":[\"event\"]}}], \"aggregatable_trigger_data\": [{\"key_piece\":\"0x400\",\"source_keys\":[\"campaignCounts\"],\"filters\":{\"product\":[\"1234\"],\"ctid\":[\"id\"]},\"not_filters\":{\"product\":[\"100\"]}},{\"key_piece\":\"0xA80\",\"source_keys\":[\"geoValue\",\"nonMatch\"]}], \"aggregatable_values\": {\"campaignCounts\":32768,\"geoValue\":1664}}"
                             }
                         }
                     }

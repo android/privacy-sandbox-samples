@@ -57,18 +57,18 @@
           "conversion_subdomain": ["electronics.megastore"],
           "product": ["1234", "234"],
           "ctid": ["id"]
-        }
-      },
-      "Attribution-Reporting-Register-Aggregatable-Source": [
-        {
-          "id": "campaignCounts",
-          "key_piece": "0x159"
         },
-        {
-          "id": "geoValue",
-          "key_piece": "0x5"
-        }
-      ],
+        "aggregation_keys": [
+          {
+            "id": "campaignCounts",
+            "key_piece": "0x159"
+          },
+          {
+            "id": "geoValue",
+            "key_piece": "0x5"
+          }
+        ]
+      },
       "Attribution-Reporting-Redirect": []
     },
     "navigation_response_headers": {
@@ -81,18 +81,18 @@
           "conversion_subdomain": ["electronics.megastore"],
           "product": ["1234", "234"],
           "ctid": ["id"]
-        }
-      },
-      "Attribution-Reporting-Register-Aggregatable-Source": [
-        {
-          "id": "campaignCounts",
-          "key_piece": "0x159"
         },
-        {
-          "id": "geoValue",
-          "key_piece": "0x5"
-        }
-      ],
+        "aggregation_keys": [
+          {
+            "id": "campaignCounts",
+            "key_piece": "0x159"
+          },
+          {
+            "id": "geoValue",
+            "key_piece": "0x5"
+          }
+        ]
+      },
       "Attribution-Reporting-Redirect": []
     }
   },

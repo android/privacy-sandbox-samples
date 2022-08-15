@@ -161,10 +161,6 @@ class MainController(
     val headers = HttpHeaders()
     headers.add(SourceResponseHeaders.regKey,
                 ObjectMapper().writeValueAsString(responseHeader.registrationHeader))
-    if (responseHeader.aggregatableRegistrationHeader != null) {
-      headers.add(SourceResponseHeaders.aggRegKey,
-                  ObjectMapper().writeValueAsString(responseHeader.aggregatableRegistrationHeader))
-    }
     responseHeader.attributionReportingRedirect?.forEach { redirect ->
       headers.add(SourceResponseHeaders.redirectKey, redirect)
     }
@@ -188,16 +184,6 @@ class MainController(
     val headers = HttpHeaders()
     headers.add(TriggerResponseHeader.regKey,
                 ObjectMapper().writeValueAsString(trigger.responseHeader.registrationHeader))
-    if (trigger.responseHeader.aggregatableDataRegistrationHeader != null) {
-      headers.add(TriggerResponseHeader.aggDataRegKey,
-                  ObjectMapper().writeValueAsString(
-                              trigger.responseHeader.aggregatableDataRegistrationHeader))
-    }
-    if (trigger.responseHeader.aggregatableValuesRegistrationHeader != null) {
-      headers.add(TriggerResponseHeader.aggValuesRegKey,
-                  ObjectMapper().writeValueAsString(
-                              trigger.responseHeader.aggregatableValuesRegistrationHeader))
-    }
     trigger.responseHeader.attributionReportingRedirect?.forEach { redirect ->
       headers.add(TriggerResponseHeader.redirectKey, redirect)
     }
