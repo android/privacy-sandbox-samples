@@ -15,6 +15,7 @@
     package="com.example.measurement.sampleapp">
 
   <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" />
 
   <application
       android:allowBackup="true"
