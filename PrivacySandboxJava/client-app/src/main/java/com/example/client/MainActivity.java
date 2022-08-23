@@ -15,15 +15,25 @@
  */
 package com.example.client;
 
+import static android.app.sdksandbox.SdkSandboxManager.EXTRA_DISPLAY_ID;
+import static android.app.sdksandbox.SdkSandboxManager.EXTRA_HEIGHT_IN_PIXELS;
+import static android.app.sdksandbox.SdkSandboxManager.EXTRA_HOST_TOKEN;
+import static android.app.sdksandbox.SdkSandboxManager.EXTRA_SURFACE_PACKAGE;
+import static android.app.sdksandbox.SdkSandboxManager.EXTRA_WIDTH_IN_PIXELS;
+
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.sdksandbox.LoadSdkException;
+import android.app.sdksandbox.RequestSurfacePackageException;
+import android.app.sdksandbox.SandboxedSdk;
 import android.app.sdksandbox.SdkSandboxManager;
-import android.app.sdksandbox.SdkSandboxManager.LoadSdkCallback;
-import android.app.sdksandbox.SdkSandboxManager.RequestSurfacePackageCallback;
-import android.app.sdksandbox.SdkSandboxManager.SendDataCallback;
+import android.app.sdksandbox.SdkSandboxManager.SdkSandboxLifecycleCallback;
+import android.app.sdksandbox.SendDataException;
+import android.app.sdksandbox.SendDataResponse;
 import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.OutcomeReceiver;
 import android.text.InputType;
 import android.util.Log;
 import android.view.SurfaceControlViewHost.SurfacePackage;
@@ -99,6 +109,10 @@ public class MainActivity extends AppCompatActivity {
     @RequiresApi(api = 33)
     private void registerLoadCodeProviderButton() {
         mLoadSdkButton.setOnClickListener(v -> {
+          // Register for sandbox death event.
+          mSdkSandboxManager.addSdkSandboxLifecycleCallback(
+              Runnable::run, new SdkSandboxLifecycleCallbackImpl());
+
           log("Attempting to load sandbox SDK");
           final LoadSdkCallbackImpl callback = new LoadSdkCallbackImpl();
           mSdkSandboxManager.loadSdk(
@@ -116,13 +130,16 @@ public class MainActivity extends AppCompatActivity {
             makeToast("Please load the SDK first!");
             return;
           }
+
           log("Getting SurfacePackage.");
           new Handler(Looper.getMainLooper()).post(() -> {
-            Bundle bundle = new Bundle();
+            Bundle params = new Bundle();
+              params.putInt(EXTRA_WIDTH_IN_PIXELS, mClientView.getWidth());
+              params.putInt(EXTRA_HEIGHT_IN_PIXELS, mClientView.getHeight());
+              params.putInt(EXTRA_DISPLAY_ID, getDisplay().getDisplayId());
+              params.putBinder(EXTRA_HOST_TOKEN, mClientView.getHostToken());
             mSdkSandboxManager.requestSurfacePackage(
-                SDK_NAME, getDisplay().getDisplayId(),
-                mClientView.getWidth(), mClientView.getHeight(), bundle,
-                Runnable::run, new RequestSurfacePackageCallbackImpl());
+                SDK_NAME, params, Runnable::run, new RequestSurfacePackageCallbackImpl());
               });
         });
     }
@@ -163,15 +180,17 @@ public class MainActivity extends AppCompatActivity {
                     params.putString("method", "createFile");
                     params.putInt("sizeInMb", sizeInMb);
                     mSdkSandboxManager.sendData(SDK_NAME, params, Runnable::run,
-                        new SendDataCallback() {
+                        new OutcomeReceiver<SendDataResponse, SendDataException>() {
                             @Override
-                            public void onSendDataSuccess(Bundle params) {
-                                makeToast(params.getString("message", "Something went wrong"));
+                            public void onResult(SendDataResponse response) {
+                                makeToast(response
+                                            .getExtraInformation()
+                                            .getString("message", "Something went wrong"));
                             }
 
                             @Override
-                            public void onSendDataError(int errorCode, String errorMessage) {
-                                makeToast("File creation failed: " + errorMessage);
+                            public void onError(SendDataException error) {
+                                makeToast("File creation failed: " + error.getMessage());
                             }
                         });
                 }
@@ -190,36 +209,57 @@ public class MainActivity extends AppCompatActivity {
      * A callback for tracking events regarding loading of an SDK.
      */
     @RequiresApi(api = 33)
-    private class LoadSdkCallbackImpl implements LoadSdkCallback {
-        private LoadSdkCallbackImpl() {}
-
+    private class LoadSdkCallbackImpl implements OutcomeReceiver<SandboxedSdk, LoadSdkException> {
         /**
          * This notifies client application that the requested SDK is successfully loaded.
          *
-         * @param params list of params returned from Sdk to the App.
+         * @param sandboxedSdk a {@link SandboxedSdk} is returned from the sandbox to the app.
          */
         @SuppressLint("Override")
         @Override
-        public void onLoadSdkSuccess(Bundle params) {
-            log("onLoadSdkSuccess: " + params);
+        public void onResult(SandboxedSdk sandboxedSdk) {
+            log("SDK is loaded");
             makeToast("Loaded successfully!");
             mSdkLoaded = true;
+
             // Send some data to the SDK if needed.
             mSdkSandboxManager.sendData(SDK_NAME, new Bundle(), Runnable::run,
                 new SendDataCallbackImpl());
         }
 
         /**
-         * This notifies client application that the requested Sdk is failed to be loaded.
+         * This notifies client application that the requested Sdk failed to be loaded.
          *
-         * @param errorCode int code for the error
-         * @param errorMessage a String description of the error
+         * @param error a {@link LoadSdkException} containing the details of failing to load the
+         *              SDK.
          */
         @SuppressLint("Override")
         @Override
-        public void onLoadSdkFailure(int errorCode, String errorMessage) {
-            log("onLoadSdkFailure(" + errorCode + "): " + errorMessage);
-            makeToast("Load SDK Failed!" + errorMessage);
+        public void onError(LoadSdkException error) {
+            log("onLoadSdkFailure(" + error.getLoadSdkErrorCode() + "): " + error.getMessage());
+            makeToast("Load SDK Failed! " + error.getMessage());
+        }
+    }
+
+    /**
+     * A callback for tracking Sdk Sandbox lifecycle events.
+     */
+    @RequiresApi(api = 33)
+    private class SdkSandboxLifecycleCallbackImpl implements SdkSandboxLifecycleCallback {
+        /**
+         * Notifies the client application that the SDK sandbox has died. The sandbox could die for
+         * various reasons, for example, due to memory pressure on the system, or a crash in the
+         * sandbox.
+         *
+         * The system will automatically restart the sandbox process if it died due to a crash.
+         * However, the state of the sandbox will be lost - so any SDKs that were loaded previously
+         * would have to be loaded again, using {@link SdkSandboxManager#loadSdk(String, Bundle,
+         * Executor, OutcomeReceiver)} to continue using them.
+         */
+        @SuppressLint("Override")
+        @Override
+        public void onSdkSandboxDied() {
+            makeToast("Sdk Sandbox process died");
         }
     }
 
@@ -227,25 +267,24 @@ public class MainActivity extends AppCompatActivity {
      * A callback for tracking a request for a surface package from an SDK.
      */
     @RequiresApi(api = 33)
-    private class RequestSurfacePackageCallbackImpl implements RequestSurfacePackageCallback {
+    private class RequestSurfacePackageCallbackImpl
+                implements OutcomeReceiver<Bundle, RequestSurfacePackageException> {
         /**
          * This notifies client application that {@link SurfacePackage}
          * is ready to remote render view from the SDK.
          *
-         * @param surfacePackage the requested surface package by
-         *            {@link SdkSandboxManager#requestSurfacePackage(String, int, int, int, Bundle,
-         *                                              Executor, RequestSurfacePackageCallback)}
-         * @param surfacePackageId a unique id for the {@link SurfacePackage} {@code surfacePackage}
-         * @param params list of params returned from Sdk to the App.
+         * @param response a {@link Bundle} which should contain the key EXTRA_SURFACE_PACKAGE with
+         * a value of {@link SurfacePackage} response.
          */
         @SuppressLint("Override")
         @Override
-        public void onSurfacePackageReady(SurfacePackage surfacePackage,
-            int surfacePackageId, Bundle params) {
-            log("Surface package ready: " + params);
+        public void onResult(Bundle response) {
+            log("Surface package ready");
             makeToast("Surface Package Rendered!");
             new Handler(Looper.getMainLooper()).post(() -> {
                 log("Setting surface package in the client view");
+                SurfacePackage surfacePackage = response.getParcelable(
+                    EXTRA_SURFACE_PACKAGE, SurfacePackage.class);
                 mClientView.setChildSurfacePackage(surfacePackage);
                 mClientView.setVisibility(View.VISIBLE);
             });
@@ -254,14 +293,15 @@ public class MainActivity extends AppCompatActivity {
         /**
          * This notifies client application that requesting {@link SurfacePackage} has failed.
          *
-         * @param errorCode int code for the error
-         * @param errorMessage a String description of the error
+         * @param error a {@link RequestSurfacePackageException} containing the details of failing
+         *              to request the surface package.
          */
         @SuppressLint("Override")
         @Override
-        public void onSurfacePackageError(int errorCode, String errorMessage) {
-            log("onSurfacePackageError" + errorCode + "): " + errorMessage);
-            makeToast("Surface Package Failed!" + errorMessage);
+        public void onError(RequestSurfacePackageException error) {
+            log("onSurfacePackageError" + error.getRequestSurfacePackageErrorCode() + "): "
+                + error.getMessage());
+            makeToast("Surface Package Failed! " + error.getMessage());
         }
     }
 
@@ -269,33 +309,33 @@ public class MainActivity extends AppCompatActivity {
      * A callback for tracking sending of data to an SDK.
      */
     @RequiresApi(api = 33)
-    private class SendDataCallbackImpl implements SendDataCallback {
-        private SendDataCallbackImpl() {}
-
+    private class SendDataCallbackImpl
+                implements OutcomeReceiver<SendDataResponse, SendDataException> {
         /**
          * This notifies the client application that sending data to the SDK has completed
          * successfully.
          *
-         * @param params list of params returned from Sdk to the App.
+         * @param response a {@link SendDataResponse} containing a bundle of data returned from the
+         *                 SDK to the App.
          */
         @SuppressLint("Override")
         @Override
-        public void onSendDataSuccess(Bundle params) {
-            log("onSendDataSuccess: " + params);
+        public void onResult(SendDataResponse response) {
+            log("onSendDataSuccess: " + response.getExtraInformation());
             makeToast("Sent data successfully!");
         }
 
         /**
          * This notifies client application that sending data to an SDK has failed.
          *
-         * @param errorCode int code for the error
-         * @param errorMessage a String description of the error
+         * @param error a {@link SendDataException} containing the details of failing to send data
+         *              to the SDK.
          */
         @SuppressLint("Override")
         @Override
-        public void onSendDataError(int errorCode, String errorMessage) {
-            log("onSendDataError(" + errorCode + "): " + errorMessage);
-            makeToast("Send data to SDK failed!" + errorMessage);
+        public void onError(SendDataException error) {
+            log("onSendDataError(" + error.getSendDataErrorCode() + "): " + error.getMessage());
+            makeToast("Send data to SDK failed!" + error.getMessage());
         }
     }
 

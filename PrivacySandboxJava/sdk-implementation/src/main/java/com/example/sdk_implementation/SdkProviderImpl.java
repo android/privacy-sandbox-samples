@@ -16,9 +16,10 @@
 package com.example.sdk_implementation;
 
 import android.annotation.SuppressLint;
-import android.app.sdksandbox.SandboxedSdkContext;
+import android.app.sdksandbox.SandboxedSdk;
 import android.app.sdksandbox.SandboxedSdkProvider;
 import android.content.Context;
+import android.os.Binder;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.WebView;
@@ -38,19 +39,15 @@ import java.util.concurrent.Executor;
 @SuppressLint("NewApi")
 public class SdkProviderImpl extends SandboxedSdkProvider {
 
-  SandboxedSdkContext mContext;
-
   @SuppressLint("Override")
   @Override
-  public void initSdk(SandboxedSdkContext sandboxedSdkContext, Bundle params,
-      Executor executor, InitSdkCallback initSdkCallback) {
-      mContext = sandboxedSdkContext;
-      executor.execute(() -> initSdkCallback.onInitSdkFinished(new Bundle()));
+  public SandboxedSdk onLoadSdk(Bundle params) {
+    return new SandboxedSdk(new Binder());
   }
 
   @SuppressLint("Override")
   @Override
-  public View getView(Context windowContext, Bundle bundle) {
+  public View getView(Context windowContext, Bundle bundle, int width, int height) {
     WebView webView = new WebView(windowContext);
     webView.loadUrl("https://developer.android.com/privacy-sandbox");
     return webView;
@@ -58,8 +55,7 @@ public class SdkProviderImpl extends SandboxedSdkProvider {
 
   @SuppressLint("Override")
   @Override
-  public void onDataReceived(@NonNull Bundle bundle,
-      DataReceivedCallback dataReceivedCallback) {
+  public void onDataReceived(Bundle bundle, DataReceivedCallback dataReceivedCallback) {
     if (bundle.isEmpty()) {
        dataReceivedCallback.onDataReceivedSuccess(new Bundle());
        return;
@@ -82,7 +78,8 @@ public class SdkProviderImpl extends SandboxedSdkProvider {
   }
 
   private Bundle createFile(int sizeInMb) throws IOException {
-    final Path path = Paths.get(mContext.getDataDir().getPath(), "file.txt");
+    final Path path = Paths.get(
+        getContext().getApplicationContext().getDataDir().getPath(), "file.txt");
     Files.deleteIfExists(path);
     Files.createFile(path);
     try (RandomAccessFile file = new RandomAccessFile(path.toString(), "rw")){

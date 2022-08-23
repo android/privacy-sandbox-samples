@@ -16,8 +16,9 @@
 package com.example.sdk_implementation;
 
 import android.annotation.SuppressLint
+import android.app.sdksandbox.SandboxedSdk
 import android.app.sdksandbox.SandboxedSdkProvider
-import android.app.sdksandbox.SandboxedSdkContext
+import android.os.Binder
 import android.os.Bundle
 import android.content.Context
 import android.view.View
@@ -37,19 +38,13 @@ import java.util.concurrent.Executor
 @SuppressLint("NewApi")
 class SdkProviderImpl : SandboxedSdkProvider() {
 
-    private lateinit var mContext: SandboxedSdkContext
-
     @SuppressLint("Override")
-    override fun initSdk(
-        sandboxedSdkContext: SandboxedSdkContext, params: Bundle,
-        executor: Executor, initSdkCallback: InitSdkCallback
-    ) {
-        mContext = sandboxedSdkContext
-        executor.execute { initSdkCallback.onInitSdkFinished(Bundle()) }
+    override fun onLoadSdk(params: Bundle): SandboxedSdk {
+        return SandboxedSdk(Binder())
     }
 
     @SuppressLint("Override")
-    override fun getView(windowContext: Context, bundle: Bundle): View {
+    override fun getView(windowContext: Context, bundle: Bundle, width: Int, height: Int): View {
         val webView = WebView(windowContext)
         webView.loadUrl("https://developer.android.com/privacy-sandbox")
         return webView
@@ -80,7 +75,7 @@ class SdkProviderImpl : SandboxedSdkProvider() {
 
     @Throws(IOException::class)
     private fun createFile(sizeInMb: Int): Bundle {
-        val path: Path = Paths.get(mContext.getDataDir()?.getPath(), "file.txt")
+        val path: Path = Paths.get(getContext()?.getApplicationContext()?.getDataDir()?.getPath(), "file.txt")
         Files.deleteIfExists(path)
         Files.createFile(path)
         RandomAccessFile(path.toString(), "rw").use { file -> file.setLength(sizeInMb * 1024L * 1024L) }
