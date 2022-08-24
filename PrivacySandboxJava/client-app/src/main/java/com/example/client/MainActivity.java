@@ -32,8 +32,10 @@ import android.app.sdksandbox.SendDataException;
 import android.app.sdksandbox.SendDataResponse;
 import android.content.DialogInterface;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.OutcomeReceiver;
+import android.os.RemoteException;
 import android.text.InputType;
 import android.util.Log;
 import android.view.SurfaceControlViewHost.SurfacePackage;
@@ -47,6 +49,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
+import com.example.myaidllibrary.ISdkApi;
 import com.example.privacysandbox.client.R;
 import java.util.concurrent.Executor;
 
@@ -222,7 +225,17 @@ public class MainActivity extends AppCompatActivity {
             makeToast("Loaded successfully!");
             mSdkLoaded = true;
 
-            // Send some data to the SDK if needed.
+            IBinder binder = sandboxedSdk.getInterface();
+            ISdkApi sdkApi = ISdkApi.Stub.asInterface(binder);
+
+            // Send some message to the SDK if needed.
+            try {
+                sdkApi.sayHello("Hi! The binder was successfully received.");
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+
+            // Send some data to the SDK if needed. This will soon be deprecated.
             mSdkSandboxManager.sendData(SDK_NAME, new Bundle(), Runnable::run,
                 new SendDataCallbackImpl());
         }

@@ -42,7 +42,7 @@ public class SdkProviderImpl extends SandboxedSdkProvider {
   @SuppressLint("Override")
   @Override
   public SandboxedSdk onLoadSdk(Bundle params) {
-    return new SandboxedSdk(new Binder());
+    return new SandboxedSdk(new SdkApi());
   }
 
   @SuppressLint("Override")
