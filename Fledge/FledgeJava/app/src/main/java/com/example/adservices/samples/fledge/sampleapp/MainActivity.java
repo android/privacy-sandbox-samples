@@ -15,6 +15,8 @@
  */
 package com.example.adservices.samples.fledge.sampleapp;
 
+import android.adservices.common.AdSelectionSignals;
+import android.adservices.common.AdTechIdentifier;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -42,28 +44,29 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = "FledgeSample";
 
     // The sample buyer and seller for the custom audiences
-    private static final String BUYER = "sample-buyer.com";
-    private static final String SELLER = "sample-seller.com";
+    // private static final AdTechIdentifier BUYER = AdTechIdentifier.fromString("samplebuyer.com");
+    // private static final AdTechIdentifier SELLER = AdTechIdentifier.fromString("sampleseller.com");
 
     // Set override URIs
-    private static final String BIDDING_LOGIC_OVERRIDE_URI = "https://sample-buyer.com/bidding";
-    private static final String SCORING_LOGIC_OVERRIDE_URI = "https://sample-seller.com/scoring/js";
-    private static final String TRUSTED_SCORING_OVERRIDE_URI = "https://sample-seller.com/scoring/trusted";
+    private static final String BIDDING_LOGIC_OVERRIDE_URI = "https://sample-abcbuyer.com/bidding";
+    private static final String SCORING_LOGIC_OVERRIDE_URI = "https://sample-abcseller.com/scoring/js";
+    private static final String TRUSTED_SCORING_OVERRIDE_URI = "https://sample-abcseller.com/scoring/trusted";
+    private static final String REPORTING_OVERRIDE_URI = "example.com";
 
     // JSON string objects that will be used during ad selection
-    private static final String TRUSTED_SCORING_SIGNALS =
+    private static final AdSelectionSignals TRUSTED_SCORING_SIGNALS = AdSelectionSignals.fromString(
         "{\n"
             + "\t\"render_uri_1\": \"signals_for_1\",\n"
             + "\t\"render_uri_2\": \"signals_for_2\"\n"
-            + "}";
-    private static final String TRUSTED_BIDDING_SIGNALS =
+            + "}");
+    private static final AdSelectionSignals TRUSTED_BIDDING_SIGNALS = AdSelectionSignals.fromString(
         "{\n"
             + "\t\"example\": \"example\",\n"
             + "\t\"valid\": \"Also valid\",\n"
             + "\t\"list\": \"list\",\n"
             + "\t\"of\": \"of\",\n"
             + "\t\"keys\": \"trusted bidding signal Values\"\n"
-            + "}";
+            + "}");
 
     // JS files
     private static final String BIDDING_LOGIC_FILE = "BiddingLogic.js";
@@ -89,6 +92,12 @@ public class MainActivity extends AppCompatActivity {
         "restart the activity using the directions in the README. You may still use the dev overrides "
         + "without restarting.";
 
+    private Uri mBiddingLogicUri;
+    private Uri mScoringLogicUri;
+    private Uri mTrustedDataUri;
+    private AdTechIdentifier mBuyer;
+    private AdTechIdentifier mSeller;
+
     /**
      * Does the initial setup for the app. This includes reading the Javascript server URIs from the
      * start intent, creating the ad selection and custom audience wrappers to wrap the APIs, and
@@ -105,51 +114,58 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             // Set override URIS since overrides are on by default
-            Uri biddingLogicUri = Uri.parse(BIDDING_LOGIC_OVERRIDE_URI);
-            Uri scoringLogicUri = Uri.parse(SCORING_LOGIC_OVERRIDE_URI);
-            Uri trustedScoringUri = Uri.parse(TRUSTED_SCORING_OVERRIDE_URI);
+            mBiddingLogicUri = Uri.parse(BIDDING_LOGIC_OVERRIDE_URI);
+            mScoringLogicUri = Uri.parse(SCORING_LOGIC_OVERRIDE_URI);
+            mTrustedDataUri = Uri.parse(TRUSTED_SCORING_OVERRIDE_URI);
+            mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
+            mSeller = resolveAdTechIdentifier(mScoringLogicUri);
 
             // Get override reporting URI
-            String reportingUri = getIntentOrError("reportingUrl", eventLog,
-                MISSING_FIELD_STRING_FORMAT_RESTART_APP);
+            String reportingUri = getIntentOrDefault("reportingUrl", REPORTING_OVERRIDE_URI);
 
             // Replace override URIs in JS
             String overrideDecisionJS = replaceReportingURI(assetFileToString(DECISION_LOGIC_FILE), reportingUri);
             String overrideBiddingJs = replaceReportingURI(assetFileToString(BIDDING_LOGIC_FILE), reportingUri);
 
             // Set up ad selection
-            AdSelectionWrapper adWrapper = new AdSelectionWrapper(Collections.singletonList(BUYER),
-                SELLER, scoringLogicUri, trustedScoringUri, context, EXECUTOR);
+            AdSelectionWrapper adWrapper = new AdSelectionWrapper(
+                Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri, context, EXECUTOR);
             binding.runAdsButton.setOnClickListener(v ->
                 adWrapper.runAdSelection(eventLog::writeEvent, binding.adSpace::setText));
 
             // Set up Custom Audience Wrapper(CAs)
-            String owner = context.getPackageName();
-            CustomAudienceWrapper caWrapper = new CustomAudienceWrapper(owner, BUYER, context, EXECUTOR);
+            CustomAudienceWrapper caWrapper = new CustomAudienceWrapper(context, EXECUTOR);
 
             // Set up CA buttons
-            setupJoinCAButtons(caWrapper, eventLog, binding, biddingLogicUri);
-            setupLeaveCAButtons(caWrapper, eventLog, binding);
+            setupJoinCAButtons(caWrapper, eventLog, binding, mBiddingLogicUri, context);
+            setupLeaveCAButtons(caWrapper, eventLog, binding, mBiddingLogicUri, context);
 
             // Set up remote overrides by default
-            useOverrides(eventLog,adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs,TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS);
+            useOverrides(eventLog,adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs,TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context);
 
             // Set up Override Switch
             binding.overrideSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     if (isChecked) {
-                        useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS);
+                        useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context);
                     } else {
                         try {
-                            Uri biddingLogicUri = Uri.parse(getIntentOrError("biddingUrl", eventLog,
-                                MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
-                            Uri scoringLogicUri = Uri.parse(getIntentOrError("scoringUrl", eventLog,
-                                MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
+                            mBiddingLogicUri = Uri.parse(getIntentOrError("biddingUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
+                            mScoringLogicUri = Uri.parse(getIntentOrError("scoringUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
+                            mTrustedDataUri = Uri.parse(getIntentOrDefault("trustedScoringUrl", mBiddingLogicUri + "/trusted"));
+                            mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
+                            mSeller = resolveAdTechIdentifier(mScoringLogicUri);
+
                             // Set with new scoring uri
-                            adWrapper.resetAdSelectionConfig(scoringLogicUri);
+                            adWrapper.resetAdSelectionConfig(Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri);
+
+                            // // Leave CAs
+                            // caWrapper.leaveCa(SHOES_NAME, eventLog::writeEvent);
+                            // caWrapper.leaveCa(SHIRTS_NAME, eventLog::writeEvent);
 
                             // Reset join custom audience buttons as they rely on different biddingLogicUri
-                            setupJoinCAButtons(caWrapper, eventLog, binding, biddingLogicUri);
+                            setupJoinCAButtons(caWrapper, eventLog, binding, mBiddingLogicUri, context);
+                            setupLeaveCAButtons(caWrapper, eventLog, binding, mBiddingLogicUri, context);
 
                             resetOverrides(eventLog, adWrapper, caWrapper);
                         } catch (Exception e) {
@@ -164,26 +180,28 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setupJoinCAButtons(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding, Uri biddingUri) {
+    private void setupJoinCAButtons(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding, Uri biddingUri, Context context) {
         binding.joinShoesButton.setOnClickListener(v ->
-            caWrapper.joinCa(SHOES_NAME, biddingUri, SHOES_RENDER_URI,
+            caWrapper.joinCa(SHOES_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri, Uri.parse(biddingUri + "/render"), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
                 eventLog::writeEvent));
         binding.joinShirtsButton.setOnClickListener(v ->
-            caWrapper.joinCa(SHIRTS_NAME, biddingUri, SHIRTS_RENDER_URI,
+            caWrapper.joinCa(SHIRTS_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri, Uri.parse(biddingUri + "/render"), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
                 eventLog::writeEvent));
     }
 
-    private void setupLeaveCAButtons(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding) {
+    private void setupLeaveCAButtons(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding, Uri biddingUri, Context context) {
         binding.leaveShoesButton.setOnClickListener(v ->
-            caWrapper.leaveCa(SHOES_NAME, eventLog::writeEvent));
+            caWrapper.leaveCa(SHOES_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent));
         binding.leaveShirtsButton.setOnClickListener(v ->
-            caWrapper.leaveCa(SHIRTS_NAME, eventLog::writeEvent));
+            caWrapper.leaveCa(SHIRTS_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent));
     }
 
-    private void useOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper, CustomAudienceWrapper customAudienceWrapper, String decisionLogicJs, String biddingLogicJs, String trustedScoringSignals, String trustedBiddingSignals) {
+    private void useOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper,
+        CustomAudienceWrapper customAudienceWrapper, String decisionLogicJs, String biddingLogicJs,
+        AdSelectionSignals trustedScoringSignals, AdSelectionSignals trustedBiddingSignals, Uri biddingUri, Context context) {
         adSelectionWrapper.overrideAdSelection(eventLog::writeEvent,decisionLogicJs, trustedScoringSignals);
-        customAudienceWrapper.addCAOverride(SHOES_NAME,biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
-        customAudienceWrapper.addCAOverride(SHIRTS_NAME,biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(SHOES_NAME,context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(SHIRTS_NAME,context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
     }
 
     private void resetOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper, CustomAudienceWrapper customAudienceWrapper) {
@@ -213,6 +231,29 @@ public class MainActivity extends AppCompatActivity {
             throw new RuntimeException(message);
         }
         return toReturn;
+    }
+
+    /**
+     * Gets a given intent extra or returns the given default value
+     * @param intent The intent to get
+     * @param defaultValue The default value to return if intent doesn't exist
+     */
+    private String getIntentOrDefault(String intent, String defaultValue) {
+        String toReturn = getIntent().getStringExtra(intent);
+        if (toReturn == null) {
+            String message = String.format("No value for %s, defaulting to %s", intent, defaultValue);
+            Log.w(TAG, message);
+            toReturn = defaultValue;
+        }
+        return toReturn;
+    }
+
+    /**
+     * Resolve the host of the given URI and returns an {@code AdTechIdentifier} object
+     * @param uri Uri to resolve
+     */
+    private AdTechIdentifier resolveAdTechIdentifier(Uri uri) {
+        return AdTechIdentifier.fromString(uri.getHost());
     }
 
     /**

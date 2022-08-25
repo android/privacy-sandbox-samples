@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.example.adservices.samples.fledge.clients;
 
 
 import android.adservices.adselection.AdSelectionConfig;
 import android.adservices.adselection.AdSelectionManager;
 import android.adservices.adselection.AdSelectionOutcome;
-import android.adservices.adselection.AddAdSelectionOverrideRequest;
 import android.adservices.adselection.ReportImpressionRequest;
-import android.adservices.exceptions.AdServicesException;
 import android.content.Context;
 import android.os.OutcomeReceiver;
 
@@ -49,32 +48,37 @@ public class AdSelectionClient {
   }
 
   /**
-   * Invokes the {@code runAdSelection} method of {@link AdSelectionManager}, and returns a future
-   * with {@link AdSelectionOutcome} if succeeds, or an {@link AdServicesException} if fails.
+   * Invokes the {@code selectAds} method of {@link AdSelectionManager}, and returns a future with
+   * {@link AdSelectionOutcome} if succeeds, or an {@link Exception} if fails.
    */
   @NonNull
-  public ListenableFuture<AdSelectionOutcome> runAdSelection(
+  public ListenableFuture<AdSelectionOutcome> selectAds(
       @NonNull AdSelectionConfig adSelectionConfig) {
     return CallbackToFutureAdapter.getFuture(
         completer -> {
-          mAdSelectionManager.runAdSelection(
+          mAdSelectionManager.selectAds(
               adSelectionConfig,
               mExecutor,
-              new OutcomeReceiver<AdSelectionOutcome, AdServicesException>() {
+              new OutcomeReceiver<AdSelectionOutcome, Exception>() {
 
                 @Override
                 public void onResult(@NonNull AdSelectionOutcome result) {
-                  completer.set(result);
+                  completer.set(
+                      new AdSelectionOutcome.Builder()
+                          .setAdSelectionId(result.getAdSelectionId())
+                          .setRenderUri(result.getRenderUri())
+                          .build());
                 }
 
                 @Override
-                public void onError(@NonNull AdServicesException error) {
+                public void onError(@NonNull Exception error) {
                   completer.setException(error);
                 }
               });
           return "Ad Selection";
         });
   }
+
 
   /**
    * Invokes the {@code reportImpression} method of {@link AdSelectionManager}, and returns a Void
@@ -88,68 +92,18 @@ public class AdSelectionClient {
           mAdSelectionManager.reportImpression(
               input,
               mExecutor,
-              new OutcomeReceiver<Void, AdServicesException>() {
+              new OutcomeReceiver<Object, Exception>() {
                 @Override
-                public void onResult(@NonNull Void result) {
-                  completer.set(result);
+                public void onResult(@NonNull Object ignoredResult) {
+                  completer.set(null);
                 }
 
                 @Override
-                public void onError(@NonNull AdServicesException error) {
+                public void onError(@NonNull Exception error) {
                   completer.setException(error);
                 }
               });
           return "reportImpression";
-        });
-  }
-
-  /**
-   * Overrides remote info for a given {@code AdSelectionConfig}
-   */
-  @NonNull
-  public ListenableFuture<Void> overrideAdSelectionConfigRemoteInfo(
-      @NonNull AddAdSelectionOverrideRequest request) {
-    return CallbackToFutureAdapter.getFuture(
-        completer -> {
-          mAdSelectionManager.overrideAdSelectionConfigRemoteInfo(
-              request,
-              mExecutor,
-              new OutcomeReceiver<Void, AdServicesException>() {
-                @Override
-                public void onResult(Void result) {
-                  completer.set(result);
-                }
-
-                @Override
-                public void onError(@NonNull AdServicesException error) {
-                  completer.setException(error);
-                }
-              });
-          return "overrideAdSelectionConfigRemoteInfo";
-        });
-  }
-
-  /**
-   * Resets all ad selection config overrides.
-   */
-  @NonNull
-  public ListenableFuture<Void> resetAllAdSelectionConfigRemoteOverrides() {
-    return CallbackToFutureAdapter.getFuture(
-        completer -> {
-          mAdSelectionManager.resetAllAdSelectionConfigRemoteOverrides(
-              mExecutor,
-              new OutcomeReceiver<Void, AdServicesException>() {
-                @Override
-                public void onResult(Void result) {
-                  completer.set(result);
-                }
-
-                @Override
-                public void onError(@NonNull AdServicesException error) {
-                  completer.setException(error);
-                }
-              });
-          return "resetAllAdSelectionConfigRemoteOverrides";
         });
   }
 

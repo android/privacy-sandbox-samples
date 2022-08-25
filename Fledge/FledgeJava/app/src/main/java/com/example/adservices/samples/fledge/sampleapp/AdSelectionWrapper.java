@@ -19,15 +19,19 @@ import android.adservices.adselection.AdSelectionConfig;
 import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.adselection.AddAdSelectionOverrideRequest;
 import android.adservices.adselection.ReportImpressionRequest;
+import android.adservices.common.AdSelectionSignals;
+import android.adservices.common.AdTechIdentifier;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import com.example.adservices.samples.fledge.clients.AdSelectionClient;
+import com.example.adservices.samples.fledge.clients.TestAdSelectionClient;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -44,6 +48,7 @@ public class AdSelectionWrapper {
 
   private AdSelectionConfig mAdSelectionConfig;
   private final AdSelectionClient mAdClient;
+  private final TestAdSelectionClient mOverrideClient;
   private final Executor mExecutor;
 
   /**
@@ -55,21 +60,21 @@ public class AdSelectionWrapper {
    * @param context The application context.
    * @param executor An executor to use with the FLEDGE API calls.
    */
-  public AdSelectionWrapper(List<String> buyers, String seller, Uri decisionUri, Uri trustedDataUri, Context context,
+  public AdSelectionWrapper(List<AdTechIdentifier> buyers, AdTechIdentifier seller, Uri decisionUri, Uri trustedDataUri, Context context,
       Executor executor) {
 
     mAdSelectionConfig = new AdSelectionConfig.Builder()
         .setSeller(seller)
         .setDecisionLogicUri(decisionUri)
         .setCustomAudienceBuyers(buyers)
-        .setAdSelectionSignals(new JSONObject().toString())
-        .setSellerSignals(new JSONObject().toString())
+        .setAdSelectionSignals(AdSelectionSignals.EMPTY)
+        .setSellerSignals(AdSelectionSignals.EMPTY)
         .setPerBuyerSignals(buyers.stream()
-            .collect(Collectors.toMap(buyer -> buyer, buyer -> new JSONObject().toString())))
-        .setContextualAds(new ArrayList<>())
+            .collect(Collectors.toMap(buyer -> buyer, buyer -> AdSelectionSignals.EMPTY)))
         .setTrustedScoringSignalsUri(trustedDataUri)
         .build();
     mAdClient = new AdSelectionClient.Builder().setContext(context).setExecutor(executor).build();
+    mOverrideClient = new TestAdSelectionClient.Builder().setContext(context).setExecutor(executor).build();
     mExecutor = executor;
   }
 
@@ -79,15 +84,16 @@ public class AdSelectionWrapper {
    *
    * @param decisionUri the new {@code Uri} to be used
    */
-  public void resetAdSelectionConfig(Uri decisionUri) {
+  public void resetAdSelectionConfig(List<AdTechIdentifier> buyers, AdTechIdentifier seller,  Uri decisionUri, Uri trustedScoringUri) {
     mAdSelectionConfig = new AdSelectionConfig.Builder()
-        .setSeller(mAdSelectionConfig.getSeller())
+        .setSeller(seller)
         .setDecisionLogicUri(decisionUri)
-        .setCustomAudienceBuyers(mAdSelectionConfig.getCustomAudienceBuyers())
-        .setAdSelectionSignals(new JSONObject().toString())
-        .setSellerSignals(new JSONObject().toString())
-        .setPerBuyerSignals(mAdSelectionConfig.getPerBuyerSignals())
-        .setContextualAds(new ArrayList<>())
+        .setCustomAudienceBuyers(buyers)
+        .setAdSelectionSignals(AdSelectionSignals.EMPTY)
+        .setSellerSignals(AdSelectionSignals.EMPTY)
+        .setPerBuyerSignals(buyers.stream()
+            .collect(Collectors.toMap(buyer -> buyer, buyer -> AdSelectionSignals.EMPTY)))
+        .setTrustedScoringSignalsUri(trustedScoringUri)
         .build();
   }
 
@@ -102,7 +108,7 @@ public class AdSelectionWrapper {
    */
   public void runAdSelection(Consumer<String> statusReceiver, Consumer<String> renderUriReceiver) {
     try {
-      Futures.addCallback(mAdClient.runAdSelection(mAdSelectionConfig),
+      Futures.addCallback(mAdClient.selectAds(mAdSelectionConfig),
           new FutureCallback<AdSelectionOutcome>() {
             public void onSuccess(AdSelectionOutcome adSelectionOutcome) {
               statusReceiver.accept("Ran ad selection");
@@ -133,10 +139,7 @@ public class AdSelectionWrapper {
    * with a string describing how the auction and reporting went.
    */
   private void reportImpression(long adSelectionId, AdSelectionConfig config, Consumer<String> statusReceiver) {
-    ReportImpressionRequest request = new ReportImpressionRequest.Builder()
-        .setAdSelectionConfig(config)
-        .setAdSelectionId(adSelectionId)
-        .build();
+    ReportImpressionRequest request = new ReportImpressionRequest(adSelectionId, config);
 
     Futures.addCallback(mAdClient.reportImpression(request),
         new FutureCallback<Void>() {
@@ -158,11 +161,12 @@ public class AdSelectionWrapper {
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  public void overrideAdSelection(Consumer<String> statusReceiver, String decisionLogicJS, String trustedScoringSignals) {
+  public void overrideAdSelection(Consumer<String> statusReceiver, String decisionLogicJS,
+      AdSelectionSignals trustedScoringSignals) {
     AddAdSelectionOverrideRequest request =
         new AddAdSelectionOverrideRequest(mAdSelectionConfig, decisionLogicJS, trustedScoringSignals);
     try {
-      Futures.addCallback(mAdClient.overrideAdSelectionConfigRemoteInfo(request),
+      Futures.addCallback(mOverrideClient.overrideAdSelectionConfigRemoteInfo(request),
           new FutureCallback<Void>() {
             public void onSuccess(Void unused) {
               statusReceiver.accept("Added override for ad selection");
@@ -186,7 +190,7 @@ public class AdSelectionWrapper {
    */
   public void resetAdSelectionOverrides(Consumer<String> statusReceiver) {
     try {
-      Futures.addCallback(mAdClient.resetAllAdSelectionConfigRemoteOverrides(),
+      Futures.addCallback(mOverrideClient.resetAllAdSelectionConfigRemoteOverrides(),
           new FutureCallback<Void>() {
             public void onSuccess(Void unused) {
               statusReceiver.accept("Reset ad selection overrides");

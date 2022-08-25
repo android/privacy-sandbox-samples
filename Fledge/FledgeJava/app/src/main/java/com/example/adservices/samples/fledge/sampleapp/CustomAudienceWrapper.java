@@ -16,6 +16,8 @@
 package com.example.adservices.samples.fledge.sampleapp;
 
 import android.adservices.common.AdData;
+import android.adservices.common.AdSelectionSignals;
+import android.adservices.common.AdTechIdentifier;
 import android.adservices.customaudience.AddCustomAudienceOverrideRequest;
 import android.adservices.customaudience.CustomAudience;
 import android.adservices.customaudience.TrustedBiddingData;
@@ -25,11 +27,13 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import com.example.adservices.samples.fledge.clients.CustomAudienceClient;
+import com.example.adservices.samples.fledge.clients.TestCustomAudienceClient;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -43,39 +47,41 @@ import org.json.JSONObject;
 @RequiresApi(api = 34)
 public class CustomAudienceWrapper {
   private final Executor mExecutor;
-  private final String mOwner;
-  private final String mBuyer;
   private final CustomAudienceClient mCaClient;
+  private final TestCustomAudienceClient mCaOverrideClient;
 
   /**
    * Initialize the custom audience wrapper and set the owner and buyer.
    *
-   * @param owner The owner field for custom audience created by this wrapper.
-   * @param buyer The buyer field for custom audience created by this wrapper.
    * @param context The application context.
    * @param executor An executor to use with the FLEDGE API calls.
    */
-  public CustomAudienceWrapper(String owner, String buyer, Context context, Executor executor) {
+  public CustomAudienceWrapper(Context context, Executor executor) {
     mExecutor = executor;
-    mOwner = owner;
-    mBuyer = buyer;
     mCaClient = new CustomAudienceClient.Builder().setContext(context).setExecutor(executor).build();
+    mCaOverrideClient = new TestCustomAudienceClient.Builder().setContext(context).setExecutor(executor).build();
   }
 
   /**
    * Joins a CA.
    *
    * @param name The name of the CA to join.
+   * @param owner The owner of the CA
+   * @param buyer The buyer of ads
+   * @param biddingUri The URL to retrieve the bidding logic
+   * @param renderUri The URL to render the ad
+   * @param dailyUpdateUri The URL for daily updates for the CA
+   * @param trustedBiddingUri The URL to retrieve trusted bidding data
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  public void joinCa(String name, Uri biddingUri, Uri renderUri, Consumer<String> statusReceiver) {
+  public void joinCa(String name, String owner, AdTechIdentifier buyer, Uri biddingUri, Uri renderUri, Uri dailyUpdateUri, Uri trustedBiddingUri, Consumer<String> statusReceiver) {
     try {
       CustomAudience ca = new CustomAudience.Builder()
-          .setOwner(mOwner)
-          .setBuyer(mBuyer)
+          .setOwnerPackageName(owner)
+          .setBuyer(buyer)
           .setName(name)
-          .setDailyUpdateUrl(Uri.EMPTY)
+          .setDailyUpdateUrl(dailyUpdateUri)
           .setBiddingLogicUrl(biddingUri)
           .setAds(Collections.singletonList(new AdData.Builder()
               .setRenderUri(renderUri)
@@ -84,9 +90,9 @@ public class CustomAudienceWrapper {
           .setActivationTime(Instant.now())
           .setExpirationTime(Instant.now().plus(Duration.ofDays(1)))
           .setTrustedBiddingData(new TrustedBiddingData.Builder()
-              .setTrustedBiddingKeys(new ArrayList<>())
-              .setTrustedBiddingUrl(Uri.EMPTY).build())
-          .setUserBiddingSignals(new JSONObject().toString())
+              .setTrustedBiddingKeys(Collections.singletonList("key"))
+              .setTrustedBiddingUrl(trustedBiddingUri).build())
+          .setUserBiddingSignals(AdSelectionSignals.EMPTY)
           .build();
 
       Futures.addCallback(mCaClient.joinCustomAudience(ca),
@@ -115,9 +121,9 @@ public class CustomAudienceWrapper {
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  public void leaveCa(String name, Consumer<String> statusReceiver) {
+  public void leaveCa(String name, String owner, AdTechIdentifier buyer, Consumer<String> statusReceiver) {
     try {
-      Futures.addCallback(mCaClient.leaveCustomAudience(mOwner, mBuyer, name),
+      Futures.addCallback(mCaClient.leaveCustomAudience(owner, buyer, name),
           new FutureCallback<Void>() {
             public void onSuccess(Void unused) {
               statusReceiver.accept("Left " + name + " custom audience");
@@ -140,21 +146,22 @@ public class CustomAudienceWrapper {
    *
    * @param name The name of the CA to override remote info.
    * @param biddingLogicJs The overriding bidding logic javascript
-   * @param trustedBiddingData The overriding trusted bidding data
+   * @param trustedBiddingSignals The overriding trusted bidding signals
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  public void addCAOverride(String name, String biddingLogicJs, String trustedBiddingData, Consumer<String> statusReceiver) {
+  public void addCAOverride(String name, String owner, AdTechIdentifier buyer, String biddingLogicJs, AdSelectionSignals trustedBiddingSignals,
+      Consumer<String> statusReceiver) {
     try {
       AddCustomAudienceOverrideRequest request =
           new AddCustomAudienceOverrideRequest.Builder()
-              .setOwner(mOwner)
-              .setBuyer(mBuyer)
+              .setBuyer(buyer)
               .setName(name)
               .setBiddingLogicJs(biddingLogicJs)
-              .setTrustedBiddingData(trustedBiddingData)
+              .setTrustedBiddingSignals(trustedBiddingSignals)
+              .setOwnerPackageName(owner)
               .build();
-      Futures.addCallback(mCaClient.overrideCustomAudienceRemoteInfo(request),
+      Futures.addCallback(mCaOverrideClient.overrideCustomAudienceRemoteInfo(request),
           new FutureCallback<Void>() {
             public void onSuccess(Void unused) {
               statusReceiver.accept("Added override for " + name + " custom audience");
@@ -180,7 +187,7 @@ public class CustomAudienceWrapper {
    */
   public void resetCAOverrides(Consumer<String> statusReceiver) {
     try {
-      Futures.addCallback(mCaClient.resetAllCustomAudienceOverrides(),
+      Futures.addCallback(mCaOverrideClient.resetAllCustomAudienceOverrides(),
           new FutureCallback<Void>() {
             public void onSuccess(Void unused) {
               statusReceiver.accept("Reset all CA overrides");
