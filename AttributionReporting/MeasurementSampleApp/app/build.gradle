@@ -28,10 +28,23 @@ android {
         applicationId "com.example.measurement.sampleapp"
         minSdkPreview "TiramisuPrivacySandbox"
         targetSdkPreview "TiramisuPrivacySandbox"
-        versionCode 2
-        versionName "1.01"
+        versionCode 3
+        versionName "1.02"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    flavorDimensions "app"
+
+    productFlavors {
+        preview {
+            dimension "app"
+        }
+        prod {
+            dimension "app"
+            minSdkVersion 33
+            targetSdkVersion 33
+        }
     }
 
     buildTypes {
