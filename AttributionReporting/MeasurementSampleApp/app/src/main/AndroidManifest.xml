@@ -27,6 +27,8 @@
       android:theme="@style/Theme.MeasurementSampleApp"
       android:testOnly="true"
       android:taskAffinity="">
+    <property android:name="android.adservices.AD_SERVICES_CONFIG"
+      android:resource="@xml/ad_services_config" />
     <activity
         android:name="com.example.measurement.sampleapp.view.MainActivity"
         android:exported="true"
