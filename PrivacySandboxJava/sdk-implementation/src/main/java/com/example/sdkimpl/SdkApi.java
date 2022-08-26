@@ -13,22 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-plugins {
-    id 'com.android.privacy-sandbox-sdk'
-}
+package com.example.sdkimpl;
 
-android {
-    compileSdkPreview 'TiramisuPrivacySandbox'
-    minSdkPreview 'TiramisuPrivacySandbox'
-    namespace = "com.example.example-sdk"
+import android.os.RemoteException;
 
-    bundle {
-        packageName = "com.example.privacysandbox.provider"
-        sdkProviderClassName = "com.example.sdkimpl.SdkProviderImpl"
-        setVersion(1, 0, 0)
+import com.example.myaidllibrary.ISdkApi;
+
+public class SdkApi extends ISdkApi.Stub {
+    @Override
+    public String sayHello(String message) throws RemoteException {
+        return "Ack!";
     }
-}
-
-dependencies {
-    include project(':sdk-implementation')
 }

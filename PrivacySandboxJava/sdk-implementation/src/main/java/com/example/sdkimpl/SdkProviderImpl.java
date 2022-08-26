@@ -13,23 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.sdk_implementation;
+package com.example.sdkimpl;
 
 import android.annotation.SuppressLint;
 import android.app.sdksandbox.SandboxedSdk;
 import android.app.sdksandbox.SandboxedSdkProvider;
 import android.content.Context;
-import android.os.Binder;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.WebView;
-import androidx.annotation.NonNull;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Executor;
 
 /*
  * This class works as an entry point for the sandbox to interact with the SDK.
@@ -42,7 +40,7 @@ public class SdkProviderImpl extends SandboxedSdkProvider {
   @SuppressLint("Override")
   @Override
   public SandboxedSdk onLoadSdk(Bundle params) {
-    return new SandboxedSdk(new Binder());
+    return new SandboxedSdk(new SdkApi());
   }
 
   @SuppressLint("Override")
