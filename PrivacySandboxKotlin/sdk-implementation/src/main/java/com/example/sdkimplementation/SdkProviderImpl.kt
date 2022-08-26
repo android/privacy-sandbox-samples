@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.sdk_implementation;
+package com.example.sdkimplementation;
 
 import android.annotation.SuppressLint
 import android.app.sdksandbox.SandboxedSdk
 import android.app.sdksandbox.SandboxedSdkProvider
-import android.os.Binder
-import android.os.Bundle
 import android.content.Context
+import android.os.Bundle
 import android.view.View
 import android.webkit.WebView
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.concurrent.Executor
+import java.io.IOException
+import java.io.RandomAccessFile
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /*
  * This class works as an entry point for the sandbox to interact with the SDK.
@@ -40,13 +38,13 @@ class SdkProviderImpl : SandboxedSdkProvider() {
 
     @SuppressLint("Override")
     override fun onLoadSdk(params: Bundle): SandboxedSdk {
-        return SandboxedSdk(Binder())
+        return SandboxedSdk(SdkApi())
     }
 
     @SuppressLint("Override")
     override fun getView(windowContext: Context, bundle: Bundle, width: Int, height: Int): View {
         val webView = WebView(windowContext)
-        webView.loadUrl("https://developer.android.com/privacy-sandbox")
+        webView.loadUrl("https://google.com")
         return webView
     }
 

@@ -13,22 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-plugins {
-    id 'com.android.privacy-sandbox-sdk'
-}
+package com.example.exampleaidllibrary;
 
-android {
-    compileSdkPreview 'TiramisuPrivacySandbox'
-    minSdkPreview 'TiramisuPrivacySandbox'
-    namespace = "com.example.example-sdk"
+import android.os.Bundle;
 
-    bundle {
-        packageName = "com.example.privacysandbox.provider"
-        sdkProviderClassName = "com.example.sdkimplementation.SdkProviderImpl"
-        setVersion(1, 0, 0)
-    }
-}
-
-dependencies {
-    include project(':sdk-implementation')
+interface ISdkApi {
+    String sayHello(String name);
 }
