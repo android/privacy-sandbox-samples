@@ -111,10 +111,10 @@ public class AdSelectionWrapper {
       Futures.addCallback(mAdClient.selectAds(mAdSelectionConfig),
           new FutureCallback<AdSelectionOutcome>() {
             public void onSuccess(AdSelectionOutcome adSelectionOutcome) {
-              statusReceiver.accept("Ran ad selection");
+              statusReceiver.accept("Ran ad selection! Id: " + adSelectionOutcome.getAdSelectionId());
               renderUriReceiver.accept("Would display ad from " + adSelectionOutcome.getRenderUri());
 
-              reportImpression(adSelectionOutcome.getAdSelectionId(), mAdSelectionConfig, statusReceiver);
+              reportImpression(adSelectionOutcome.getAdSelectionId(), statusReceiver);
             }
 
             public void onFailure(@NonNull Throwable e) {
@@ -138,8 +138,8 @@ public class AdSelectionWrapper {
    * @param statusReceiver A consumer function that is run after impression reporting
    * with a string describing how the auction and reporting went.
    */
-  private void reportImpression(long adSelectionId, AdSelectionConfig config, Consumer<String> statusReceiver) {
-    ReportImpressionRequest request = new ReportImpressionRequest(adSelectionId, config);
+  public void reportImpression(long adSelectionId, Consumer<String> statusReceiver) {
+    ReportImpressionRequest request = new ReportImpressionRequest(adSelectionId, mAdSelectionConfig);
 
     Futures.addCallback(mAdClient.reportImpression(request),
         new FutureCallback<Void>() {

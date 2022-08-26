@@ -22,13 +22,14 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.CompoundButton;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -48,9 +49,9 @@ public class MainActivity extends AppCompatActivity {
     // private static final AdTechIdentifier SELLER = AdTechIdentifier.fromString("sampleseller.com");
 
     // Set override URIs
-    private static final String BIDDING_LOGIC_OVERRIDE_URI = "https://sample-abcbuyer.com/bidding";
-    private static final String SCORING_LOGIC_OVERRIDE_URI = "https://sample-abcseller.com/scoring/js";
-    private static final String TRUSTED_SCORING_OVERRIDE_URI = "https://sample-abcseller.com/scoring/trusted";
+    private static final String BIDDING_LOGIC_OVERRIDE_URI = "https://sample-buyer.com/bidding";
+    private static final String SCORING_LOGIC_OVERRIDE_URI = "https://sample-seller.com/scoring/js";
+    private static final String TRUSTED_SCORING_OVERRIDE_URI = "https://sample-seller.com/scoring/trusted";
     private static final String REPORTING_OVERRIDE_URI = "example.com";
 
     // JSON string objects that will be used during ad selection
@@ -73,12 +74,14 @@ public class MainActivity extends AppCompatActivity {
     private static final String DECISION_LOGIC_FILE = "DecisionLogic.js";
 
     // The names for the shirts and shoes custom audience
-    private static final String SHOES_NAME = "shoes";
-    private static final String SHIRTS_NAME = "shirts";
+    private static final String SHOES_CA_NAME = "shoes";
+    private static final String SHIRTS_CA_NAME = "shirts";
+    private static final String SHORT_EXPIRING_CA_NAME = "short_expiring";
+    private static final String INVALID_FIELD_CA_NAME = "invalid_fields";
 
-    // Shirts and shoes render URIS
-    private static final Uri SHOES_RENDER_URI = Uri.parse("shoes-uri.shoestld");
-    private static final Uri SHIRTS_RENDER_URI = Uri.parse("shirts-uri.shirtstld");
+    // Expiry durations
+    private static final Duration ONE_DAY_EXPIRY = Duration.ofDays(1);
+    private static final Duration THIRTY_SECONDS_EXPIRY = Duration.ofSeconds(30);
 
     // Executor to be used for API calls
     private static final Executor EXECUTOR = Executors.newCachedThreadPool();
@@ -137,41 +140,36 @@ public class MainActivity extends AppCompatActivity {
             CustomAudienceWrapper caWrapper = new CustomAudienceWrapper(context, EXECUTOR);
 
             // Set up CA buttons
-            setupJoinCAButtons(caWrapper, eventLog, binding, mBiddingLogicUri, context);
-            setupLeaveCAButtons(caWrapper, eventLog, binding, mBiddingLogicUri, context);
+            setupCASwitches(caWrapper, eventLog, binding, mBiddingLogicUri, context);
+
+            // Set up Report Impression button and text box
+            setupReportImpressionButton(adWrapper, binding, eventLog);
 
             // Set up remote overrides by default
             useOverrides(eventLog,adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs,TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context);
 
             // Set up Override Switch
-            binding.overrideSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked) {
-                        useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context);
-                    } else {
-                        try {
-                            mBiddingLogicUri = Uri.parse(getIntentOrError("biddingUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
-                            mScoringLogicUri = Uri.parse(getIntentOrError("scoringUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
-                            mTrustedDataUri = Uri.parse(getIntentOrDefault("trustedScoringUrl", mBiddingLogicUri + "/trusted"));
-                            mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
-                            mSeller = resolveAdTechIdentifier(mScoringLogicUri);
+            binding.overrideSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) {
+                    useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context);
+                } else {
+                    try {
+                        mBiddingLogicUri = Uri.parse(getIntentOrError("biddingUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
+                        mScoringLogicUri = Uri.parse(getIntentOrError("scoringUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
+                        mTrustedDataUri = Uri.parse(getIntentOrDefault("trustedScoringUrl", mBiddingLogicUri + "/trusted"));
+                        mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
+                        mSeller = resolveAdTechIdentifier(mScoringLogicUri);
 
-                            // Set with new scoring uri
-                            adWrapper.resetAdSelectionConfig(Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri);
+                        // Set with new scoring uri
+                        adWrapper.resetAdSelectionConfig(Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri);
 
-                            // // Leave CAs
-                            // caWrapper.leaveCa(SHOES_NAME, eventLog::writeEvent);
-                            // caWrapper.leaveCa(SHIRTS_NAME, eventLog::writeEvent);
+                        // Reset CA switches as they rely on different biddingLogicUri
+                        setupCASwitches(caWrapper, eventLog, binding, mBiddingLogicUri, context);
 
-                            // Reset join custom audience buttons as they rely on different biddingLogicUri
-                            setupJoinCAButtons(caWrapper, eventLog, binding, mBiddingLogicUri, context);
-                            setupLeaveCAButtons(caWrapper, eventLog, binding, mBiddingLogicUri, context);
-
-                            resetOverrides(eventLog, adWrapper, caWrapper);
-                        } catch (Exception e) {
-                            binding.overrideSwitch.setChecked(true);
-                            Log.e(TAG, "Error getting mock server uris", e);
-                        }
+                        resetOverrides(eventLog, adWrapper, caWrapper);
+                    } catch (Exception e) {
+                        binding.overrideSwitch.setChecked(true);
+                        Log.e(TAG, "Error getting mock server uris", e);
                     }
                 }
             });
@@ -180,28 +178,65 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setupJoinCAButtons(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding, Uri biddingUri, Context context) {
-        binding.joinShoesButton.setOnClickListener(v ->
-            caWrapper.joinCa(SHOES_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri, Uri.parse(biddingUri + "/render"), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
-                eventLog::writeEvent));
-        binding.joinShirtsButton.setOnClickListener(v ->
-            caWrapper.joinCa(SHIRTS_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri, Uri.parse(biddingUri + "/render"), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
-                eventLog::writeEvent));
+    private void setupCASwitches(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding, Uri biddingUri, Context context) {
+        // Shoes
+        binding.shoesCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            if (isChecked) {
+                caWrapper.joinCa(SHOES_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                    Uri.parse(biddingUri + "/render_" + SHOES_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
+                    eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY));
+            } else {
+                caWrapper.leaveCa(SHOES_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+            }
+        });
+        // Shirts
+        binding.shirtsCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            if (isChecked) {
+                caWrapper.joinCa(SHIRTS_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                    Uri.parse(biddingUri + "/render_" + SHIRTS_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
+                    eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY));
+            } else {
+                caWrapper.leaveCa(SHIRTS_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+            }
+        });
+        // Short expiring CA
+        binding.shortExpiryCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            if (isChecked) {
+                caWrapper.joinCa(SHORT_EXPIRING_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                    Uri.parse(biddingUri + "/render_" + SHORT_EXPIRING_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
+                    eventLog::writeEvent, calcExpiry(THIRTY_SECONDS_EXPIRY));
+            } else {
+                caWrapper.leaveCa(SHORT_EXPIRING_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+            }
+        });
+        // Invalid fields CA
+        binding.invalidFieldsCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            if (isChecked) {
+                caWrapper.joinEmptyFieldsCa(INVALID_FIELD_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                    Uri.parse(biddingUri + "/daily"), eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY));
+            } else {
+                caWrapper.leaveCa(INVALID_FIELD_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+            }
+        });
     }
 
-    private void setupLeaveCAButtons(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding, Uri biddingUri, Context context) {
-        binding.leaveShoesButton.setOnClickListener(v ->
-            caWrapper.leaveCa(SHOES_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent));
-        binding.leaveShirtsButton.setOnClickListener(v ->
-            caWrapper.leaveCa(SHIRTS_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent));
+    private void setupReportImpressionButton(AdSelectionWrapper adSelectionWrapper, ActivityMainBinding binding, EventLogManager eventLog) {
+        binding.runReportImpressionButton.setOnClickListener(
+            (l) ->  {
+                long adSelectionId = Long.parseLong(
+                    binding.adSelectionIdInput.getText().toString());
+                adSelectionWrapper.reportImpression(adSelectionId, eventLog::writeEvent);
+            });
     }
 
     private void useOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper,
         CustomAudienceWrapper customAudienceWrapper, String decisionLogicJs, String biddingLogicJs,
         AdSelectionSignals trustedScoringSignals, AdSelectionSignals trustedBiddingSignals, Uri biddingUri, Context context) {
         adSelectionWrapper.overrideAdSelection(eventLog::writeEvent,decisionLogicJs, trustedScoringSignals);
-        customAudienceWrapper.addCAOverride(SHOES_NAME,context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
-        customAudienceWrapper.addCAOverride(SHIRTS_NAME,context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(SHOES_CA_NAME,context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(SHIRTS_CA_NAME,context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(SHORT_EXPIRING_CA_NAME,context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(INVALID_FIELD_CA_NAME,context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
     }
 
     private void resetOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper, CustomAudienceWrapper customAudienceWrapper) {
@@ -262,5 +297,13 @@ public class MainActivity extends AppCompatActivity {
     private String assetFileToString(String location) throws IOException {
         return new BufferedReader(new InputStreamReader(getApplicationContext().getAssets().open(location)))
             .lines().collect(Collectors.joining("\n"));
+    }
+
+    /**
+     * Returns a point in time at {@code duration} in the future from now
+     * @param duration Amount of time in the future
+     */
+    private Instant calcExpiry(Duration duration) {
+        return Instant.now().plus(duration);
     }
 }
