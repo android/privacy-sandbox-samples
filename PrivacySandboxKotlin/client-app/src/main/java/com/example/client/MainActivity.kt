@@ -15,43 +15,34 @@
  */
 package com.example.client
 
-import android.app.sdksandbox.SdkSandboxManager.EXTRA_DISPLAY_ID
-import android.app.sdksandbox.SdkSandboxManager.EXTRA_HEIGHT_IN_PIXELS
-import android.app.sdksandbox.SdkSandboxManager.EXTRA_HOST_TOKEN
-import android.app.sdksandbox.SdkSandboxManager.EXTRA_SURFACE_PACKAGE
-import android.app.sdksandbox.SdkSandboxManager.EXTRA_WIDTH_IN_PIXELS
-
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.app.sdksandbox.LoadSdkException
 import android.app.sdksandbox.RequestSurfacePackageException
 import android.app.sdksandbox.SandboxedSdk
 import android.app.sdksandbox.SdkSandboxManager
+import android.app.sdksandbox.SdkSandboxManager.EXTRA_DISPLAY_ID
+import android.app.sdksandbox.SdkSandboxManager.EXTRA_HEIGHT_IN_PIXELS
+import android.app.sdksandbox.SdkSandboxManager.EXTRA_HOST_TOKEN
+import android.app.sdksandbox.SdkSandboxManager.EXTRA_SURFACE_PACKAGE
+import android.app.sdksandbox.SdkSandboxManager.EXTRA_WIDTH_IN_PIXELS
 import android.app.sdksandbox.SdkSandboxManager.SdkSandboxLifecycleCallback
 import android.app.sdksandbox.SendDataException
 import android.app.sdksandbox.SendDataResponse
 import android.content.DialogInterface
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.os.OutcomeReceiver
+import android.os.*
 import android.text.InputType
 import android.util.Log
-import android.view.SurfaceView
 import android.view.SurfaceControlViewHost.SurfacePackage
+import android.view.SurfaceView
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
-
-import com.example.client.MainActivity
-import com.example.privacysandbox.client.R
-
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-
-import java.util.concurrent.Executor
-import java.lang.Runnable
+import com.example.exampleaidllibrary.ISdkApi
+import com.example.privacysandbox.client.R
 
 @SuppressLint("NewApi")
 class MainActivity : AppCompatActivity() {
@@ -71,6 +62,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mCreateFileButton: Button
 
     /**
+     * Button to call one of the SDK public APIs.
+     */
+    private lateinit var mSdkApiSayHelloButton: Button
+
+    /**
      * An instance of SdkSandboxManager which contains APIs to communicate with the sandbox.
      */
     private lateinit var mSdkSandboxManager: SdkSandboxManager
@@ -80,8 +76,17 @@ class MainActivity : AppCompatActivity() {
      * going to be rendered by the sandbox.
      */
     private lateinit var mClientView: SurfaceView
+
+    /**
+     * This object is going to be set when SDK is successfully loaded. It is a wrapper for the
+     * public SDK API Binder object defined by SDK by implementing the AIDL file from
+     * example-aidl-library module.
+     */
+    private lateinit var mSandboxedSdk : SandboxedSdk
+
     private var mSdkLoaded = false
-    
+
+
     @RequiresApi(api = 33)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,9 +99,11 @@ class MainActivity : AppCompatActivity() {
         mLoadSdkButton = findViewById(R.id.load_sdk_button)
         mRequestWebViewButton = findViewById(R.id.request_webview_button)
         mCreateFileButton = findViewById(R.id.create_file_button)
+        mSdkApiSayHelloButton = findViewById(R.id.sdk_api_say_hello_button)
         registerLoadCodeProviderButton()
         registerRequestWebViewButton()
         registerCreateFileButton()
+        registerSdkApiSayHelloButton()
     }
 
     /**
@@ -137,6 +144,49 @@ class MainActivity : AppCompatActivity() {
                     SDK_NAME, params, { obj: Runnable -> obj.run() }, RequestSurfacePackageCallbackImpl())
             }
         }
+    }
+
+    /**
+     * Call SDK public API to say Hello.
+     */
+    @RequiresApi(api = 33)
+    private fun registerSdkApiSayHelloButton() {
+        mSdkApiSayHelloButton.setOnClickListener { _ ->
+            if (!mSdkLoaded) {
+                makeToast("Please load the SDK first!")
+                return@setOnClickListener
+            }
+
+            // Show dialog to collect the size of storage
+            val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+            builder.setTitle("What is your name?")
+            val input = EditText(this)
+            input.setInputType(InputType.TYPE_CLASS_TEXT)
+            builder.setView(input)
+            builder.setPositiveButton("Create", object : DialogInterface.OnClickListener {
+                override fun onClick(dialog: DialogInterface?, which: Int) {
+                    val binder: IBinder? = mSandboxedSdk.getInterface()
+                    val sdkApi = ISdkApi.Stub.asInterface(binder)
+
+                    // Send some message to the SDK if needed.
+                    try {
+                        val name : String = input.getText().toString()
+                        val greeting : String = sdkApi.sayHello(name)
+                        makeToast("Sdk replied: ($greeting)")
+                    } catch (e: RemoteException) {
+                        throw RuntimeException(e)
+                    }
+                }
+            })
+            builder.setNegativeButton("Cancel", object : DialogInterface.OnClickListener {
+                override fun onClick(dialog: DialogInterface, which: Int) {
+                    dialog.cancel()
+                }
+            })
+            builder.show()
+        }
+
+
     }
 
     /**
@@ -216,6 +266,7 @@ class MainActivity : AppCompatActivity() {
             log("SDK is loaded")
             makeToast("Loaded successfully!")
             mSdkLoaded = true
+            mSandboxedSdk = sandboxedSdk;
 
             // Send some data to the SDK if needed.
             mSdkSandboxManager.sendData(SDK_NAME, Bundle(), { obj: Runnable -> obj.run() }, SendDataCallbackImpl())

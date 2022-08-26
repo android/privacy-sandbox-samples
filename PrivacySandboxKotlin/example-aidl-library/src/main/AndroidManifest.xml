@@ -11,18 +11,6 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.privacysandbox.provider">
-
-  <application
-      android:allowBackup="true"
-      android:label="@string/app_name">
-
-    <sdk-library android:name="com.example.privacysandbox.provider" android:versionMajor="1" />
-    <property
-        android:name="android.sdksandbox.PROPERTY_SDK_PROVIDER_CLASS_NAME"
-        android:value="com.example.sdkimplementation.SdkProviderImpl"/>
-    
-  </application>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
 </manifest>
