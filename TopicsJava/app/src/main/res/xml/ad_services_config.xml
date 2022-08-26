@@ -15,5 +15,5 @@
   ~ limitations under the License.
   -->
 <ad-services-config>
-    <topics allowAllToAccess="true" />
+    <topics allowAllToAccess="true"/>
 </ad-services-config>
