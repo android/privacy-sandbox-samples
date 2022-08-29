@@ -27,6 +27,6 @@
   <string name="ca_switch_shirts_text">Shirts CA</string>
   <string name="ca_switch_short_expiry_text">CA with short expiry</string>
   <string name="ca_switch_invalid_fields_text">CA with invalid fields</string>
-  <string name="edit_text_ad_selection_input_hint">Enter Ad Seelction Id</string>
+  <string name="edit_text_ad_selection_input_hint">Enter Ad Selection Id</string>
   <string name="report_impression_button_text">Report Impression</string>
 </resources>
