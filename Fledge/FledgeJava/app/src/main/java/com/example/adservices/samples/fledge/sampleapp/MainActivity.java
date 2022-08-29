@@ -91,9 +91,10 @@ public class MainActivity extends AppCompatActivity {
         "restart the activity using the directions in the README. The app will not be usable " +
         "until this is done.";
 
-    private static final String MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES = "ERROR: %s is missing, " +
-        "restart the activity using the directions in the README. You may still use the dev overrides "
-        + "without restarting.";
+    private static final String MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES = "ERROR: Cannot disable "
+        + "Remote Overrides because %s is not configured. To configure it you have to run 'adb shell "
+        + "am start ...' with passing '-e biddingURL \"<your bidding url>\"'. Follow the instructions"
+        + " in README.md for more details.";
 
     private Uri mBiddingLogicUri;
     private Uri mScoringLogicUri;
