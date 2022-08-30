@@ -5,6 +5,11 @@ constructing a topics request inside of the `AdvertisingTopicsClient` class.
 This request can be used to fetch a list of topics that have been assigned to
 a given user.
 
+Note that this sample includes several build flavors. Developers should use the "preview" flavor
+and can follow the commands described in this README as is. For OEMs to use the required build
+flavor, you will need to update the "Preview" part of the commands to "Oems", all other instructions
+are the same.
+
 ## About the Topics API
 
 The Topics API infers coarse-grained interest signals on-device based on a
@@ -122,7 +127,7 @@ reduce epoch length so that the batch run will quickly yield useful results.
 for i in {0..10} # Number of apps to install
 do
   # Build and install on device or emulator
-  echo "${installationString:= installSampleapp${i}_Debug}"
+  echo "${installationString:= installSampleapp${i}_PreviewDebug}"
   ./gradlew ${installationString}
   unset installationString
   # Run app 10 times
@@ -143,7 +148,7 @@ uninstall all of the sample applications:
 ``` bash
 for i in {0..10} # Number of apps to uninstall
 do
-  echo "${uninstallString:= uninstallSampleapp${i}_Debug}"
+  echo "${uninstallString:= uninstallSampleapp${i}_PreviewDebug}"
   ./gradlew ${uninstallString}
   unset uninstallString
 done

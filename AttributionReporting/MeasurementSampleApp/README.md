@@ -1,5 +1,10 @@
 # Overview
 
+Note that this sample includes several build flavors. Developers should use the "preview" flavor
+when compiling and installing the app. For OEMs to use the required build flavor, you will need to 
+specify "oem" when compiling and installing. All other instructions in this README are the same
+regardless of what flavor is used.
+
 The Measurement sample app showcases how to use the Attribution Reporting API
 * Initializes a `MeasurementManager` client in `AppModule`
 * Provides two buttons to register the source event from `SourceFragment` via `registerSource`

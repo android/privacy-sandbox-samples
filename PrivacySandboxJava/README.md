@@ -5,6 +5,11 @@ This is a sample project describing how to
 - develop a client app which loads and interacts with an already-installed
   SDK through privacy sandbox.
 
+Note that this sample includes several build flavors. Developers should use the "preview" flavor
+and can follow the commands described in this README as is. For OEMs to use the required build
+flavor, you will need to update the "Preview" part of the commands to "Oems", all other instructions
+are the same.
+
 ## SDK provider
 
 The Privacy Sandbox should have a class which extends `SandboxedSdkProvider`.
@@ -21,7 +26,7 @@ corresponding to which Android Studio version you are using.
 Build the APK bundle by running
 
 ```shell
-./gradlew client-app:buildPrivacySandboxSdkApksForDebug
+./gradlew client-app:buildPrivacySandboxSdkApksForPreviewDebug
 ```
 
 This will output a location where the APK is generated. It is automatically signed with your local
@@ -38,7 +43,7 @@ Proceed to the [Client app](#client-app) section.
 Install the SDK provider app by running
 
 ```shell
-./gradlew sdk-app:installDebug
+./gradlew sdk-app:installPreviewDebug
 ```
 
 This app has no UI, so move on to running the client app.
@@ -74,7 +79,7 @@ Example: `BA:4E:E2:0E:9C:AA:AA:58:50:F2:...:3F:83:B8:56:C0:08:98`
   installed to the target device.
 - Run the client app on the same target device from Android Studio or by running
   ```shell
-  ./gradlew client-app:installDebug
+  ./gradlew client-app:installPreviewDebug
   adb shell am start -n com.example.privacysandbox.client/com.example.client.MainActivity
   ```
 

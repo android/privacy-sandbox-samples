@@ -9,6 +9,11 @@ wraps the API calls that allow apps to join and leave custom audiences (CAs) whi
 `AdSelectionClient` wraps the functionality that allows apps to run ad auctions
 and report impressions based on the results of those auctions.
 
+Note that this sample includes several build flavors. Developers should use the "preview" flavor
+and can follow the commands described in this README as is. For OEMs to use the required build
+flavor, you will need to update the "Preview" part of the commands to "Oems", all other instructions
+are the same.
+
 ## About the FLEDGE API
 
 For a full overview of how FLEDGE works, read the [design proposal]. Review the 
@@ -28,7 +33,7 @@ folder.
 ## Launching the app 
 First install the app on your device by running 
 ```shell
-./gradlew installDebug
+./gradlew installPreviewDebug
 ```
 Once the app is installed on your device, you must launch it with these options:
 

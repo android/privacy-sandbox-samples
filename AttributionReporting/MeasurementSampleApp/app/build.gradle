@@ -34,14 +34,15 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    flavorDimensions "app"
+    flavorDimensions "androidSdk"
 
     productFlavors {
         preview {
-            dimension "app"
+            dimension "androidSdk"
         }
-        prod {
-            dimension "app"
+
+        oem {
+            dimension "androidSdk"
             minSdkVersion 33
             targetSdkVersion 33
         }
