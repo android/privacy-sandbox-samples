@@ -22,6 +22,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.CompoundButton;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding;
@@ -101,6 +102,14 @@ public class MainActivity extends AppCompatActivity {
     private Uri mTrustedDataUri;
     private AdTechIdentifier mBuyer;
     private AdTechIdentifier mSeller;
+    private AdSelectionWrapper adWrapper;
+    private CustomAudienceWrapper caWrapper;
+    private String overrideDecisionJS;
+    private String overrideBiddingJs;
+    private Context context;
+    private ActivityMainBinding binding;
+    private EventLogManager eventLog;
+
 
     /**
      * Does the initial setup for the app. This includes reading the Javascript server URIs from the
@@ -110,73 +119,82 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Context context = getApplicationContext();
-        ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
+        context = getApplicationContext();
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
         View view = binding.getRoot();
         setContentView(view);
-        EventLogManager eventLog = new EventLogManager(binding.eventLog);
+        eventLog = new EventLogManager(binding.eventLog);
 
         try {
-            // Set override URIS since overrides are on by default
-            mBiddingLogicUri = Uri.parse(BIDDING_LOGIC_OVERRIDE_URI);
-            mScoringLogicUri = Uri.parse(SCORING_LOGIC_OVERRIDE_URI);
-            mTrustedDataUri = Uri.parse(TRUSTED_SCORING_OVERRIDE_URI);
-            mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
-            mSeller = resolveAdTechIdentifier(mScoringLogicUri);
-
             // Get override reporting URI
-            String reportingUri = getIntentOrDefault("reportingUrl", REPORTING_OVERRIDE_URI);
+            String reportingUriString = getIntentOrDefault("reportingUrl", REPORTING_OVERRIDE_URI);
 
             // Replace override URIs in JS
-            String overrideDecisionJS = replaceReportingURI(assetFileToString(DECISION_LOGIC_FILE), reportingUri);
-            String overrideBiddingJs = replaceReportingURI(assetFileToString(BIDDING_LOGIC_FILE), reportingUri);
+            overrideDecisionJS = replaceReportingURI(assetFileToString(DECISION_LOGIC_FILE),
+                reportingUriString);
+            overrideBiddingJs = replaceReportingURI(assetFileToString(BIDDING_LOGIC_FILE),
+                reportingUriString);
 
-            // Set up ad selection
-            AdSelectionWrapper adWrapper = new AdSelectionWrapper(
-                Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri, context, EXECUTOR);
-            binding.runAdsButton.setOnClickListener(v ->
-                adWrapper.runAdSelection(eventLog::writeEvent, binding.adSpace::setText));
-
-            // Set up Custom Audience Wrapper(CAs)
-            CustomAudienceWrapper caWrapper = new CustomAudienceWrapper(context, EXECUTOR);
-
-            // Set up CA buttons
-            setupCASwitches(caWrapper, eventLog, binding, mBiddingLogicUri, context);
-
-            // Set up Report Impression button and text box
-            setupReportImpressionButton(adWrapper, binding, eventLog);
-
-            // Set up remote overrides by default
-            useOverrides(eventLog,adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs,TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context);
+            // Setup overrides since they are on by default
+            setupOverrideFlow();
 
             // Set up Override Switch
-            binding.overrideSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (isChecked) {
-                    useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context);
-                } else {
-                    try {
-                        mBiddingLogicUri = Uri.parse(getIntentOrError("biddingUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
-                        mScoringLogicUri = Uri.parse(getIntentOrError("scoringUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
-                        mTrustedDataUri = Uri.parse(getIntentOrDefault("trustedScoringUrl", mBiddingLogicUri + "/trusted"));
-                        mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
-                        mSeller = resolveAdTechIdentifier(mScoringLogicUri);
-
-                        // Set with new scoring uri
-                        adWrapper.resetAdSelectionConfig(Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri);
-
-                        // Reset CA switches as they rely on different biddingLogicUri
-                        setupCASwitches(caWrapper, eventLog, binding, mBiddingLogicUri, context);
-
-                        resetOverrides(eventLog, adWrapper, caWrapper);
-                    } catch (Exception e) {
-                        binding.overrideSwitch.setChecked(true);
-                        Log.e(TAG, "Error getting mock server uris", e);
-                    }
-                }
-            });
+            binding.overrideSwitch.setOnCheckedChangeListener(this::toggleOverrideSwitch);
         } catch (Exception e) {
             Log.e(TAG, "Error when setting up app", e);
         }
+    }
+
+    private void toggleOverrideSwitch(CompoundButton buttonView, boolean isChecked) {
+        if (isChecked) {
+            setupOverrideFlow();
+        } else {
+            try {
+                mBiddingLogicUri = Uri.parse(getIntentOrError("biddingUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
+                mScoringLogicUri = Uri.parse(getIntentOrError("scoringUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
+                mTrustedDataUri = Uri.parse(getIntentOrDefault("trustedScoringUrl", mBiddingLogicUri + "/trusted"));
+                mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
+                mSeller = resolveAdTechIdentifier(mScoringLogicUri);
+
+                // Set with new scoring uri
+                adWrapper.resetAdSelectionConfig(Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri);
+
+                // Reset CA switches as they rely on different biddingLogicUri
+                setupCASwitches(caWrapper, eventLog, binding, mBiddingLogicUri, context);
+
+                resetOverrides(eventLog, adWrapper, caWrapper);
+            } catch (Exception e) {
+                binding.overrideSwitch.setChecked(true);
+                Log.e(TAG, "Error getting mock server uris", e);
+            }
+        }
+    }
+
+    private void setupOverrideFlow() {
+        // Set override URIS since overrides are on by default
+        mBiddingLogicUri = Uri.parse(BIDDING_LOGIC_OVERRIDE_URI);
+        mScoringLogicUri = Uri.parse(SCORING_LOGIC_OVERRIDE_URI);
+        mTrustedDataUri = Uri.parse(TRUSTED_SCORING_OVERRIDE_URI);
+        mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
+        mSeller = resolveAdTechIdentifier(mScoringLogicUri);
+
+        // Set up ad selection
+        adWrapper = new AdSelectionWrapper(
+            Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri, context, EXECUTOR);
+        binding.runAdsButton.setOnClickListener(v ->
+            adWrapper.runAdSelection(eventLog::writeEvent, binding.adSpace::setText));
+
+        // Set up Custom Audience Wrapper(CAs)
+        caWrapper = new CustomAudienceWrapper(context, EXECUTOR);
+
+        // Set up CA buttons
+        setupCASwitches(caWrapper, eventLog, binding, mBiddingLogicUri, context);
+
+        // Set up Report Impression button and text box
+        setupReportImpressionButton(adWrapper, binding, eventLog);
+
+        // Set up remote overrides by default
+        useOverrides(eventLog,adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs,TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context);
     }
 
     private void setupCASwitches(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding, Uri biddingUri, Context context) {
