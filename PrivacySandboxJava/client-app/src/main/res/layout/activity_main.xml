@@ -42,6 +42,12 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:text="Create File" />
+      <Button
+          android:id="@+id/sdk_api_say_hello_button"
+          style="?android:attr/buttonBarButtonStyle"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="Call SDK API to greet" />
   </LinearLayout>
 
   <SurfaceView

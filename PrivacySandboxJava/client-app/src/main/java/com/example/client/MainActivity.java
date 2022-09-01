@@ -49,7 +49,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
-import com.example.myaidllibrary.ISdkApi;
+import com.example.exampleaidllibrary.ISdkApi;
 import com.example.privacysandbox.client.R;
 import java.util.concurrent.Executor;
 
@@ -74,6 +74,10 @@ public class MainActivity extends AppCompatActivity {
      */
     private Button mCreateFileButton;
     /**
+     * Button to call one of the SDK public APIs.
+     */
+    private Button mSdkApiSayHelloButton;
+    /**
      * An instance of SdkSandboxManager which contains APIs to communicate with the sandbox.
      */
     private SdkSandboxManager mSdkSandboxManager;
@@ -82,6 +86,12 @@ public class MainActivity extends AppCompatActivity {
      * going to be rendered by the sandbox.
      */
     private SurfaceView mClientView;
+    /**
+     * This object is going to be set when SDK is successfully loaded. It is a wrapper for the
+     * public SDK API Binder object defined by SDK by implementing the AIDL file from
+     * example-aidl-library module.
+     */
+    private SandboxedSdk mSandboxedSdk;
 
     private boolean mSdkLoaded = false;
 
@@ -100,10 +110,12 @@ public class MainActivity extends AppCompatActivity {
         mLoadSdkButton = findViewById(R.id.load_sdk_button);
         mRequestWebViewButton = findViewById(R.id.request_webview_button);
         mCreateFileButton = findViewById(R.id.create_file_button);
+        mSdkApiSayHelloButton = findViewById(R.id.sdk_api_say_hello_button);
 
         registerLoadCodeProviderButton();
         registerRequestWebViewButton();
         registerCreateFileButton();
+        registerSdkApiSayHelloButton();
     }
 
     /**
@@ -209,6 +221,48 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Call SDK public API to say Hello.
+     */
+    @RequiresApi(api = 33)
+    private void registerSdkApiSayHelloButton() {
+        mSdkApiSayHelloButton.setOnClickListener(v -> {
+            if (!mSdkLoaded) {
+                makeToast("Please load the SDK first!");
+                return;
+            }
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("What is your name?");
+            final EditText input = new EditText(this);
+            input.setInputType(InputType.TYPE_CLASS_TEXT);
+            builder.setView(input);
+
+            builder.setPositiveButton("Create", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    IBinder binder = mSandboxedSdk.getInterface();
+                    ISdkApi sdkApi = ISdkApi.Stub.asInterface(binder);
+
+                    try {
+                        String name = input.getText().toString();
+                        String greeting = sdkApi.sayHello(name);
+                        makeToast("Sdk replied: (" + greeting + ")");
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.cancel();
+                }
+            });
+            builder.show();
+        });
+    }
+
+    /**
      * A callback for tracking events regarding loading of an SDK.
      */
     @RequiresApi(api = 33)
@@ -225,15 +279,7 @@ public class MainActivity extends AppCompatActivity {
             makeToast("Loaded successfully!");
             mSdkLoaded = true;
 
-            IBinder binder = sandboxedSdk.getInterface();
-            ISdkApi sdkApi = ISdkApi.Stub.asInterface(binder);
-
-            // Send some message to the SDK if needed.
-            try {
-                sdkApi.sayHello("Hi! The binder was successfully received.");
-            } catch (RemoteException e) {
-                throw new RuntimeException(e);
-            }
+            mSandboxedSdk = sandboxedSdk;
 
             // Send some data to the SDK if needed. This will soon be deprecated.
             mSdkSandboxManager.sendData(SDK_NAME, new Bundle(), Runnable::run,

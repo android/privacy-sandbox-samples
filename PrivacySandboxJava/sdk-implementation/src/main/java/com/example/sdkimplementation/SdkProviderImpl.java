@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.sdkimpl;
+package com.example.sdkimplementation;
 
 import android.annotation.SuppressLint;
 import android.app.sdksandbox.SandboxedSdk;
@@ -47,7 +47,7 @@ public class SdkProviderImpl extends SandboxedSdkProvider {
   @Override
   public View getView(Context windowContext, Bundle bundle, int width, int height) {
     WebView webView = new WebView(windowContext);
-    webView.loadUrl("https://developer.android.com/privacy-sandbox");
+    webView.loadUrl("https://google.com");
     return webView;
   }
 

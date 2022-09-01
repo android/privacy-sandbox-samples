@@ -18,7 +18,7 @@ plugins {
 }
 
 android {
-    namespace 'com.example.sdkimpl'
+    namespace 'com.example.sdkimplementation'
     compileSdkPreview "TiramisuPrivacySandbox"
 
     defaultConfig {

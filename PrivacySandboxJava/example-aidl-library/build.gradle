@@ -17,7 +17,7 @@ plugins {
  * limitations under the License.
  */
 android {
-    namespace 'com.example.myaidllibrary'
+    namespace 'com.example.exampleaidllibrary'
     sourceSets {
         main {
             aidl.srcDirs = ['src']
