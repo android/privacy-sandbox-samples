@@ -13,10 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.myaidllibrary;
+package com.example.sdkimplementation;
 
-import android.os.Bundle;
+import android.os.RemoteException;
 
-interface ISdkApi {
-    String sayHello(String message);
+import com.example.exampleaidllibrary.ISdkApi;
+
+public class SdkApi extends ISdkApi.Stub {
+    @Override
+    public String sayHello(String name) throws RemoteException {
+        return "Hello, " + name + "!";
+    }
 }

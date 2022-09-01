@@ -24,7 +24,7 @@ android {
 
     bundle {
         packageName = "com.example.privacysandbox.provider"
-        sdkProviderClassName = "com.example.sdkimpl.SdkProviderImpl"
+        sdkProviderClassName = "com.example.sdkimplementation.SdkProviderImpl"
         setVersion(1, 0, 0)
     }
 }
