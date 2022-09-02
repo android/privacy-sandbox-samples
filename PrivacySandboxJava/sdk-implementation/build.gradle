@@ -29,6 +29,20 @@ android {
         consumerProguardFiles "consumer-rules.pro"
     }
 
+    flavorDimensions 'androidSdk'
+
+    productFlavors {
+        preview {
+            dimension 'androidSdk'
+        }
+
+        oem {
+            dimension 'androidSdk'
+            minSdkVersion 33
+            targetSdkVersion 33
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled false

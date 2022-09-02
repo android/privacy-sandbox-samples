@@ -24,10 +24,24 @@ android {
         applicationId "com.example.privacysandbox.provider"
         minSdkPreview "TiramisuPrivacySandbox"
         targetSdkPreview "TiramisuPrivacySandbox"
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "1.01"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    flavorDimensions 'androidSdk'
+
+    productFlavors {
+        preview {
+            dimension 'androidSdk'
+        }
+
+        oem {
+            dimension 'androidSdk'
+            minSdkVersion 33
+            targetSdkVersion 33
+        }
     }
 
     buildTypes {
