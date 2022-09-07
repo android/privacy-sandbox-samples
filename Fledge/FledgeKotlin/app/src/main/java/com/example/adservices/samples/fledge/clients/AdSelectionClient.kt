@@ -18,9 +18,7 @@ package com.example.adservices.samples.fledge.clients
 import android.adservices.adselection.AdSelectionConfig
 import android.adservices.adselection.AdSelectionManager
 import android.adservices.adselection.AdSelectionOutcome
-import android.adservices.adselection.AddAdSelectionOverrideRequest
 import android.adservices.adselection.ReportImpressionRequest
-import android.adservices.exceptions.AdServicesException
 import android.content.Context
 import android.os.OutcomeReceiver
 import androidx.annotation.RequiresApi
@@ -40,22 +38,26 @@ class AdSelectionClient private constructor(
   private val adSelectionManager: AdSelectionManager
 
   /**
-   * Invokes the `runAdSelection` method of [AdSelectionManager], and returns a future
-   * with [AdSelectionOutcome] if succeeds, or an [AdServicesException] if fails.
+   * Invokes the {@code selectAds} method of {@link AdSelectionManager}, and returns a future with
+   * {@link AdSelectionOutcome} if succeeds, or an {@link Exception} if fails.
    */
-  fun runAdSelection(
+  fun selectAds(
     adSelectionConfig: AdSelectionConfig
   ): ListenableFuture<AdSelectionOutcome?> {
     return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<AdSelectionOutcome?> ->
-      adSelectionManager.runAdSelection(
+      adSelectionManager.selectAds(
         adSelectionConfig,
         executor,
-        object : OutcomeReceiver<AdSelectionOutcome, AdServicesException> {
+        object : OutcomeReceiver<AdSelectionOutcome, Exception> {
           override fun onResult(result: AdSelectionOutcome) {
-            completer.set(result)
+            completer.set(
+              AdSelectionOutcome.Builder()
+                .setAdSelectionId(result.adSelectionId)
+                .setRenderUri(result.renderUri)
+                .build())
           }
 
-          override fun onError(error: AdServicesException) {
+          override fun onError(error: Exception) {
             completer.setException(error)
           }
         })
@@ -74,59 +76,16 @@ class AdSelectionClient private constructor(
       adSelectionManager.reportImpression(
         input,
         executor,
-        object : NullableOutcomeReceiver<Void?, AdServicesException?> {
-          override fun onResult(result: Void?) {
-            completer.set(result)
+        object : NullableOutcomeReceiver<Any?, java.lang.Exception?> {
+          override fun onResult(result: Any?) {
+            completer.set(null)
           }
 
-          override fun onError(error: AdServicesException?) {
+          override fun onError(error: java.lang.Exception?) {
             completer.setException(error!!)
           }
         })
       "reportImpression"
-    }
-  }
-
-  /**
-   * Overrides remote info for a given `AdSelectionConfig`
-   */
-  fun overrideAdSelectionConfigRemoteInfo(
-    request: AddAdSelectionOverrideRequest
-  ): ListenableFuture<Void?> {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
-      adSelectionManager.overrideAdSelectionConfigRemoteInfo(
-        request,
-        executor,
-        object : NullableOutcomeReceiver<Void?, AdServicesException> {
-          override fun onResult(result: Void?) {
-            completer.set(result)
-          }
-
-          override fun onError(error: AdServicesException) {
-            completer.setException(error)
-          }
-        })
-      "overrideAdSelectionConfigRemoteInfo"
-    }
-  }
-
-  /**
-   * Resets all ad selection config overrides.
-   */
-  fun resetAllAdSelectionConfigRemoteOverrides(): ListenableFuture<Void?> {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
-      adSelectionManager.resetAllAdSelectionConfigRemoteOverrides(
-        executor,
-        object : NullableOutcomeReceiver<Void?, AdServicesException> {
-          override fun onResult(result: Void?) {
-            completer.set(result)
-          }
-
-          override fun onError(error: AdServicesException) {
-            completer.setException(error)
-          }
-        })
-      "resetAllAdSelectionConfigRemoteOverrides"
     }
   }
 

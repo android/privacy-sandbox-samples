@@ -15,12 +15,11 @@
 */
 package com.example.adservices.samples.fledge.clients
 
-import android.adservices.customaudience.AddCustomAudienceOverrideRequest
+import android.adservices.common.AdTechIdentifier
 import android.adservices.customaudience.CustomAudience
 import android.adservices.customaudience.CustomAudienceManager
 import android.adservices.customaudience.JoinCustomAudienceRequest
 import android.adservices.customaudience.LeaveCustomAudienceRequest
-import android.adservices.exceptions.AdServicesException
 import android.content.Context
 import android.os.OutcomeReceiver
 import androidx.annotation.RequiresApi
@@ -48,12 +47,12 @@ class CustomAudienceClient private constructor(
       customAudienceManager.joinCustomAudience(
         request,
         executor,
-        object : NullableOutcomeReceiver<Void?, AdServicesException?> {
-          override fun onResult(result: Void?) {
+        object : NullableOutcomeReceiver<Any?, java.lang.Exception?> {
+          override fun onResult(result: Any?) {
             completer.set(null)
           }
 
-          override fun onError(error: AdServicesException?) {
+          override fun onError(error: java.lang.Exception?) {
             completer.setException(error!!)
           }
         })
@@ -64,70 +63,27 @@ class CustomAudienceClient private constructor(
 
   /** Leave custom audience.  */
   fun leaveCustomAudience(
-    owner: String, buyer: String, name: String
+    owner: String, buyer: AdTechIdentifier, name: String
   ): ListenableFuture<Void?> {
     return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
       val request = LeaveCustomAudienceRequest.Builder()
-        .setOwner(owner)
+        .setOwnerPackageName(owner)
         .setBuyer(buyer)
         .setName(name)
         .build()
       customAudienceManager.leaveCustomAudience(
         request,
         executor,
-        object : NullableOutcomeReceiver<Void?, AdServicesException?> {
-          override fun onResult(result: Void?) {
+        object : OutcomeReceiver<Any, java.lang.Exception> {
+          override fun onResult(ignoredResult: Any) {
             completer.set(null)
           }
 
-          override fun onError(error: AdServicesException?) {
-            completer.setException(error!!)
+          override fun onError(error: java.lang.Exception) {
+            completer.setException(error)
           }
         })
       "leaveCustomAudience"
-    }
-  }
-
-  /**
-   * Overrides Custom Audience remote info, such as `biddingLogicJS` and `trustedBiddingData`
-   */
-  fun overrideCustomAudienceRemoteInfo(
-    request: AddCustomAudienceOverrideRequest
-  ): ListenableFuture<Void?> {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
-      customAudienceManager.overrideCustomAudienceRemoteInfo(
-        request,
-        executor,
-        object : NullableOutcomeReceiver<Void?, AdServicesException?> {
-          override fun onResult(result: Void?) {
-            completer.set(null)
-          }
-
-          override fun onError(error: AdServicesException?) {
-            completer.setException(error!!)
-          }
-        })
-      "overrideCustomAudienceRemoteInfo"
-    }
-  }
-
-  /**
-   * Resets all custom audience overrides.
-   */
-  fun resetAllCustomAudienceOverrides(): ListenableFuture<Void?> {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
-      customAudienceManager.resetAllCustomAudienceOverrides(
-        executor,
-        object : NullableOutcomeReceiver<Void?, AdServicesException?> {
-          override fun onResult(result: Void?) {
-            completer.set(null)
-          }
-
-          override fun onError(error: AdServicesException?) {
-            completer.setException(error!!)
-          }
-        })
-      "resetAllCustomAudienceOverrides"
     }
   }
 

@@ -18,11 +18,15 @@
   <string name="seller_scoring_hint">https://seller-js-url.example.com</string>
   <string name="event_log_text">Event Log</string>
   <string name="run_ads_button_text">Run Ad Selection</string>
-  <string name="join_shoes_button_text">Join Shoes Custom Audience</string>
-  <string name="leave_shoes_button_text">Leave Shoes Custom Audience</string>
-  <string name="join_shirts_button_text">Join Shirts Custom Audience</string>
-  <string name="leave_shirts_button_text">Leave Shirts Custom Audience</string>
   <string name="override_switch_text">Use Remote Overrides</string>
   <string name="override_switch_on">ON</string>
   <string name="override_switch_off">Off</string>
+  <string name="ca_switch_on">JOINED</string>
+  <string name="ca_switch_off">LEFT</string>
+  <string name="ca_switch_shoes_text">Shoes CA</string>
+  <string name="ca_switch_shirts_text">Shirts CA</string>
+  <string name="ca_switch_short_expiry_text">CA with short expiry</string>
+  <string name="ca_switch_invalid_fields_text">CA with invalid fields</string>
+  <string name="edit_text_ad_selection_input_hint">Enter Ad Selection Id</string>
+  <string name="report_impression_button_text">Report Impression</string>
 </resources>

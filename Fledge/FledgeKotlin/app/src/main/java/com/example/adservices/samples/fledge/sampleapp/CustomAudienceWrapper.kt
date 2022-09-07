@@ -16,6 +16,8 @@
 package com.example.adservices.samples.fledge.sampleapp
 
 import android.adservices.common.AdData
+import android.adservices.common.AdSelectionSignals
+import android.adservices.common.AdTechIdentifier
 import android.adservices.customaudience.AddCustomAudienceOverrideRequest
 import android.adservices.customaudience.CustomAudience
 import android.adservices.customaudience.TrustedBiddingData
@@ -24,10 +26,12 @@ import android.net.Uri
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.adservices.samples.fledge.clients.CustomAudienceClient
+import com.example.adservices.samples.fledge.clients.TestCustomAudienceClient
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 import java.time.Duration
 import java.time.Instant
+import java.util.Collections
 import java.util.concurrent.Executor
 import java.util.function.Consumer
 import org.json.JSONObject
@@ -44,51 +48,84 @@ import org.json.JSONObject
  */
 @RequiresApi(api = 34)
 class CustomAudienceWrapper(
-  private val owner: String,
-  private val buyer: String,
   private val executor: Executor,
   context: Context
 ) {
   private val caClient: CustomAudienceClient
+  private val caOverrideClient : TestCustomAudienceClient
 
   /**
    * Joins a CA.
    *
    * @param name The name of the CA to join.
+   * @param owner The owner of the CA
+   * @param buyer The buyer of ads
+   * @param biddingUri The URL to retrieve the bidding logic
+   * @param renderUri The URL to render the ad
+   * @param dailyUpdateUri The URL for daily updates for the CA
+   * @param trustedBiddingUri The URL to retrieve trusted bidding data
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  fun joinCa(name: String, biddingUri: Uri, renderUri: Uri, statusReceiver: Consumer<String>) {
+  fun joinCa(
+    name: String,
+    owner: String,
+    buyer: AdTechIdentifier,
+    biddingUri: Uri,
+    renderUri: Uri,
+    dailyUpdateUri: Uri,
+    trustedBiddingUri: Uri,
+    statusReceiver: Consumer<String>,
+    expiry: Instant) {
     try {
-      val ca = CustomAudience.Builder()
-        .setOwner(owner)
-        .setBuyer(buyer)
-        .setName(name)
-        .setDailyUpdateUrl(Uri.EMPTY)
-        .setBiddingLogicUrl(biddingUri)
-        .setAds(listOf(AdData.Builder()
+      joinCustomAudience(
+        CustomAudience.Builder()
+          .setOwnerPackageName(owner)
+          .setBuyer(buyer)
+          .setName(name)
+          .setDailyUpdateUrl(dailyUpdateUri)
+          .setBiddingLogicUrl(biddingUri)
+          .setAds(listOf(AdData.Builder()
                          .setRenderUri(renderUri)
                          .setMetadata(JSONObject().toString())
                          .build()))
-        .setActivationTime(Instant.now())
-        .setExpirationTime(Instant.now().plus(Duration.ofDays(1)))
-        .setTrustedBiddingData(TrustedBiddingData.Builder()
-                                 .setTrustedBiddingKeys(ArrayList())
-                                 .setTrustedBiddingUrl(Uri.EMPTY).build())
-        .setUserBiddingSignals(JSONObject().toString())
-        .build()
-      Futures.addCallback(caClient.joinCustomAudience(ca),
-                          object : FutureCallback<Void?> {
-                            override fun onSuccess(unused: Void?) {
-                              statusReceiver.accept("Joined $name custom audience")
-                            }
+          .setActivationTime(Instant.now())
+          .setExpirationTime(expiry)
+          .setTrustedBiddingData(TrustedBiddingData.Builder()
+                                 .setTrustedBiddingKeys(Collections.singletonList("key"))
+                                 .setTrustedBiddingUrl(trustedBiddingUri).build())
+          .setUserBiddingSignals(AdSelectionSignals.EMPTY)
+          .build(),
+        statusReceiver)
+    } catch (e: Exception) {
+      statusReceiver.accept("Got the following exception when trying to join " + name
+                              + " custom audience: " + e)
+      Log.e(TAG, "Exception calling joinCustomAudience", e)
+    }
+  }
 
-                            override fun onFailure(e: Throwable) {
-                              statusReceiver.accept("Error when joining " + name + " custom audience: "
-                                                      + e.message)
-                              Log.e(TAG, "Exception during CA join process ", e)
-                            }
-                          }, executor)
+  fun joinEmptyFieldCa(
+    name: String,
+    owner: String,
+    buyer: AdTechIdentifier,
+    biddingUri: Uri,
+    dailyUpdateUri: Uri,
+    statusReceiver: Consumer<String>,
+    expiry: Instant
+  ) {
+    try {
+      joinCustomAudience(
+        CustomAudience.Builder()
+          .setOwnerPackageName(owner)
+          .setBuyer(buyer)
+          .setName(name)
+          .setDailyUpdateUrl(dailyUpdateUri)
+          .setBiddingLogicUrl(biddingUri)
+          .setActivationTime(Instant.now())
+          .setExpirationTime(expiry)
+          .build(),
+        statusReceiver
+      )
     } catch (e: Exception) {
       statusReceiver.accept("Got the following exception when trying to join " + name
                               + " custom audience: " + e)
@@ -103,7 +140,7 @@ class CustomAudienceWrapper(
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  fun leaveCa(name: String, statusReceiver: Consumer<String>) {
+  fun leaveCa(name: String, owner: String, buyer: AdTechIdentifier, statusReceiver: Consumer<String>) {
     try {
       Futures.addCallback(caClient.leaveCustomAudience(owner, buyer, name),
                           object : FutureCallback<Void?> {
@@ -128,24 +165,26 @@ class CustomAudienceWrapper(
    *
    * @param name The name of the CA to override remote info.
    * @param biddingLogicJs The overriding bidding logic javascript
-   * @param trustedBiddingData The overriding trusted bidding data
+   * @param trustedBiddingSignals The overriding trusted bidding signals
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
   fun addCAOverride(
     name: String,
+    owner: String,
+    buyer: AdTechIdentifier,
     biddingLogicJs: String?,
-    trustedBiddingData: String?,
+    trustedBiddingSignals: AdSelectionSignals,
     statusReceiver: Consumer<String?>
   ) {
     val request = AddCustomAudienceOverrideRequest.Builder()
-      .setOwner(owner)
+      .setOwnerPackageName(owner)
       .setBuyer(buyer)
       .setName(name)
       .setBiddingLogicJs(biddingLogicJs!!)
-      .setTrustedBiddingData(trustedBiddingData!!)
+      .setTrustedBiddingSignals(trustedBiddingSignals)
       .build()
-    Futures.addCallback(caClient.overrideCustomAudienceRemoteInfo(request),
+    Futures.addCallback(caOverrideClient.overrideCustomAudienceRemoteInfo(request),
                         object : FutureCallback<Void?> {
                           override fun onSuccess(unused: Void?) {
                             statusReceiver.accept("Added override for $name custom audience")
@@ -165,7 +204,7 @@ class CustomAudienceWrapper(
    * string indicating the outcome of the call.
    */
   fun resetCAOverrides(statusReceiver: Consumer<String?>) {
-    Futures.addCallback(caClient.resetAllCustomAudienceOverrides(),
+    Futures.addCallback(caOverrideClient.resetAllCustomAudienceOverrides(),
                         object : FutureCallback<Void?> {
                           override fun onSuccess(unused: Void?) {
                             statusReceiver.accept("Reset all CA overrides")
@@ -177,10 +216,32 @@ class CustomAudienceWrapper(
                         }, executor)
   }
 
+  private fun joinCustomAudience(
+    ca : CustomAudience,
+    statusReceiver: Consumer<String>
+  ) {
+    Futures.addCallback(caClient.joinCustomAudience(ca),
+                        object : FutureCallback<Void?> {
+                          override fun onSuccess(unused: Void?) {
+                            statusReceiver.accept("Joined ${ca.name} custom audience")
+                          }
+
+                          override fun onFailure(e: Throwable) {
+                            statusReceiver.accept("Error when joining " + ca.name + " custom audience: "
+                                                    + e.message)
+                            Log.e(TAG, "Exception during CA join process ", e)
+                          }
+                        }, executor)
+  }
+
   /**
    * Initialize the custom audience wrapper and set the owner and buyer.
    */
   init {
     caClient = CustomAudienceClient.Builder().setContext(context).setExecutor(executor).build()
+    caOverrideClient = TestCustomAudienceClient.Builder()
+      .setContext(context)
+      .setExecutor(executor)
+      .build()
   }
 }

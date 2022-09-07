@@ -36,11 +36,18 @@ First install the app on your device by running
 ```shell
 ./gradlew installPreviewDebug
 ```
-Once the app is installed on your device, you must launch it with these options:
 
-If you only wish to use the remote overrides you can run:
+Then, you will need to [enable developer
+options](https://developer.android.com/studio/debug/dev-options) on your device.
+
+Next, run the following command
+```
+adb shell "device_config put adservices fledge_js_isolate_enforce_max_heap_size false"
+```
+
+Once the above steps are completed, you must launch it with these options:
 ```shell
-adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity -e reportingUrl [reporting endpoint]
+adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity
 ```
 
 Otherwise, to optionally use remote overrides or mock servers, run:
