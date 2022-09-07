@@ -5,6 +5,11 @@ This repository contains a set of individual Android Studio projects to help you
 
 The Privacy Sandbox on Android is currently in Alpha and it is not recommended to deploy or use these samples other than to test your own infrastructure.
 
+Note: It is recommended to use [Android Studio
+Canary](https://developer.android.com/studio/preview). As we work to support the
+latest features for Privacy Sandbox, there may be some issues using Stable
+releases.
+
 Read below for a description of each sample.
 
 
