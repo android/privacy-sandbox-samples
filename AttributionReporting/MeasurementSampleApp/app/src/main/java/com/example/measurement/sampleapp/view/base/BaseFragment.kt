@@ -16,10 +16,7 @@
 
 package com.example.measurement.sampleapp.view.base
 
-import android.adservices.AdServicesApiUtil
-import android.adservices.measurement.MeasurementManager
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
