@@ -82,7 +82,6 @@ public class CustomAudienceClient {
         completer -> {
           LeaveCustomAudienceRequest request =
               new LeaveCustomAudienceRequest.Builder()
-                  .setOwnerPackageName(owner)
                   .setBuyer(buyer)
                   .setName(name)
                   .build();

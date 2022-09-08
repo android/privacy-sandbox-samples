@@ -29,7 +29,6 @@ import com.example.adservices.samples.fledge.clients.CustomAudienceClient
 import com.example.adservices.samples.fledge.clients.TestCustomAudienceClient
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
-import java.time.Duration
 import java.time.Instant
 import java.util.Collections
 import java.util.concurrent.Executor
@@ -80,11 +79,10 @@ class CustomAudienceWrapper(
     try {
       joinCustomAudience(
         CustomAudience.Builder()
-          .setOwnerPackageName(owner)
           .setBuyer(buyer)
           .setName(name)
-          .setDailyUpdateUrl(dailyUpdateUri)
-          .setBiddingLogicUrl(biddingUri)
+          .setDailyUpdateUri(dailyUpdateUri)
+          .setBiddingLogicUri(biddingUri)
           .setAds(listOf(AdData.Builder()
                          .setRenderUri(renderUri)
                          .setMetadata(JSONObject().toString())
@@ -93,7 +91,7 @@ class CustomAudienceWrapper(
           .setExpirationTime(expiry)
           .setTrustedBiddingData(TrustedBiddingData.Builder()
                                  .setTrustedBiddingKeys(Collections.singletonList("key"))
-                                 .setTrustedBiddingUrl(trustedBiddingUri).build())
+                                 .setTrustedBiddingUri(trustedBiddingUri).build())
           .setUserBiddingSignals(AdSelectionSignals.EMPTY)
           .build(),
         statusReceiver)
@@ -116,11 +114,10 @@ class CustomAudienceWrapper(
     try {
       joinCustomAudience(
         CustomAudience.Builder()
-          .setOwnerPackageName(owner)
           .setBuyer(buyer)
           .setName(name)
-          .setDailyUpdateUrl(dailyUpdateUri)
-          .setBiddingLogicUrl(biddingUri)
+          .setDailyUpdateUri(dailyUpdateUri)
+          .setBiddingLogicUri(biddingUri)
           .setActivationTime(Instant.now())
           .setExpirationTime(expiry)
           .build(),
@@ -178,7 +175,6 @@ class CustomAudienceWrapper(
     statusReceiver: Consumer<String?>
   ) {
     val request = AddCustomAudienceOverrideRequest.Builder()
-      .setOwnerPackageName(owner)
       .setBuyer(buyer)
       .setName(name)
       .setBiddingLogicJs(biddingLogicJs!!)

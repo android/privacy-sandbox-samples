@@ -30,6 +30,6 @@ function reportWin(ad_selection_signals, per_buyer_signals, signals_for_buyer,
  contextual_signals, custom_audience_signals) {
   // Add the address of your reporting server here
   let reporting_address = 'https://reporting.example.com';
-  return {'status': 0, 'results': {'reporting_url':
+  return {'status': 0, 'results': {'reporting_uri':
          reporting_address + '?ca=' + custom_audience_signals.name} };
 }

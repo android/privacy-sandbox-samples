@@ -45,15 +45,15 @@ public class MainActivity extends AppCompatActivity {
     // Log tag
     public static final String TAG = "FledgeSample";
 
-    // The sample buyer and seller for the custom audiences
-    // private static final AdTechIdentifier BUYER = AdTechIdentifier.fromString("samplebuyer.com");
-    // private static final AdTechIdentifier SELLER = AdTechIdentifier.fromString("sampleseller.com");
-
     // Set override URIs
-    private static final String BIDDING_LOGIC_OVERRIDE_URI = "https://sample-buyer.com/bidding";
-    private static final String SCORING_LOGIC_OVERRIDE_URI = "https://sample-seller.com/scoring/js";
-    private static final String TRUSTED_SCORING_OVERRIDE_URI = "https://sample-seller.com/scoring/trusted";
-    private static final String REPORTING_OVERRIDE_URI = "example.com";
+    // Using enrolled test domains
+    // test.com -> buyer
+    // test2.com -> seller
+    // test3.com -> reporting
+    private static final String BIDDING_LOGIC_OVERRIDE_URI = "https://test.com/bidding";
+    private static final String SCORING_LOGIC_OVERRIDE_URI = "https://test2.com/scoring/js";
+    private static final String TRUSTED_SCORING_OVERRIDE_URI = "https://test2.com/scoring/trusted";
+    private static final String REPORTING_OVERRIDE_URI = "test3.com";
 
     // JSON string objects that will be used during ad selection
     private static final AdSelectionSignals TRUSTED_SCORING_SIGNALS = AdSelectionSignals.fromString(
@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
                 resetOverrides(eventLog, adWrapper, caWrapper);
             } catch (Exception e) {
                 binding.overrideSwitch.setChecked(true);
-                Log.e(TAG, "Error getting mock server uris", e);
+                Log.e(TAG, "Cannot disable overrides because mock URLs not provided", e);
             }
         }
     }

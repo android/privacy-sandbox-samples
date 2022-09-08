@@ -30,13 +30,10 @@ import com.example.adservices.samples.fledge.clients.AdSelectionClient;
 import com.example.adservices.samples.fledge.clients.TestAdSelectionClient;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.json.JSONObject;
 
 /**
  * Wrapper for the FLEDGE Ad Selection API. This wrapper is opinionated and makes several

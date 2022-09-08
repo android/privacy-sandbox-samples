@@ -30,7 +30,6 @@ import com.example.adservices.samples.fledge.clients.CustomAudienceClient;
 import com.example.adservices.samples.fledge.clients.TestCustomAudienceClient;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.concurrent.Executor;
@@ -79,11 +78,10 @@ public class CustomAudienceWrapper {
     try {
       joinCustomAudience(
           new CustomAudience.Builder()
-              .setOwnerPackageName(owner)
               .setBuyer(buyer)
               .setName(name)
-              .setDailyUpdateUrl(dailyUpdateUri)
-              .setBiddingLogicUrl(biddingUri)
+              .setDailyUpdateUri(dailyUpdateUri)
+              .setBiddingLogicUri(biddingUri)
               .setAds(Collections.singletonList(new AdData.Builder()
                   .setRenderUri(renderUri)
                   .setMetadata(new JSONObject().toString())
@@ -92,7 +90,7 @@ public class CustomAudienceWrapper {
               .setExpirationTime(expiry)
               .setTrustedBiddingData(new TrustedBiddingData.Builder()
                   .setTrustedBiddingKeys(Collections.singletonList("key"))
-                  .setTrustedBiddingUrl(trustedBiddingUri).build())
+                  .setTrustedBiddingUri(trustedBiddingUri).build())
               .setUserBiddingSignals(AdSelectionSignals.EMPTY)
               .build(),
           statusReceiver);
@@ -117,11 +115,10 @@ public class CustomAudienceWrapper {
     try {
       joinCustomAudience(
           new CustomAudience.Builder()
-            .setOwnerPackageName(owner)
             .setBuyer(buyer)
             .setName(name)
-            .setDailyUpdateUrl(dailyUpdateUri)
-            .setBiddingLogicUrl(biddingUri)
+            .setDailyUpdateUri(dailyUpdateUri)
+            .setBiddingLogicUri(biddingUri)
             .setActivationTime(Instant.now())
             .setExpirationTime(expiry)
             .build(),
@@ -178,7 +175,6 @@ public class CustomAudienceWrapper {
               .setName(name)
               .setBiddingLogicJs(biddingLogicJs)
               .setTrustedBiddingSignals(trustedBiddingSignals)
-              .setOwnerPackageName(owner)
               .build();
       Futures.addCallback(mCaOverrideClient.overrideCustomAudienceRemoteInfo(request),
           new FutureCallback<Void>() {

@@ -51,10 +51,14 @@ private val THIRTY_SECONDS_EXPIRY: Duration = Duration.ofSeconds(30)
 
 
 // Set override URIs
-private const val BIDDING_LOGIC_OVERRIDE_URI = "https://sample-buyer.com/bidding"
-private const val SCORING_LOGIC_OVERRIDE_URI = "https://sample-seller.com/scoring/js"
-private const val TRUSTED_SCORING_OVERRIDE_URI = "https://sample-seller.com/scoring/trusted"
-private const val REPORTING_OVERRIDE_URI = "example.com"
+// Using enrolled test domains
+// test.com -> buyer
+// test2.com -> seller
+// test3.com -> reporting
+private const val BIDDING_LOGIC_OVERRIDE_URI = "https://test.com/bidding"
+private const val SCORING_LOGIC_OVERRIDE_URI = "https://test2.com/scoring/js"
+private const val TRUSTED_SCORING_OVERRIDE_URI = "https://test2.com/scoring/trusted"
+private const val REPORTING_OVERRIDE_URI = "test3.com"
 
 // JS files
 private const val BIDDING_LOGIC_FILE = "BiddingLogic.js"
@@ -162,7 +166,7 @@ class MainActivity : AppCompatActivity() {
         resetOverrides(eventLog!!, adWrapper!!, caWrapper!!)
       } catch (e: java.lang.Exception) {
         binding!!.overrideSwitch.isChecked = true
-        Log.e(TAG, "Error getting mock server uris", e)
+        Log.e(TAG, "Cannot disable overrides because mock URLs not provided", e)
       }
     }
   }

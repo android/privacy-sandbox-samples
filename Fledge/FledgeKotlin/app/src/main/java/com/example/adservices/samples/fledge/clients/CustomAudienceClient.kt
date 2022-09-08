@@ -67,7 +67,6 @@ class CustomAudienceClient private constructor(
   ): ListenableFuture<Void?> {
     return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
       val request = LeaveCustomAudienceRequest.Builder()
-        .setOwnerPackageName(owner)
         .setBuyer(buyer)
         .setName(name)
         .build()
