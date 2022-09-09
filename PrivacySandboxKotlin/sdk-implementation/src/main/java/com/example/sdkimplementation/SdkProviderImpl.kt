@@ -22,11 +22,6 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.webkit.WebView
-import java.io.IOException
-import java.io.RandomAccessFile
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 
 /*
  * This class works as an entry point for the sandbox to interact with the SDK.
@@ -38,7 +33,7 @@ class SdkProviderImpl : SandboxedSdkProvider() {
 
     @SuppressLint("Override")
     override fun onLoadSdk(params: Bundle): SandboxedSdk {
-        return SandboxedSdk(SdkApi())
+        return SandboxedSdk(SdkApi(context!!))
     }
 
     @SuppressLint("Override")
@@ -48,37 +43,7 @@ class SdkProviderImpl : SandboxedSdkProvider() {
         return webView
     }
 
-    @SuppressLint("Override")
-    override fun onDataReceived(bundle: Bundle, dataReceivedCallback: DataReceivedCallback) {
-        if (bundle.isEmpty()) {
-            dataReceivedCallback.onDataReceivedSuccess(Bundle())
-            return
-        }
-        try {
-            val methodName: String = bundle.getString("method", "")
-            when (methodName) {
-                "createFile" -> {
-                    val sizeInMb: Int = bundle.getInt("sizeInMb")
-                    val result: Bundle = createFile(sizeInMb)
-                    return dataReceivedCallback.onDataReceivedSuccess(result)
-                }
-                else -> {
-                    dataReceivedCallback.onDataReceivedError("Unknown method name")
-                }
-            }
-        } catch (e: Throwable) {
-            dataReceivedCallback.onDataReceivedError("Failed process data: " + e.message)
-        }
-    }
-
-    @Throws(IOException::class)
-    private fun createFile(sizeInMb: Int): Bundle {
-        val path: Path = Paths.get(getContext()?.getApplicationContext()?.getDataDir()?.getPath(), "file.txt")
-        Files.deleteIfExists(path)
-        Files.createFile(path)
-        RandomAccessFile(path.toString(), "rw").use { file -> file.setLength(sizeInMb * 1024L * 1024L) }
-        val result: Bundle = Bundle();
-        result.putString("message", "Created " + sizeInMb + " MB file successfully");
-        return result
+    override fun onDataReceived(p0: Bundle, p1: DataReceivedCallback) {
+        // Do not add implementation here, this function will be deleted
     }
 }

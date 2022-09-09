@@ -15,8 +15,6 @@
  */
 package com.example.exampleaidllibrary;
 
-import android.os.Bundle;
-
 interface ISdkApi {
-    String sayHello(String name);
+    String createFile(int sizeInMb);
 }
