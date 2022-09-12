@@ -13,19 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+ const simulateDelay = (ms) => {
+   var start = new Date().getTime();
+   var end = start;
+   while(end < start + ms) {
+       end = new Date().getTime();
+   }
+ }
+
+
 /**
  * Trivial scoring function -- scores each ad with the value of its bid.
  */
 function scoreAd(ad, bid, auction_config, seller_signals, trusted_scoring_signals,
   contextual_signal, user_signal, custom_audience_signal) {
+  simulateDelay(0);
   return {'status': 0, 'score': bid };
 }
 
 
-function reportResult(ad_selection_config, render_url, bid, contextual_signals) {
+function reportResult(ad_selection_config, render_uri, bid, contextual_signals) {
   // Add the address of your reporting server here
   let reporting_address = 'https://reporting.example.com';
+  simulateDelay(0);
   return {'status': 0, 'results': {'signals_for_buyer': '{"signals_for_buyer" : 1}'
-          , 'reporting_url': reporting_address + '?render_url='
-            + render_url + '?bid=' + bid } };
+          , 'reporting_uri': reporting_address + '?render_uri='
+              + render_uri + '?bid=' + bid } };
 }
