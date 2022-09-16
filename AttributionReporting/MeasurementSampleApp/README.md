@@ -27,9 +27,10 @@ We can easily configure the Server URL from the options menu on the top right si
 3. Switch tabs and click `Register Trigger` button
 4. Force AttributionJobService 
    * `adb shell cmd jobscheduler run -f com.google.android.adservices.api 5`
-5. Force ReportingJobService
+5. Open phone time & date settings. Disable automatic time & date. Then set the date 3 days forward.
+6. Force ReportingJobService
     * `adb shell cmd jobscheduler run -f com.google.android.adservices.api 3`
-6. Open phone time & date settings. Disable automatic time & date. Then set the date 3 days forward.
+    * `adb shell cmd jobscheduler run -f com.google.android.adservices.api 7`
 
 You can verify server interactions by examining the request/response logs of the
 configured server.
