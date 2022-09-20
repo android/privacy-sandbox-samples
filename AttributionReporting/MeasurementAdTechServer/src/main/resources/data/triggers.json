@@ -90,5 +90,19 @@
         ]
       }
     }
+  },
+  {
+    "conv_id": "6",
+    "response_headers": {
+      "Attribution-Reporting-Register-Trigger": {
+        "event_trigger_data": [{
+          "trigger_data": "1",
+          "priority": "20",
+          "deduplication_key": "5"
+        }],
+        "debug_key": "456"
+      },
+      "Attribution-Reporting-Redirect": []
+    }
   }
 ]

@@ -41,5 +41,15 @@ data class AggregationServicePayload(
 
   @JsonProperty("debug_cleartext_payload")
   @get:JsonProperty("debug_cleartext_payload")
-  val debugCleartextPayload: String,
+  val debugCleartextPayload: String?,
+
+
+  @JsonProperty("source_debug_key")
+  @get:JsonProperty("source_debug_key")
+  val sourceDebugKey: String?,
+
+
+  @JsonProperty("trigger_debug_key")
+  @get:JsonProperty("trigger_debug_key")
+  val triggerDebugKey: String?,
 )

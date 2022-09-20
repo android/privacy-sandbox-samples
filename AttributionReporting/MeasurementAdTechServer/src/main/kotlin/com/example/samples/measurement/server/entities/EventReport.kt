@@ -44,4 +44,13 @@ data class EventReport(
   @JsonProperty("randomized_trigger_rate")
   @get:JsonProperty("randomized_trigger_rate")
   val randomizedTriggerRate: Float,
+
+  @JsonProperty("source_debug_key")
+  @get:JsonProperty("source_debug_key")
+  val sourceDebugKey: String?,
+
+
+  @JsonProperty("trigger_debug_key")
+  @get:JsonProperty("trigger_debug_key")
+  val triggerDebugKey: String?,
 )

@@ -60,6 +60,10 @@ data class TriggerRegistrationHeader(
   @JsonProperty("filters")
   @get:JsonProperty("filters")
   val filters: Map<String, List<String>>?,
+
+  @JsonProperty("debug_key")
+  @get:JsonProperty("debug_key")
+  val debugKey: String?,
 )
 
 data class AggregatableTriggerData(

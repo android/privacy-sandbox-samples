@@ -73,4 +73,8 @@ data class SourceRegistrationHeader(
   @JsonProperty("aggregation_keys")
   @get:JsonProperty("aggregation_keys")
   val aggregationKeys: List<Map<String, String>>?,
+
+  @JsonProperty("debug_key")
+  @get:JsonProperty("debug_key")
+  val debugKey: String?,
 )

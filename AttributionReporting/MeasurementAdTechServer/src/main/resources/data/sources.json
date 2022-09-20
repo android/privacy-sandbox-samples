@@ -122,5 +122,28 @@
       },
       "Attribution-Reporting-Redirect": []
     }
+  },
+  {
+    "ad_id": "5",
+    "event_response_headers": {
+      "Attribution-Reporting-Register-Source": {
+        "source_event_id": "1234082341",
+        "destination": "android-app://com.example.measurement.sampleapp",
+        "expiry": "1728000",
+        "priority": "10",
+        "debug_key": "123"
+      },
+      "Attribution-Reporting-Redirect": []
+    },
+    "navigation_response_headers": {
+      "Attribution-Reporting-Register-Source": {
+        "source_event_id": "1234082341",
+        "destination": "android-app://com.example.measurement.sampleapp",
+        "expiry": "1728000",
+        "priority": "10",
+        "debug_key": "123"
+      },
+      "Attribution-Reporting-Redirect": []
+    }
   }
 ]
