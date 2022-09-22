@@ -198,7 +198,7 @@ class MainController(
    * Endpoint: /.well-known/attribution-reporting/report-attribution
    * Request Body: EventReport
    */
-  @PostMapping(value = ["/.well-known/attribution-reporting/report-attribution"])
+  @PostMapping(value = ["/.well-known/attribution-reporting/report-event-attribution"])
   fun saveEventReport(@RequestBody eventReport: EventReport): ResponseEntity<Void> {
     eventReportRepo.save(eventReport.reportId, eventReport)
     return ResponseEntity.accepted().build()
