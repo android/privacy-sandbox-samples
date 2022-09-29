@@ -21,7 +21,8 @@
   <TextView
       android:id="@+id/ad_space"
       android:layout_width="match_parent"
-      android:layout_height="45dp"
+      android:layout_weight=".10"
+      android:layout_height="0dp"
       android:layout_marginTop="18dp"
       android:layout_marginStart="5dp"
       android:layout_marginEnd="5dp"
@@ -31,7 +32,8 @@
   <TextView
       android:id="@+id/event_log"
       android:layout_width="match_parent"
-      android:layout_height="241dp"
+      android:layout_weight=".20"
+      android:layout_height="0dp"
       android:layout_marginTop="5dp"
       android:layout_marginStart="5dp"
       android:layout_marginEnd="5dp"
@@ -39,7 +41,8 @@
       android:text="@string/event_log_text" />
   <RelativeLayout
       android:layout_width="match_parent"
-      android:layout_height="wrap_content">
+      android:layout_weight=".10"
+      android:layout_height="0dp">
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/override_switch"
         android:layout_width="match_parent"
@@ -54,7 +57,8 @@
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
-      android:layout_height="wrap_content">
+      android:layout_weight=".10"
+      android:layout_height="0dp">
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/shoes_ca_switch"
@@ -70,7 +74,8 @@
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
-      android:layout_height="wrap_content">
+      android:layout_weight=".10"
+      android:layout_height="0dp">
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/shirts_ca_switch"
         android:layout_width="match_parent"
@@ -85,7 +90,8 @@
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
-      android:layout_height="wrap_content">
+      android:layout_weight=".10"
+      android:layout_height="0dp">
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/short_expiry_ca_switch"
         android:layout_width="match_parent"
@@ -100,7 +106,8 @@
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
-      android:layout_height="wrap_content">
+      android:layout_weight=".10"
+      android:layout_height="0dp">
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/invalid_fields_ca_switch"
         android:layout_width="match_parent"
@@ -115,7 +122,8 @@
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
-      android:layout_height="wrap_content">
+      android:layout_weight=".10"
+      android:layout_height="0dp">
     <Button
         android:id="@+id/run_ads_button"
         android:layout_width="match_parent"
@@ -129,7 +137,8 @@
 
   <LinearLayout
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
+      android:layout_weight=".10"
+      android:layout_height="0dp"
       android:orientation="horizontal">
     <EditText
         android:id="@+id/ad_selection_id_input"
