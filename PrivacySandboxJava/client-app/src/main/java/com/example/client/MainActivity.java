@@ -28,8 +28,6 @@ import android.app.sdksandbox.RequestSurfacePackageException;
 import android.app.sdksandbox.SandboxedSdk;
 import android.app.sdksandbox.SdkSandboxManager;
 import android.app.sdksandbox.SdkSandboxManager.SdkSandboxLifecycleCallback;
-import android.app.sdksandbox.SendDataException;
-import android.app.sdksandbox.SendDataResponse;
 import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.IBinder;
@@ -74,10 +72,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private Button mCreateFileButton;
     /**
-     * Button to call one of the SDK public APIs.
-     */
-    private Button mSdkApiSayHelloButton;
-    /**
      * An instance of SdkSandboxManager which contains APIs to communicate with the sandbox.
      */
     private SdkSandboxManager mSdkSandboxManager;
@@ -110,12 +104,10 @@ public class MainActivity extends AppCompatActivity {
         mLoadSdkButton = findViewById(R.id.load_sdk_button);
         mRequestWebViewButton = findViewById(R.id.request_webview_button);
         mCreateFileButton = findViewById(R.id.create_file_button);
-        mSdkApiSayHelloButton = findViewById(R.id.sdk_api_say_hello_button);
 
         registerLoadCodeProviderButton();
         registerRequestWebViewButton();
         registerCreateFileButton();
-        registerSdkApiSayHelloButton();
     }
 
     /**
@@ -190,63 +182,11 @@ public class MainActivity extends AppCompatActivity {
                         return;
                     }
 
-                    // Let SDK know the size of file we want it to create.
-                    final Bundle params = new Bundle();
-                    params.putString("method", "createFile");
-                    params.putInt("sizeInMb", sizeInMb);
-                    mSdkSandboxManager.sendData(SDK_NAME, params, Runnable::run,
-                        new OutcomeReceiver<SendDataResponse, SendDataException>() {
-                            @Override
-                            public void onResult(SendDataResponse response) {
-                                makeToast(response
-                                            .getExtraInformation()
-                                            .getString("message", "Something went wrong"));
-                            }
-
-                            @Override
-                            public void onError(SendDataException error) {
-                                makeToast("File creation failed: " + error.getMessage());
-                            }
-                        });
-                }
-            });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            });
-            builder.show();
-        });
-    }
-
-    /**
-     * Call SDK public API to say Hello.
-     */
-    @RequiresApi(api = 33)
-    private void registerSdkApiSayHelloButton() {
-        mSdkApiSayHelloButton.setOnClickListener(v -> {
-            if (!mSdkLoaded) {
-                makeToast("Please load the SDK first!");
-                return;
-            }
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("What is your name?");
-            final EditText input = new EditText(this);
-            input.setInputType(InputType.TYPE_CLASS_TEXT);
-            builder.setView(input);
-
-            builder.setPositiveButton("Create", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
                     IBinder binder = mSandboxedSdk.getInterface();
                     ISdkApi sdkApi = ISdkApi.Stub.asInterface(binder);
-
                     try {
-                        String name = input.getText().toString();
-                        String greeting = sdkApi.sayHello(name);
-                        makeToast("Sdk replied: (" + greeting + ")");
+                        String response = sdkApi.createFile(sizeInMb);
+                        makeToast(response);
                     } catch (RemoteException e) {
                         throw new RuntimeException(e);
                     }
@@ -280,10 +220,6 @@ public class MainActivity extends AppCompatActivity {
             mSdkLoaded = true;
 
             mSandboxedSdk = sandboxedSdk;
-
-            // Send some data to the SDK if needed. This will soon be deprecated.
-            mSdkSandboxManager.sendData(SDK_NAME, new Bundle(), Runnable::run,
-                new SendDataCallbackImpl());
         }
 
         /**
@@ -361,40 +297,6 @@ public class MainActivity extends AppCompatActivity {
             log("onSurfacePackageError" + error.getRequestSurfacePackageErrorCode() + "): "
                 + error.getMessage());
             makeToast("Surface Package Failed! " + error.getMessage());
-        }
-    }
-
-    /**
-     * A callback for tracking sending of data to an SDK.
-     */
-    @RequiresApi(api = 33)
-    private class SendDataCallbackImpl
-                implements OutcomeReceiver<SendDataResponse, SendDataException> {
-        /**
-         * This notifies the client application that sending data to the SDK has completed
-         * successfully.
-         *
-         * @param response a {@link SendDataResponse} containing a bundle of data returned from the
-         *                 SDK to the App.
-         */
-        @SuppressLint("Override")
-        @Override
-        public void onResult(SendDataResponse response) {
-            log("onSendDataSuccess: " + response.getExtraInformation());
-            makeToast("Sent data successfully!");
-        }
-
-        /**
-         * This notifies client application that sending data to an SDK has failed.
-         *
-         * @param error a {@link SendDataException} containing the details of failing to send data
-         *              to the SDK.
-         */
-        @SuppressLint("Override")
-        @Override
-        public void onError(SendDataException error) {
-            log("onSendDataError(" + error.getSendDataErrorCode() + "): " + error.getMessage());
-            makeToast("Send data to SDK failed!" + error.getMessage());
         }
     }
 

@@ -15,13 +15,36 @@
  */
 package com.example.sdkimplementation;
 
+import android.content.Context;
 import android.os.RemoteException;
 
 import com.example.exampleaidllibrary.ISdkApi;
 
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 public class SdkApi extends ISdkApi.Stub {
+    private Context mContext;
+
+    public SdkApi(Context context) {
+        mContext = context;
+    }
+
     @Override
-    public String sayHello(String name) throws RemoteException {
-        return "Hello, " + name + "!";
+    public String createFile(int sizeInMb) throws RemoteException {
+        try {
+            final Path path = Paths.get(mContext.getDataDir().getPath(), "file.txt");
+            Files.deleteIfExists(path);
+            Files.createFile(path);
+            try (RandomAccessFile file = new RandomAccessFile(path.toString(), "rw")){
+                file.setLength(sizeInMb * 1024 * 1024);
+            }
+            return "Created " + sizeInMb + " MB file successfully";
+        } catch (IOException e) {
+            throw new RemoteException(e.getMessage());
+        }
     }
 }

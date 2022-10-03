@@ -27,8 +27,6 @@ import android.app.sdksandbox.SdkSandboxManager.EXTRA_HOST_TOKEN
 import android.app.sdksandbox.SdkSandboxManager.EXTRA_SURFACE_PACKAGE
 import android.app.sdksandbox.SdkSandboxManager.EXTRA_WIDTH_IN_PIXELS
 import android.app.sdksandbox.SdkSandboxManager.SdkSandboxLifecycleCallback
-import android.app.sdksandbox.SendDataException
-import android.app.sdksandbox.SendDataResponse
 import android.content.DialogInterface
 import android.os.*
 import android.text.InputType
@@ -60,11 +58,6 @@ class MainActivity : AppCompatActivity() {
      * Button to create a file inside sandbox.
      */
     private lateinit var mCreateFileButton: Button
-
-    /**
-     * Button to call one of the SDK public APIs.
-     */
-    private lateinit var mSdkApiSayHelloButton: Button
 
     /**
      * An instance of SdkSandboxManager which contains APIs to communicate with the sandbox.
@@ -99,11 +92,9 @@ class MainActivity : AppCompatActivity() {
         mLoadSdkButton = findViewById(R.id.load_sdk_button)
         mRequestWebViewButton = findViewById(R.id.request_webview_button)
         mCreateFileButton = findViewById(R.id.create_file_button)
-        mSdkApiSayHelloButton = findViewById(R.id.sdk_api_say_hello_button)
         registerLoadCodeProviderButton()
         registerRequestWebViewButton()
         registerCreateFileButton()
-        registerSdkApiSayHelloButton()
     }
 
     /**
@@ -147,49 +138,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Call SDK public API to say Hello.
-     */
-    @RequiresApi(api = 33)
-    private fun registerSdkApiSayHelloButton() {
-        mSdkApiSayHelloButton.setOnClickListener { _ ->
-            if (!mSdkLoaded) {
-                makeToast("Please load the SDK first!")
-                return@setOnClickListener
-            }
-
-            // Show dialog to collect the size of storage
-            val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-            builder.setTitle("What is your name?")
-            val input = EditText(this)
-            input.setInputType(InputType.TYPE_CLASS_TEXT)
-            builder.setView(input)
-            builder.setPositiveButton("Create", object : DialogInterface.OnClickListener {
-                override fun onClick(dialog: DialogInterface?, which: Int) {
-                    val binder: IBinder? = mSandboxedSdk.getInterface()
-                    val sdkApi = ISdkApi.Stub.asInterface(binder)
-
-                    // Send some message to the SDK if needed.
-                    try {
-                        val name : String = input.getText().toString()
-                        val greeting : String = sdkApi.sayHello(name)
-                        makeToast("Sdk replied: ($greeting)")
-                    } catch (e: RemoteException) {
-                        throw RuntimeException(e)
-                    }
-                }
-            })
-            builder.setNegativeButton("Cancel", object : DialogInterface.OnClickListener {
-                override fun onClick(dialog: DialogInterface, which: Int) {
-                    dialog.cancel()
-                }
-            })
-            builder.show()
-        }
-
-
-    }
-
-    /**
      * Register the callback action after once mCreateFileButton got clicked.
      */
     @RequiresApi(api = 33)
@@ -220,25 +168,15 @@ class MainActivity : AppCompatActivity() {
                         return
                     }
 
-                    // Let SDK know the size of file we want it to create.
-                    val params = Bundle()
-                    params.putString("method", "createFile")
-                    params.putInt("sizeInMb", sizeInMb)
-                    mSdkSandboxManager.sendData(SDK_NAME, params, Runnable::run,
-                                                object :
-                                                    OutcomeReceiver<SendDataResponse?, SendDataException?> {
-                                                    override fun onResult(response: SendDataResponse) {
-                                                        makeToast(response
-                                                                      .getExtraInformation()
-                                                                      .getString("message",
-                                                                                 "Something went wrong"))
-                                                    }
+                    val binder: IBinder? = mSandboxedSdk.getInterface()
+                    val sdkApi = ISdkApi.Stub.asInterface(binder)
 
-                                                    @Override
-                                                    override fun onError(error: SendDataException) {
-                                                        makeToast("File creation failed: " + error.message)
-                                                    }
-                                                })
+                    try {
+                        val response: String = sdkApi.createFile(sizeInMb)
+                        makeToast(response)
+                    } catch (e: RemoteException) {
+                        throw RuntimeException(e)
+                    }
                 }
             })
             builder.setNegativeButton("Cancel", object : DialogInterface.OnClickListener {
@@ -267,9 +205,6 @@ class MainActivity : AppCompatActivity() {
             makeToast("Loaded successfully!")
             mSdkLoaded = true
             mSandboxedSdk = sandboxedSdk;
-
-            // Send some data to the SDK if needed.
-            mSdkSandboxManager.sendData(SDK_NAME, Bundle(), { obj: Runnable -> obj.run() }, SendDataCallbackImpl())
         }
 
         /**
@@ -343,39 +278,6 @@ class MainActivity : AppCompatActivity() {
                 .toString() + "): "
                   + error.message)
             makeToast("Surface Package Failed! " + error.message)
-        }
-    }
-
-    /**
-     * A callback for tracking sending of data to an SDK.
-     */
-    @RequiresApi(api = 33)
-    private inner class SendDataCallbackImpl() :
-        OutcomeReceiver<SendDataResponse?, SendDataException?> {
-        /**
-         * This notifies the client application that sending data to the SDK has completed
-         * successfully.
-         *
-         * @param response a [SendDataResponse] containing a bundle of data returned from the
-         * SDK to the App.
-         */
-        @SuppressLint("Override")
-        override fun onResult(response: SendDataResponse) {
-            log("onSendDataSuccess: " + response.getExtraInformation())
-            makeToast("Sent data successfully!")
-        }
-
-        /**
-         * This notifies client application that sending data to an SDK has failed.
-         *
-         * @param error a [SendDataException] containing the details of failing to send data
-         * to the SDK.
-         */
-        @SuppressLint("Override")
-        override fun onError(error: SendDataException) {
-            log("onSendDataError(" + error.getSendDataErrorCode()
-                .toString() + "): " + error.message)
-            makeToast("Send data to SDK failed!" + error.message)
         }
     }
 
