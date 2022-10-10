@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String BIDDING_LOGIC_OVERRIDE_URI = "https://test.com/bidding";
     private static final String SCORING_LOGIC_OVERRIDE_URI = "https://test2.com/scoring/js";
     private static final String TRUSTED_SCORING_OVERRIDE_URI = "https://test2.com/scoring/trusted";
-    private static final String REPORTING_OVERRIDE_URI = "test3.com";
+    private static final String REPORTING_OVERRIDE_URI = "https://test3.com/reporting";
 
     // JSON string objects that will be used during ad selection
     private static final AdSelectionSignals TRUSTED_SCORING_SIGNALS = AdSelectionSignals.fromString(
@@ -135,6 +135,9 @@ public class MainActivity extends AppCompatActivity {
             overrideBiddingJs = replaceReportingURI(assetFileToString(BIDDING_LOGIC_FILE),
                 reportingUriString);
 
+            // Set up Report Impression button and text box
+            setupReportImpressionButton(adWrapper, binding, eventLog);
+
             // Setup overrides since they are on by default
             setupOverrideFlow();
 
@@ -190,9 +193,6 @@ public class MainActivity extends AppCompatActivity {
         // Set up CA buttons
         setupCASwitches(caWrapper, eventLog, binding, mBiddingLogicUri, context);
 
-        // Set up Report Impression button and text box
-        setupReportImpressionButton(adWrapper, binding, eventLog);
-
         // Set up remote overrides by default
         useOverrides(eventLog,adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs,TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context);
     }
@@ -242,9 +242,15 @@ public class MainActivity extends AppCompatActivity {
     private void setupReportImpressionButton(AdSelectionWrapper adSelectionWrapper, ActivityMainBinding binding, EventLogManager eventLog) {
         binding.runReportImpressionButton.setOnClickListener(
             (l) ->  {
-                long adSelectionId = Long.parseLong(
-                    binding.adSelectionIdInput.getText().toString());
-                adSelectionWrapper.reportImpression(adSelectionId, eventLog::writeEvent);
+                try {
+                    String adSelectionIdInput = binding.adSelectionIdInput.getText().toString();
+                    long adSelectionId = Long.parseLong(adSelectionIdInput);
+                    adSelectionWrapper.reportImpression(adSelectionId, eventLog::writeEvent);
+                } catch (NumberFormatException e) {
+                    Log.e(TAG, String.format("Error while parsing the ad selection id: %s", e));
+                    eventLog.writeEvent("Invalid AdSelectionId. Cannot run report impressions!");
+                }
+
             });
     }
 
