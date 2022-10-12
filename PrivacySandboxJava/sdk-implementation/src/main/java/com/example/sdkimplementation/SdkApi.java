@@ -20,8 +20,8 @@ import android.os.RemoteException;
 
 import com.example.exampleaidllibrary.ISdkApi;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,10 +39,12 @@ public class SdkApi extends ISdkApi.Stub {
             final Path path = Paths.get(mContext.getDataDir().getPath(), "file.txt");
             Files.deleteIfExists(path);
             Files.createFile(path);
-            try (RandomAccessFile file = new RandomAccessFile(path.toString(), "rw")){
-                file.setLength(sizeInMb * 1024 * 1024);
-            }
-            return "Created " + sizeInMb + " MB file successfully";
+            final byte[] buffer = new byte[sizeInMb * 1024 * 1024];
+            Files.write(path, buffer);
+
+            final File file = new File(path.toString());
+            final long actualFileSize = file.length() / (1024 * 1024);
+            return "Created " + actualFileSize + " MB file successfully";
         } catch (IOException e) {
             throw new RemoteException(e.getMessage());
         }

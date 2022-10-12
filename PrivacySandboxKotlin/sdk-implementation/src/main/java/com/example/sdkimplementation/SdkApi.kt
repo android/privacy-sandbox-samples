@@ -18,6 +18,7 @@ package com.example.sdkimplementation
 import android.content.Context
 import android.os.RemoteException
 import com.example.exampleaidllibrary.ISdkApi
+import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
 import java.nio.file.Files
@@ -37,8 +38,12 @@ class SdkApi(sdkContext: Context) : ISdkApi.Stub() {
                     mContext!!.applicationContext.dataDir.path, "file.txt")
             Files.deleteIfExists(path)
             Files.createFile(path)
-            RandomAccessFile(path.toString(), "rw").use { file -> file.setLength((sizeInMb * 1024 * 1024).toLong()) }
-            "Created $sizeInMb MB file successfully"
+            val buffer = ByteArray(sizeInMb * 1024 * 1024)
+            Files.write(path, buffer)
+
+            val file = File(path.toString())
+            val actualFileSize: Long = file.length() / (1024 * 1024)
+            "Created $actualFileSize MB file successfully"
         } catch (e: IOException) {
             throw RemoteException(e.message)
         }
