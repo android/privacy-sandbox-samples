@@ -63,9 +63,6 @@ dependencies {
     implementation 'com.google.android.material:material:1.5.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
     implementation project(':example-aidl-library')
-    /* If you are using the stable version of Android Studio,
-     * comment out the line below.
-     */
     implementation project(':example-sdk')
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

@@ -33,10 +33,5 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-    <!-- If you are using a stable release of Android Studio, please uncomment this section.
-    <uses-sdk-library android:name="com.example.privacysandbox.provider"
-        android:versionMajor="1"
-        android:certDigest="BC:4E:E2:0E:9C:AA:AA:58:50:F2:45:06:13:DF:C0:53:E8:BF:27:31:67:FD:EE:E8:05:3F:83:B8:56:C0:08:95" />
-    -->
   </application>
 </manifest>
