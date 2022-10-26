@@ -51,6 +51,10 @@ class MainActivity : AppCompatActivity() {
   private var settingsAppButton: Button? = null
   private var RB_SETTING_APP_INTENT = "android.adservices.ui.SETTINGS"
 
+  //This value is passed into the GetTopicsRequest builder to indicate whether or not the caller wants to
+  //be registered as having received a topic, and therefor eligible to receive one in the next epoch
+  private val shouldRecordObservation = true
+
   //On app creation setup view as well as assign variables for TextViews to display results
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -75,7 +79,10 @@ class MainActivity : AppCompatActivity() {
     val mTopicsManager = mContext.getSystemService(
       TopicsManager::class.java)
     val mExecutor: Executor = Executors.newCachedThreadPool()
-    mTopicsManager.getTopics(GetTopicsRequest.create(), mExecutor,
+    val mTopicsRequestBuilder: GetTopicsRequest.Builder = GetTopicsRequest.Builder()
+    mTopicsRequestBuilder.setShouldRecordObservation(shouldRecordObservation)
+    mTopicsRequestBuilder.setAdsSdkName(baseContext.packageName);
+    mTopicsManager.getTopics(mTopicsRequestBuilder.build(), mExecutor,
       mCallback as OutcomeReceiver<GetTopicsResponse, Exception>
     )
   }

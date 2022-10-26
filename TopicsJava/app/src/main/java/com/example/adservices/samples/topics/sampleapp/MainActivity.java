@@ -53,6 +53,10 @@ public class MainActivity extends AppCompatActivity {
     private Button mSettingsAppButton;
     private static final String RB_SETTING_APP_INTENT = "android.adservices.ui.SETTINGS";
 
+    //This value is passed into the GetTopicsRequest builder to indicate whether or not the caller wants to
+    //be registered as having received a topic, and therefor eligible to receive one in the next epoch
+    private boolean shouldRecordObservation = true;
+
     //On app creation setup view as well as assign variables for TextViews to display results
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +82,10 @@ public class MainActivity extends AppCompatActivity {
         createTaxonomy();
         TopicsManager mTopicsManager = mContext.getSystemService(TopicsManager.class);
         Executor mExecutor = Executors.newCachedThreadPool();
-        mTopicsManager.getTopics(GetTopicsRequest.create(),mExecutor,mCallback);
+        GetTopicsRequest.Builder mTopicsRequestBuilder = new GetTopicsRequest.Builder();
+        mTopicsRequestBuilder.setShouldRecordObservation(shouldRecordObservation);
+        mTopicsRequestBuilder.setAdsSdkName(getBaseContext().getPackageName());
+        mTopicsManager.getTopics(mTopicsRequestBuilder.build(),mExecutor,mCallback);
     }
 
     //onResult is called when getTopics successfully comes back with an answer
