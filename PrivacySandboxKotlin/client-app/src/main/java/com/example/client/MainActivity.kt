@@ -26,7 +26,7 @@ import android.app.sdksandbox.SdkSandboxManager.EXTRA_HEIGHT_IN_PIXELS
 import android.app.sdksandbox.SdkSandboxManager.EXTRA_HOST_TOKEN
 import android.app.sdksandbox.SdkSandboxManager.EXTRA_SURFACE_PACKAGE
 import android.app.sdksandbox.SdkSandboxManager.EXTRA_WIDTH_IN_PIXELS
-import android.app.sdksandbox.SdkSandboxManager.SdkSandboxLifecycleCallback
+import android.app.sdksandbox.SdkSandboxManager.SdkSandboxProcessDeathCallback
 import android.content.DialogInterface
 import android.os.*
 import android.text.InputType
@@ -104,8 +104,8 @@ class MainActivity : AppCompatActivity() {
     private fun registerLoadCodeProviderButton() {
         mLoadSdkButton.setOnClickListener { _: View? ->
             // Register for sandbox death event.
-            mSdkSandboxManager.addSdkSandboxLifecycleCallback(
-                { obj: Runnable -> obj.run() }, SdkSandboxLifecycleCallbackImpl())
+            mSdkSandboxManager.addSdkSandboxProcessDeathCallback(
+                { obj: Runnable -> obj.run() }, SdkSandboxProcessDeathCallbackImpl())
             log("Attempting to load sandbox SDK")
             val callback = LoadSdkCallbackImpl()
             mSdkSandboxManager.loadSdk(
@@ -221,10 +221,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * A callback for tracking Sdk Sandbox lifecycle events.
+     * A callback for tracking Sdk Sandbox process death event.
      */
     @RequiresApi(api = 33)
-    private inner class SdkSandboxLifecycleCallbackImpl() : SdkSandboxLifecycleCallback {
+    private inner class SdkSandboxProcessDeathCallbackImpl() : SdkSandboxProcessDeathCallback {
         /**
          * Notifies the client application that the SDK sandbox has died. The sandbox could die for
          * various reasons, for example, due to memory pressure on the system, or a crash in the

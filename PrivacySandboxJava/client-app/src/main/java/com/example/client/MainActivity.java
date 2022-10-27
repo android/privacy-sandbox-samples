@@ -27,7 +27,7 @@ import android.app.sdksandbox.LoadSdkException;
 import android.app.sdksandbox.RequestSurfacePackageException;
 import android.app.sdksandbox.SandboxedSdk;
 import android.app.sdksandbox.SdkSandboxManager;
-import android.app.sdksandbox.SdkSandboxManager.SdkSandboxLifecycleCallback;
+import android.app.sdksandbox.SdkSandboxManager.SdkSandboxProcessDeathCallback;
 import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.IBinder;
@@ -117,8 +117,8 @@ public class MainActivity extends AppCompatActivity {
     private void registerLoadCodeProviderButton() {
         mLoadSdkButton.setOnClickListener(v -> {
           // Register for sandbox death event.
-          mSdkSandboxManager.addSdkSandboxLifecycleCallback(
-              Runnable::run, new SdkSandboxLifecycleCallbackImpl());
+          mSdkSandboxManager.addSdkSandboxProcessDeathCallback(
+              Runnable::run, new SdkSandboxProcessDeathCallbackImpl());
 
           log("Attempting to load sandbox SDK");
           final LoadSdkCallbackImpl callback = new LoadSdkCallbackImpl();
@@ -237,10 +237,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * A callback for tracking Sdk Sandbox lifecycle events.
+     * A callback for tracking Sdk Sandbox process death event.
      */
     @RequiresApi(api = 33)
-    private class SdkSandboxLifecycleCallbackImpl implements SdkSandboxLifecycleCallback {
+    private class SdkSandboxProcessDeathCallbackImpl implements SdkSandboxProcessDeathCallback {
         /**
          * Notifies the client application that the SDK sandbox has died. The sandbox could die for
          * various reasons, for example, due to memory pressure on the system, or a crash in the
