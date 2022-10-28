@@ -39,10 +39,12 @@ This process involves installing the proper SDK and the device
 images needed to test functionality on either a physical device or an emulator.
 
 to enable the Topics API, you’ll need to declare and configure ad services
-permissions, and you'll need to run the following command:
+permissions, and you'll need to run the following commands:
 
 ```shell
 adb shell device_config put adservices ppapi_app_allow_list \"*\"
+
+adb shell setprop debug.adservices.disable_topics_enrollment_check true
 ```
 
 Install and launch the Topics sample app on your device with the Privacy Sandbox
