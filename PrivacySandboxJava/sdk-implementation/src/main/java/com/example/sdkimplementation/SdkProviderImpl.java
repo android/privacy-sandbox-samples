@@ -46,12 +46,4 @@ public class SdkProviderImpl extends SandboxedSdkProvider {
     webView.loadUrl("https://google.com");
     return webView;
   }
-
-  /**
-   * @deprecated Please use your APIs instead
-   */
-  @Override
-  public void onDataReceived(
-          @NonNull Bundle bundle, @NonNull DataReceivedCallback dataReceivedCallback) {
-  }
 }

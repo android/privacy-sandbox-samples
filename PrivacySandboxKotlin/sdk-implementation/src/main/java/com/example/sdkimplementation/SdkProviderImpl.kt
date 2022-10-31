@@ -42,8 +42,4 @@ class SdkProviderImpl : SandboxedSdkProvider() {
         webView.loadUrl("https://google.com")
         return webView
     }
-
-    override fun onDataReceived(p0: Bundle, p1: DataReceivedCallback) {
-        // Do not add implementation here, this function will be deleted
-    }
 }
