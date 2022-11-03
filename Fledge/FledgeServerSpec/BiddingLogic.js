@@ -26,10 +26,9 @@ const simulateDelay = (ms) => {
  * Generates a bid of 10 for the shoes CA, and a bid of 5 otherwise
  */
 function generateBid(ad, auction_signals, per_buyer_signals,
-  trusted_bidding_signals, contextual_signals, user_signals,
-  custom_audience_signals) {
+  trusted_bidding_signals, contextual_signals, custom_audience_bidding_signals) {
   var bid = 5;
-  if (custom_audience_signals.name === "shoes") {
+  if (custom_audience_bidding_signals.name === "shoes") {
       bid = 10;
   }
   simulateDelay(0);
@@ -37,10 +36,10 @@ function generateBid(ad, auction_signals, per_buyer_signals,
 }
 
 function reportWin(ad_selection_signals, per_buyer_signals, signals_for_buyer,
- contextual_signals, custom_audience_signals) {
+ contextual_signals, custom_audience_reporting_signals) {
   // Add the address of your reporting server here
   let reporting_address = 'https://reporting.example.com';
   simulateDelay(0);
   return {'status': 0, 'results': {'reporting_uri':
-         reporting_address + '?ca=' + custom_audience_signals.name} };
+         reporting_address + '?ca=' + custom_audience_reporting_signals.name} };
 }

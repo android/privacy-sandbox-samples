@@ -17,7 +17,7 @@
  * Trivial scoring function -- scores each ad with the value of its bid.
  */
 function scoreAd(ad, bid, auction_config, seller_signals, trusted_scoring_signals,
-  contextual_signal, user_signal, custom_audience_signal) {
+  contextual_signal, user_signal, custom_audience_scoring_signals) {
   return {'status': 0, 'score': bid };
 }
 
