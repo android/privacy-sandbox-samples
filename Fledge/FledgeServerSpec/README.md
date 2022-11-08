@@ -36,12 +36,12 @@ This is what the signals will look like:
 ### OpenAPI Definitions
 
 For convenience, we have provided OpenAPI definitions for how the reporting
-endpoint could be run in `reporting-server.json`.
+endpoint could be run in `mock-server.json`.
 
 ### Set-Up Directions With OpenAPI Specs
 
 1. Find a server mocking tool which can run servers based on OpenAPI specs.
-2. Import the `reporting-server.json` spec and begin running a server.
+2. Import the `mock-server.json` spec and begin running a server.
 3. Monitor the call log of the reporting server to see data reported by FLEDGE.
 
 The impression reporting endpoint need only return a 200 status code -- the
@@ -49,7 +49,7 @@ response content does not matter. To verify that impressions were reported,
 check the call logs for the reporting endpoint.
 
 ## Option 2: Mock Server
-To instead use a mock server for ad selection and reporting, you will need to set 
+To instead use a mock server for ad selection and reporting, you will need to set
 up 7 HTTPS endpoints that your test device or emulator can access. They are:
 
 1. A buyer bidding logic endpoint that serves the sample `BiddingLogic.js`
@@ -61,13 +61,13 @@ up 7 HTTPS endpoints that your test device or emulator can access. They are:
 3. A seller scoring logic endpoint that serves the sample `ScoringLogic.js`
    JavaScript in this directory.
 4. A [scoring signals](https://developer.android.com/design-for-safety/privacy-sandbox/fledge#ad-selection-ad-tech-platform-managed-trusted-server)
-endpoint that serves the sample `ScoringSignals.json` in this directory.
+   endpoint that serves the sample `ScoringSignals.json` in this directory.
 
 5. A winning buyer impression reporting endpoint. Modify the reporting_address
    variable in the `BiddingLogic.js` file to match this endpoint.
 
 6. A seller impression reporting endpoint. Modify the reporting_address variable
-    in the `ScoringLogic.js` file to match this endpoint.
+   in the `ScoringLogic.js` file to match this endpoint.
 
 7. A buyer daily fetch endpoint that serves the sample `DailyUpdateResponse.json`
    JSON object in this directory.  Modify the `trusted_bidding_uri` and
@@ -81,21 +81,17 @@ check the call logs for endpoints 3 and 4.
 ### OpenAPI Definitions
 
 For convenience, we have provided OpenAPI definitions for how these endpoints
-could be run in the files `js-server.json` and `reporting-server.json`, where
-`js-server.json` manages endpoints 1-4, and `reporting-server.json` manages
-endpoints 5 and 6. In order for `js-server.json` to be usable, the 
+could be run in `mock-server.json`, which manages endpoints all 1-7. In order for `mock-server.json` to be usable, the
 `report_address` variable in the contained javascript string must be updated to
-the address of the reporting server, and the `trusted_bidding_uri` and 
-`render_uri` fields in the daily fetch response should be changed to match the
-domain of the js server.
+the address of the server, and the `trusted_bidding_uri` and `render_uri` fields in the daily fetch response should be changed to match the
+domain of the server.
 
 ### Set-Up Directions With OpenAPI Specs
 
 1. Find a server mocking tool which can run servers based on OpenAPI specs.
-2. Import the `reporting-server.json` spec and begin running a server.
-3. Replace both occurrences of "reporting.example.com" in the `js-server.json`
-   file with the URL of the reporting server.
-4. Import the `js-server.json` spec and begin running the js server.
-5. Replace all occurrences of "js.example.com" in the daily fetch response with
-   the URL of the js server.
-6. Monitor the call log of the reporting server to see data reported by FLEDGE.
+2. Import the `mock-server.json` spec and begin running the server.
+3. Replace both occurrences of "reporting.example.com" in `mock-server.json`
+   file with the URL of the server.
+4. Replace all occurrences of "js.example.com" in the daily fetch response with
+   the URL of the server.
+5. Monitor the call log of the server to see data reported by FLEDGE.

@@ -41,5 +41,5 @@ function reportWin(ad_selection_signals, per_buyer_signals, signals_for_buyer,
   let reporting_address = 'https://reporting.example.com';
   simulateDelay(0);
   return {'status': 0, 'results': {'reporting_uri':
-         reporting_address + '?ca=' + custom_audience_reporting_signals.name} };
+         reporting_address + '/reportWin?ca=' + custom_audience_reporting_signals.name} };
 }

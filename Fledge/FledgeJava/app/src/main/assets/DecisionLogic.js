@@ -26,6 +26,6 @@ function reportResult(ad_selection_config, render_uri, bid, contextual_signals) 
   // Add the address of your reporting server here
   let reporting_address = 'https://reporting.example.com';
   return {'status': 0, 'results': {'signals_for_buyer': '{"signals_for_buyer" : 1}'
-          , 'reporting_uri': reporting_address + '?render_uri='
+          , 'reporting_uri': reporting_address + 'reportResult?render_uri='
             + render_uri + '?bid=' + bid } };
 }

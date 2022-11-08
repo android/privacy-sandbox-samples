@@ -33,7 +33,6 @@ import java.time.Instant
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.stream.Collectors
-import kotlin.math.E
 
 
 // Log tag
@@ -49,17 +48,6 @@ private const val INVALID_FIELD_CA_NAME = "invalid_fields"
 private val ONE_DAY_EXPIRY: Duration = Duration.ofDays(1)
 private val THIRTY_SECONDS_EXPIRY: Duration = Duration.ofSeconds(30)
 
-
-// Set override URIs
-// Using enrolled test domains
-// test.com -> buyer
-// test2.com -> seller
-// test3.com -> reporting
-private const val BIDDING_LOGIC_OVERRIDE_URI = "https://test.com/bidding"
-private const val SCORING_LOGIC_OVERRIDE_URI = "https://test2.com/scoring/js"
-private const val TRUSTED_SCORING_OVERRIDE_URI = "https://test2.com/scoring/trusted"
-private const val REPORTING_OVERRIDE_URI = "test3.com"
-
 // JS files
 private const val BIDDING_LOGIC_FILE = "BiddingLogic.js"
 private const val DECISION_LOGIC_FILE = "DecisionLogic.js"
@@ -68,10 +56,9 @@ private const val DECISION_LOGIC_FILE = "DecisionLogic.js"
 private val EXECUTOR: Executor = Executors.newCachedThreadPool()
 
 // Strings to inform user a field in missing
-private const val MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES = ("ERROR: Cannot disable "
-  + "Remote Overrides because %s is not configured. To configure it you have to run 'adb shell "
-  + "am start ...' with passing '-e biddingURL \"<your bidding url>\"'. Follow the instructions"
-  + " in README.md for more details.")
+private const val MISSING_FIELD_STRING_FORMAT_RESTART_APP = "ERROR: %s is missing, " +
+  "restart the activity using the directions in the README. The app will not be usable " +
+  "until this is done."
 
 /**
  * Android application activity for testing FLEDGE API
@@ -118,8 +105,7 @@ class MainActivity : AppCompatActivity() {
     eventLog = EventLogManager(binding!!.eventLog);
     try {
       // Get override reporting URI
-      var reportingUriString = getIntentOrDefault("reportingUrl", REPORTING_OVERRIDE_URI)
-
+      val reportingUriString = getIntentOrError("baseUrl", eventLog!!, MISSING_FIELD_STRING_FORMAT_RESTART_APP)
       // Replace override URIs in JS
       overrideDecisionJS = replaceReportingURI(assetFileToString(DECISION_LOGIC_FILE),
                                                reportingUriString)
@@ -144,14 +130,13 @@ class MainActivity : AppCompatActivity() {
       setupOverrideFlow()
     } else {
       try {
-        mBiddingLogicUri = Uri.parse(getIntentOrError("biddingUrl",
-                                                      eventLog!!,
-                                                      MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES))
-        mScoringLogicUri = Uri.parse(getIntentOrError("scoringUrl",
-                                                      eventLog!!,
-                                                      MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES))
-        mTrustedDataUri = Uri.parse(getIntentOrDefault("trustedScoringUrl",
-                                                       "$mBiddingLogicUri/trusted"))
+        val baseUri = getIntentOrError("baseUrl",
+                                       eventLog!!,
+                                       MISSING_FIELD_STRING_FORMAT_RESTART_APP)
+
+        mBiddingLogicUri = Uri.parse(baseUri + "bidding")
+        mScoringLogicUri = Uri.parse(baseUri + "scoring")
+        mTrustedDataUri = Uri.parse("$mBiddingLogicUri/trusted")
         mBuyer = resolveAdTechIdentifier(mBiddingLogicUri)
         mSeller = resolveAdTechIdentifier(mScoringLogicUri)
 
@@ -173,9 +158,14 @@ class MainActivity : AppCompatActivity() {
 
   private fun setupOverrideFlow() {
     // Set override URIS since overrides are on by default
-    mBiddingLogicUri = Uri.parse(BIDDING_LOGIC_OVERRIDE_URI)
-    mScoringLogicUri = Uri.parse(SCORING_LOGIC_OVERRIDE_URI)
-    mTrustedDataUri = Uri.parse(TRUSTED_SCORING_OVERRIDE_URI)
+    val overrideUriBase = getIntentOrError("baseUrl",
+                                           eventLog!!,
+                                           MISSING_FIELD_STRING_FORMAT_RESTART_APP)
+
+    mBiddingLogicUri = Uri.parse("$overrideUriBase/bidding")
+    mScoringLogicUri = Uri.parse("$overrideUriBase/scoring")
+    mTrustedDataUri = Uri.parse("$mBiddingLogicUri/trusted")
+
     mBuyer = resolveAdTechIdentifier(mBiddingLogicUri)
     mSeller = resolveAdTechIdentifier(mScoringLogicUri)
 

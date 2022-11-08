@@ -38,6 +38,6 @@ function reportResult(ad_selection_config, render_uri, bid, contextual_signals) 
   let reporting_address = 'https://reporting.example.com';
   simulateDelay(0);
   return {'status': 0, 'results': {'signals_for_buyer': '{"signals_for_buyer" : 1}'
-          , 'reporting_uri': reporting_address + '?render_uri='
+          , 'reporting_uri': reporting_address + '/reportResult?render_uri='
               + render_uri + '?bid=' + bid } };
 }

@@ -45,16 +45,6 @@ public class MainActivity extends AppCompatActivity {
     // Log tag
     public static final String TAG = "FledgeSample";
 
-    // Set override URIs
-    // Using enrolled test domains
-    // test.com -> buyer
-    // test2.com -> seller
-    // test3.com -> reporting
-    private static final String BIDDING_LOGIC_OVERRIDE_URI = "https://test.com/bidding";
-    private static final String SCORING_LOGIC_OVERRIDE_URI = "https://test2.com/scoring/js";
-    private static final String TRUSTED_SCORING_OVERRIDE_URI = "https://test2.com/scoring/trusted";
-    private static final String REPORTING_OVERRIDE_URI = "https://test3.com/reporting";
-
     // JSON string objects that will be used during ad selection
     private static final AdSelectionSignals TRUSTED_SCORING_SIGNALS = AdSelectionSignals.fromString(
         "{\n"
@@ -87,15 +77,10 @@ public class MainActivity extends AppCompatActivity {
     // Executor to be used for API calls
     private static final Executor EXECUTOR = Executors.newCachedThreadPool();
 
-    // Strings to inform user a field in missing
+    // String to inform user a field in missing
     private static final String MISSING_FIELD_STRING_FORMAT_RESTART_APP = "ERROR: %s is missing, " +
         "restart the activity using the directions in the README. The app will not be usable " +
         "until this is done.";
-
-    private static final String MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES = "ERROR: Cannot disable "
-        + "Remote Overrides because %s is not configured. To configure it you have to run 'adb shell "
-        + "am start ...' with passing '-e biddingURL \"<your bidding url>\"'. Follow the instructions"
-        + " in README.md for more details.";
 
     private Uri mBiddingLogicUri;
     private Uri mScoringLogicUri;
@@ -127,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             // Get override reporting URI
-            String reportingUriString = getIntentOrDefault("reportingUrl", REPORTING_OVERRIDE_URI);
+            String reportingUriString = getIntentOrError("baseUrl", eventLog, MISSING_FIELD_STRING_FORMAT_RESTART_APP);
 
             // Replace override URIs in JS
             overrideDecisionJS = replaceReportingURI(assetFileToString(DECISION_LOGIC_FILE),
@@ -153,9 +138,11 @@ public class MainActivity extends AppCompatActivity {
             setupOverrideFlow();
         } else {
             try {
-                mBiddingLogicUri = Uri.parse(getIntentOrError("biddingUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
-                mScoringLogicUri = Uri.parse(getIntentOrError("scoringUrl", eventLog, MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES));
-                mTrustedDataUri = Uri.parse(getIntentOrDefault("trustedScoringUrl", mBiddingLogicUri + "/trusted"));
+                String baseUri = getIntentOrError("baseUrl", eventLog, MISSING_FIELD_STRING_FORMAT_RESTART_APP);
+
+                mBiddingLogicUri = Uri.parse(baseUri + "bidding");
+                mScoringLogicUri = Uri.parse(baseUri + "scoring");
+                mTrustedDataUri = Uri.parse(mBiddingLogicUri + "/trusted");
                 mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
                 mSeller = resolveAdTechIdentifier(mScoringLogicUri);
 
@@ -175,12 +162,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupOverrideFlow() {
         // Set override URIS since overrides are on by default
-        mBiddingLogicUri = Uri.parse(BIDDING_LOGIC_OVERRIDE_URI);
-        mScoringLogicUri = Uri.parse(SCORING_LOGIC_OVERRIDE_URI);
-        mTrustedDataUri = Uri.parse(TRUSTED_SCORING_OVERRIDE_URI);
+        String overrideUriBase = getIntentOrError("baseUrl", eventLog, MISSING_FIELD_STRING_FORMAT_RESTART_APP);
+
+        mBiddingLogicUri = Uri.parse(overrideUriBase + "/bidding");
+        mScoringLogicUri = Uri.parse(overrideUriBase + "/scoring");
+        mTrustedDataUri = Uri.parse(mBiddingLogicUri + "/trusted");
+
         mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
         mSeller = resolveAdTechIdentifier(mScoringLogicUri);
-
         // Set up ad selection
         adWrapper = new AdSelectionWrapper(
             Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri, context, EXECUTOR);

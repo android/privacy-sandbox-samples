@@ -45,18 +45,13 @@ Next, run the following command
 adb shell "device_config put adservices fledge_js_isolate_enforce_max_heap_size false"
 ```
 
-Once the above steps are completed, you must launch it with these options:
+Once the above steps are completed, you must launch with this command:
 
-If you only wish to use the remote overrides you can run:
 ```shell
-adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity
+adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity -e baseUrl [base server url] 
 ```
 
-Otherwise, to optionally use remote overrides or mock servers, run:
-```shell
-adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity -e reportingUrl [reporting endpoint] -e biddingUrl [bidding endpoint] -e scoringUrl [scoring endpoint]
-```
-These commands will inform the app where your server endpoints are running.
+This command will inform the app where your server endpoints are running.
 
 ## Manage custom audiences and run ad selection
 
