@@ -134,8 +134,8 @@ class MainActivity : AppCompatActivity() {
                                        eventLog!!,
                                        MISSING_FIELD_STRING_FORMAT_RESTART_APP)
 
-        mBiddingLogicUri = Uri.parse(baseUri + "bidding")
-        mScoringLogicUri = Uri.parse(baseUri + "scoring")
+        mBiddingLogicUri = Uri.parse("$baseUri/bidding")
+        mScoringLogicUri = Uri.parse("$baseUri/scoring")
         mTrustedDataUri = Uri.parse("$mBiddingLogicUri/trusted")
         mBuyer = resolveAdTechIdentifier(mBiddingLogicUri)
         mSeller = resolveAdTechIdentifier(mScoringLogicUri)
