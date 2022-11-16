@@ -120,11 +120,11 @@ public class MainActivity extends AppCompatActivity {
             overrideBiddingJs = replaceReportingURI(assetFileToString(BIDDING_LOGIC_FILE),
                 reportingUriString);
 
-            // Set up Report Impression button and text box
-            setupReportImpressionButton(adWrapper, binding, eventLog);
-
             // Setup overrides since they are on by default
             setupOverrideFlow();
+
+            // Set up Report Impression button and text box
+            setupReportImpressionButton(adWrapper, binding, eventLog);
 
             // Set up Override Switch
             binding.overrideSwitch.setOnCheckedChangeListener(this::toggleOverrideSwitch);

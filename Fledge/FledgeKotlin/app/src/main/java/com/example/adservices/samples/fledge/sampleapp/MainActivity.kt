@@ -115,6 +115,9 @@ class MainActivity : AppCompatActivity() {
       // Setup overrides since they are on by default
       setupOverrideFlow()
 
+      // Setup report impressions button
+      setupReportImpressionButton(adWrapper!!, binding!!, eventLog!!)
+
       // Set up Override Switch
       binding!!.overrideSwitch.setOnCheckedChangeListener(this::toggleOverrideSwitch)
     } catch (e: Exception) {
@@ -178,9 +181,6 @@ class MainActivity : AppCompatActivity() {
 
     // Set up CA buttons
     setupCASwitches(caWrapper!!, eventLog!!, binding!!, mBiddingLogicUri, context!!)
-
-    // Setup report impressions button
-    setupReportImpressionButton(adWrapper!!, binding!!, eventLog!!)
 
     // Setup remote overrides by default
     useOverrides(eventLog!! ,adWrapper!!, caWrapper!!, overrideDecisionJS!!, overrideBiddingJs!!,TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context!!);
@@ -286,13 +286,16 @@ class MainActivity : AppCompatActivity() {
     binding: ActivityMainBinding,
     eventLog: EventLogManager,
   ) {
-    binding.runReportImpressionButton.setOnClickListener { _ ->
-      val adSelectionId =
-        binding.adSelectionIdInput.text.toString().toLong()
-      adSelectionWrapper.reportImpression(adSelectionId
-      ) { event: String? ->
-        eventLog.writeEvent(
-          event!!)
+    binding.runReportImpressionButton.setOnClickListener {
+      try {
+        val adSelectionIdInput = binding.adSelectionIdInput.text.toString()
+        val adSelectionId = adSelectionIdInput.toLong()
+        adSelectionWrapper.reportImpression(adSelectionId) { event: String? ->
+          eventLog.writeEvent(event!!)
+        }
+      } catch (e: NumberFormatException) {
+        Log.e(TAG, String.format("Error while parsing the ad selection id: %s", e))
+        eventLog.writeEvent("Invalid AdSelectionId. Cannot run report impressions!")
       }
     }
   }
