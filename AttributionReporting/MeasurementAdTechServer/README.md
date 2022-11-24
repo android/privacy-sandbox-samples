@@ -10,7 +10,7 @@ showcase the measurement workflow from AdTech perspective.
 - Trigger Registration
    - POST: `/trigger?ad_id=<ad_id>`
 - Event Report Receipt/View
-   - POST: `/.well-known/attribution-reporting/report-attribution`
+   - POST: `/.well-known/attribution-reporting/report-event-attribution`
    - GET: `/event-reports`
 - Aggregate Report Receipt/View
    - POST: `/.well-known/attribution-reporting/report-aggregate-attribution`
