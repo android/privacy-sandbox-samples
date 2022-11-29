@@ -22,8 +22,8 @@ android {
 
     defaultConfig {
         applicationId "com.example.privacysandbox.client"
-        minSdkPreview "TiramisuPrivacySandbox"
-        targetSdkPreview "TiramisuPrivacySandbox"
+        minSdkVersion 33
+        targetSdkVersion 33
         versionCode 2
         versionName "1.01"
 
@@ -54,6 +54,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    namespace 'com.example.privacysandbox.client'
 }
 
 dependencies {
