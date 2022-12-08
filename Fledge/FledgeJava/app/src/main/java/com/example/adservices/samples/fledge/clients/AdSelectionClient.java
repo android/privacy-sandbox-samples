@@ -18,6 +18,7 @@ package com.example.adservices.samples.fledge.clients;
 
 
 import android.adservices.adselection.AdSelectionConfig;
+import android.adservices.adselection.AdSelectionFromOutcomesConfig;
 import android.adservices.adselection.AdSelectionManager;
 import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.adselection.ReportImpressionRequest;
@@ -25,6 +26,7 @@ import android.content.Context;
 import android.os.OutcomeReceiver;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.concurrent.futures.CallbackToFutureAdapter;
 
@@ -60,14 +62,9 @@ public class AdSelectionClient {
               adSelectionConfig,
               mExecutor,
               new OutcomeReceiver<AdSelectionOutcome, Exception>() {
-
                 @Override
                 public void onResult(@NonNull AdSelectionOutcome result) {
-                  completer.set(
-                      new AdSelectionOutcome.Builder()
-                          .setAdSelectionId(result.getAdSelectionId())
-                          .setRenderUri(result.getRenderUri())
-                          .build());
+                  completer.set(result);
                 }
 
                 @Override
@@ -79,6 +76,32 @@ public class AdSelectionClient {
         });
   }
 
+  /**
+   * Invokes the {@code selectAds} method of {@link AdSelectionManager}, and returns a future with
+   * {@link AdSelectionOutcome} if succeeds, or an {@link Exception} if fails.
+   */
+  @NonNull
+  public ListenableFuture<AdSelectionOutcome> selectAds(
+      @NonNull AdSelectionFromOutcomesConfig config) {
+    return CallbackToFutureAdapter.getFuture(
+        completer -> {
+          mAdSelectionManager.selectAds(
+              config,
+              mExecutor,
+              new OutcomeReceiver<AdSelectionOutcome, Exception>() {
+                @Override
+                public void onResult(@Nullable AdSelectionOutcome result) {
+                  completer.set(result);
+                }
+
+                @Override
+                public void onError(@NonNull Exception error) {
+                  completer.setException(error);
+                }
+              });
+          return "Ad Selection from outcomes";
+        });
+  }
 
   /**
    * Invokes the {@code reportImpression} method of {@link AdSelectionManager}, and returns a Void
