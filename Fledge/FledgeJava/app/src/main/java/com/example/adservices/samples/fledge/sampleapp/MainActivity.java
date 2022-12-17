@@ -283,21 +283,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Gets a given intent extra or returns the given default value
-     * @param intent The intent to get
-     * @param defaultValue The default value to return if intent doesn't exist
-     */
-    private String getIntentOrDefault(String intent, String defaultValue) {
-        String toReturn = getIntent().getStringExtra(intent);
-        if (toReturn == null) {
-            String message = String.format("No value for %s, defaulting to %s", intent, defaultValue);
-            Log.w(TAG, message);
-            toReturn = defaultValue;
-        }
-        return toReturn;
-    }
-
-    /**
      * Resolve the host of the given URI and returns an {@code AdTechIdentifier} object
      * @param uri Uri to resolve
      */

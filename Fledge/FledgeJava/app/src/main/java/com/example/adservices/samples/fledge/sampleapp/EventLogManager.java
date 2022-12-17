@@ -15,6 +15,7 @@
  */
 package com.example.adservices.samples.fledge.sampleapp;
 
+import android.text.method.ScrollingMovementMethod;
 import android.widget.TextView;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -27,7 +28,7 @@ public class EventLogManager {
   /**
    * The number of events to display
    */
-  private final int HISTORY_LENGTH = 8;
+  private final int HISTORY_LENGTH = 30;
 
   /**
    * Text that appears above the event log
@@ -49,6 +50,7 @@ public class EventLogManager {
    */
   public EventLogManager(TextView display) {
     this.mDisplay = display;
+    this.mDisplay.setMovementMethod(new ScrollingMovementMethod());
     render();
   }
 
@@ -62,6 +64,13 @@ public class EventLogManager {
       if (mEvents.size() > HISTORY_LENGTH) {
         mEvents.remove();
       }
+    }
+    render();
+  }
+
+  public void flush() {
+    synchronized (mEvents) {
+      mEvents.clear();
     }
     render();
   }
@@ -80,5 +89,4 @@ public class EventLogManager {
       mDisplay.setText(output);
     }
   }
-
 }

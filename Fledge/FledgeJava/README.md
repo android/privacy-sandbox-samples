@@ -24,7 +24,7 @@ For a full overview of how FLEDGE works, read the [design proposal]. Review the
 To test functionality of the FLEDGE API, you need to [set up your development
 environment].
 
-## Set up bidding code and impression reporting endpoints
+## Set up bidding, scoring, mediation code and impression reporting endpoints
 
 In order for ad selection components of the app to work, you must follow the 
 directions for a setting up a server located in the [FledgeServerSpec]
@@ -45,10 +45,21 @@ Next, run the following command
 adb shell "device_config put adservices fledge_js_isolate_enforce_max_heap_size false"
 ```
 
-Once the above steps are completed, you must launch with this command:
+Once the above steps are completed, you must launch with the below command:
 
+1. For vanilla ad selection and reporting
 ```shell
 adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity -e baseUrl [base server url] 
+```
+
+2. For Waterfall mediation flow
+```shell
+adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.WaterfallMediationActivity \
+-e mediationNetwork [waterfall_mediation_network_url] \
+-e networkA [waterfall_network_A_url] \
+-e networkB [waterfall_network_B_url] \
+-e networkC [waterfall_network_C_url]
+
 ```
 
 This command will inform the app where your server endpoints are running.
