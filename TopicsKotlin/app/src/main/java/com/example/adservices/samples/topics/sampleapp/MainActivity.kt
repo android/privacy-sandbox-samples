@@ -80,7 +80,8 @@ class MainActivity : AppCompatActivity() {
       TopicsManager::class.java)
     val mExecutor: Executor = Executors.newCachedThreadPool()
     val mTopicsRequestBuilder: GetTopicsRequest.Builder = GetTopicsRequest.Builder()
-    mTopicsRequestBuilder.setShouldRecordObservation(shouldRecordObservation)
+    //The following command is unavailable in the Android Privacy Sandbox Beta 1 release
+    //mTopicsRequestBuilder.setShouldRecordObservation(shouldRecordObservation)
     mTopicsRequestBuilder.setAdsSdkName(baseContext.packageName);
     mTopicsManager.getTopics(mTopicsRequestBuilder.build(), mExecutor,
       mCallback as OutcomeReceiver<GetTopicsResponse, Exception>

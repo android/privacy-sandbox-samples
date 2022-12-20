@@ -83,7 +83,8 @@ public class MainActivity extends AppCompatActivity {
         TopicsManager mTopicsManager = mContext.getSystemService(TopicsManager.class);
         Executor mExecutor = Executors.newCachedThreadPool();
         GetTopicsRequest.Builder mTopicsRequestBuilder = new GetTopicsRequest.Builder();
-        mTopicsRequestBuilder.setShouldRecordObservation(shouldRecordObservation);
+        //The following command is unavailable in the Android Privacy Sandbox Beta 1 release
+        //mTopicsRequestBuilder.setShouldRecordObservation(shouldRecordObservation);
         mTopicsRequestBuilder.setAdsSdkName(getBaseContext().getPackageName());
         mTopicsManager.getTopics(mTopicsRequestBuilder.build(),mExecutor,mCallback);
     }
