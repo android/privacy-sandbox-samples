@@ -18,16 +18,17 @@ plugins {
 }
 
 android {
-    compileSdkPreview "TiramisuPrivacySandbox"
+    compileSdk = 33
+    compileSdkExtension = 4
 
     defaultConfig {
         applicationId "com.example.adservices.samples.topics.sampleapp"
-        minSdkPreview "TiramisuPrivacySandbox"
-        targetSdkPreview "TiramisuPrivacySandbox"
         versionCode 2
         versionName "1.01"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        targetSdk 33
+        minSdk 33
     }
 
     compileOptions {
