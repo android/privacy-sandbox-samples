@@ -19,12 +19,13 @@ plugins {
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkPreview "TiramisuPrivacySandbox"
+    compileSdk = 33
+    compileSdkExtension = 4
 
     defaultConfig {
         applicationId "com.example.adservices.samples.fledge.sampleapp"
-        minSdkPreview "TiramisuPrivacySandbox"
-        targetSdkPreview "TiramisuPrivacySandbox"
+        targetSdkVersion 33
+        minSdkVersion 33
         versionCode 1
         versionName "1.0"
 

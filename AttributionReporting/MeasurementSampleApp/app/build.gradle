@@ -22,12 +22,13 @@ plugins {
 }
 
 android {
-    compileSdkPreview 'TiramisuPrivacySandbox'
+    compileSdk = 33
+    compileSdkExtension = 4
 
     defaultConfig {
         applicationId "com.example.measurement.sampleapp"
-        minSdkPreview "TiramisuPrivacySandbox"
-        targetSdkPreview "TiramisuPrivacySandbox"
+        minSdkVersion 33
+        targetVersion 33
         versionCode 3
         versionName "1.02"
 
