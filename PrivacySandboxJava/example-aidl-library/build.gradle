@@ -23,13 +23,12 @@ android {
             aidl.srcDirs = ['src']
         }
     }
-    compileSdkPreview "TiramisuPrivacySandbox"
+    compileSdk = 33
+    compileSdkExtension = 4
 
     defaultConfig {
-        minSdkPreview "TiramisuPrivacySandbox"
-        targetSdkPreview "TiramisuPrivacySandbox"
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion 33
+        targetSdkVersion 33
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -57,5 +56,8 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildFeatures {
+        aidl = true
     }
 }

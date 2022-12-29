@@ -16,6 +16,7 @@
 
 pluginManagement {
     repositories {
+        maven { url 'https://androidx.dev/snapshots/builds/9263393/artifacts/repository/' }
         gradlePluginPortal()
         google()
         mavenCentral()
@@ -24,6 +25,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven { url 'https://androidx.dev/snapshots/builds/9263393/artifacts/repository/' }
         google()
         mavenCentral()
     }

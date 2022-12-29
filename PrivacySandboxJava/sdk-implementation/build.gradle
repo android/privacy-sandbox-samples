@@ -19,11 +19,12 @@ plugins {
 
 android {
     namespace 'com.example.sdkimplementation'
-    compileSdkPreview "TiramisuPrivacySandbox"
+    compileSdk = 33
+    compileSdkExtension = 4
 
     defaultConfig {
-        minSdkPreview "TiramisuPrivacySandbox"
-        targetSdkPreview "TiramisuPrivacySandbox"
+        minSdkVersion 33
+        targetSdkVersion 33
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"

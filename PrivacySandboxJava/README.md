@@ -26,6 +26,16 @@ There are two methods for building and installing the SDK. The preferred option 
 Studio's UI to handle building and deploying the SDK and launching the client app. However, it is
 possible to build the app bundle and install the APK via the command line, then run the client app.
 
+### Setting up your device
+You will need to override a few flags to get the Privacy Sandbox enabled on your device. Before
+installing the app, run the following commands:
+
+```shell
+adb shell device_config put adservices adservice_system_service_enabled false
+adb shell device_config put adservices global_kill_switch false
+adb shell device_config put adservices disable_sdk_sandbox false
+```
+
 ### From the UI
 In Android Studio, edit your run configuration as follows:
 Edit run configurations > client-app > Deploy > Default APK. Then, under Launch Options,
