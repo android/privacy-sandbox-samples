@@ -16,6 +16,7 @@
 package com.example.adservices.samples.fledge.clients
 
 import android.adservices.adselection.AdSelectionManager
+import android.adservices.adselection.AddAdSelectionFromOutcomesOverrideRequest
 import android.adservices.adselection.AddAdSelectionOverrideRequest
 import android.adservices.adselection.RemoveAdSelectionOverrideRequest
 import android.adservices.adselection.TestAdSelectionManager
@@ -97,6 +98,59 @@ class TestAdSelectionClient private constructor(
   fun resetAllAdSelectionConfigRemoteOverrides(): ListenableFuture<Void?>? {
     return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
       mTestAdSelectionManager.resetAllAdSelectionConfigRemoteOverrides(
+        mExecutor,
+        object : OutcomeReceiver<Any?, Exception> {
+          override fun onResult(ignoredResult: Any) {
+            completer.set(null)
+          }
+
+          override fun onError(error: Exception) {
+            completer.setException(error)
+          }
+        })
+      "resetAllAdSelectionConfigRemoteOverrides"
+    }
+  }
+
+  /**
+   * Invokes the {@code overrideAdSelectionFromOutcomesConfigRemoteInfo} method of {@link
+   * AdSelectionManager}, and returns a Void future
+   *
+   * <p>This method is only available when Developer mode is enabled and the app is debuggable.
+   *
+   * @hide
+   */
+  fun overrideAdSelectionFromOutcomesConfigRemoteInfo(
+    request: AddAdSelectionFromOutcomesOverrideRequest,
+  ): ListenableFuture<Void?> {
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
+      mTestAdSelectionManager.overrideAdSelectionFromOutcomesConfigRemoteInfo(
+        request,
+        mExecutor,
+        object : OutcomeReceiver<Any?, java.lang.Exception> {
+          override fun onResult(ignoredResult: Any) {
+            completer.set(null)
+          }
+
+          override fun onError(error: java.lang.Exception) {
+            completer.setException(error)
+          }
+        })
+      "overrideAdSelectionConfigRemoteInfo"
+    }
+  }
+
+  /**
+   * Invokes the {@code removeAdSelectionConfigRemoteInfoOverride} method of {@link
+   * AdSelectionManager}, and returns a Void future
+   *
+   * <p>This method is only available when Developer mode is enabled and the app is debuggable.
+   *
+   * @hide
+   */
+  fun resetAllAdSelectionFromOutcomesConfigRemoteOverrides(): ListenableFuture<Void?> {
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
+      mTestAdSelectionManager.resetAllAdSelectionFromOutcomesConfigRemoteOverrides(
         mExecutor,
         object : OutcomeReceiver<Any?, Exception> {
           override fun onResult(ignoredResult: Any) {

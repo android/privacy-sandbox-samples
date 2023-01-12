@@ -16,6 +16,7 @@
 package com.example.adservices.samples.fledge.clients
 
 import android.adservices.adselection.AdSelectionConfig
+import android.adservices.adselection.AdSelectionFromOutcomesConfig
 import android.adservices.adselection.AdSelectionManager
 import android.adservices.adselection.AdSelectionOutcome
 import android.adservices.adselection.ReportImpressionRequest
@@ -47,6 +48,34 @@ class AdSelectionClient private constructor(
     return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<AdSelectionOutcome?> ->
       adSelectionManager.selectAds(
         adSelectionConfig,
+        executor,
+        object : OutcomeReceiver<AdSelectionOutcome, Exception> {
+          override fun onResult(result: AdSelectionOutcome) {
+            completer.set(
+              AdSelectionOutcome.Builder()
+                .setAdSelectionId(result.adSelectionId)
+                .setRenderUri(result.renderUri)
+                .build())
+          }
+
+          override fun onError(error: Exception) {
+            completer.setException(error)
+          }
+        })
+      "Ad Selection"
+    }
+  }
+
+  /**
+   * Invokes the {@code selectAds} method of {@link AdSelectionManager}, and returns a future with
+   * {@link AdSelectionOutcome} if succeeds, or an {@link Exception} if fails.
+   */
+  fun selectAds(
+    adSelectionFromOutcomesConfig: AdSelectionFromOutcomesConfig
+  ): ListenableFuture<AdSelectionOutcome?> {
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<AdSelectionOutcome?> ->
+      adSelectionManager.selectAds(
+        adSelectionFromOutcomesConfig,
         executor,
         object : OutcomeReceiver<AdSelectionOutcome, Exception> {
           override fun onResult(result: AdSelectionOutcome) {

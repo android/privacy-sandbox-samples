@@ -27,7 +27,7 @@ private const val TITLE = "Event Log"
 /**
  * The number of events to display
  */
-private const val HISTORY_LENGTH = 8
+private const val HISTORY_LENGTH = 30
 
 /**
  * Class that manages a text view event log and shows the HISTORY_LENGTH most recent events
@@ -56,6 +56,13 @@ class EventLogManager(
       if (events.size > HISTORY_LENGTH) {
         events.remove()
       }
+    }
+    render()
+  }
+
+  fun flush() {
+    synchronized(events) {
+      events.clear()
     }
     render()
   }
