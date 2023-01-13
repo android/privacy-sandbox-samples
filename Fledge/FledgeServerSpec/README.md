@@ -1,6 +1,10 @@
 # FLEDGE Server Spec
 
-## Option 1: Remote Overrides (Default)
+## Single SSP Auctions
+To run a single SSP Auctions, you can follow one of the options below for to 
+either use overrides or one server to represent your SSP.
+
+### Option 1: Remote Overrides (Default)
 
 To enable the usage of the remote overrides APIs in the sample app, you will
 need to set up a reporting HTTPS endpoint that your test device or emulator can
@@ -33,12 +37,12 @@ This is what the signals will look like:
             + "}";
 ```
 
-### OpenAPI Definitions
+#### OpenAPI Definitions
 
 For convenience, we have provided OpenAPI definitions for how the reporting
 endpoint could be run in `mock-server.json`.
 
-### Set-Up Directions With OpenAPI Specs
+#### Set-Up Directions With OpenAPI Specs
 
 1. Find a server mocking tool which can run servers based on OpenAPI specs.
 2. Import the `mock-server.json` spec and begin running a server.
@@ -48,7 +52,7 @@ The impression reporting endpoint need only return a 200 status code -- the
 response content does not matter. To verify that impressions were reported,
 check the call logs for the reporting endpoint.
 
-## Option 2: Mock Server
+### Option 2: Mock Server
 To instead use a mock server for ad selection and reporting, you will need to set
 up 7 HTTPS endpoints that your test device or emulator can access. They are:
 
@@ -60,6 +64,7 @@ up 7 HTTPS endpoints that your test device or emulator can access. They are:
 
 3. A seller scoring logic endpoint that serves the sample `ScoringLogic.js`
    JavaScript in this directory.
+
 4. A [scoring signals](https://developer.android.com/design-for-safety/privacy-sandbox/fledge#ad-selection-ad-tech-platform-managed-trusted-server)
    endpoint that serves the sample `ScoringSignals.json` in this directory.
 
@@ -78,7 +83,7 @@ The impression reporting endpoints need only return a 200 status code -- the
 response content does not matter. To verify that impressions were reported,
 check the call logs for endpoints 3 and 4.
 
-### OpenAPI Definitions
+#### OpenAPI Definitions
 
 For convenience, we have provided OpenAPI definitions for how these endpoints
 could be run in `mock-server.json`, which manages endpoints all 1-7. In order for `mock-server.json` to be usable, the
@@ -86,7 +91,7 @@ could be run in `mock-server.json`, which manages endpoints all 1-7. In order fo
 the address of the server, and the `trusted_bidding_uri` and `render_uri` fields in the daily fetch response should be changed to match the
 domain of the server.
 
-### Set-Up Directions With OpenAPI Specs
+#### Set-Up Directions With OpenAPI Specs
 
 1. Find a server mocking tool which can run servers based on OpenAPI specs.
 2. Import the `mock-server.json` spec and begin running the server.
@@ -95,3 +100,20 @@ domain of the server.
 4. Replace all occurrences of "js.example.com" in the daily fetch response with
    the URL of the server.
 5. Monitor the call log of the server to see data reported by FLEDGE.
+
+
+##  Waterfall Mediation
+To demonstrate Waterfall mediation you need to create at least 2 SSPs; one 
+mediation SSP and at least one participant SSP. You have two options; using 
+overrides or setting up mock servers.
+
+### Option 1: Remote Overrides (Default)
+Follow Single SSP Auctions, Option 1 to set up overrides. Repeat that process 
+for each SSP. Addition to bidding and scoring, use the sample 
+`WaterfallMediationOutcomeSelectionLogic.js` JavaScript in this directory.
+
+### Option 2: Mock Server
+Follow Single SSP Auction, Option 2 to set up mock servers. Repeat that process 
+for each SSP. For the SSP that will orchestrate the waterfall mediation, Add a 
+waterfall mediation logic endpoint that serves the sample 
+`WaterfallMediationOutcomeSelectionLogic.js` JavaScript in this directory.

@@ -10,6 +10,26 @@
     }
   ],
   "paths": {
+    "/waterfall_mediation": {
+      "get": {
+        "tags": [
+          "default"
+        ],
+        "summary": "/waterfall_mediation",
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "/**\n * Returns the outcome passed if its bid is higher than the bid floor,\n * otherwise returns null\n */ \nfunction selectOutcome(outcomes, selection_signals) {\n    const outcome_1p = outcomes[0];\n    const bid_floor = selection_signals.bid_floor;\n    return {'status': 0, 'result': (outcome_1p.bid >= bid_floor) ? outcome_1p : null};\n}"
+              }
+            }
+          }
+        }
+      }
+    },
     "/bidding": {
       "get": {
         "tags": [
