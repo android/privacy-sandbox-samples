@@ -58,16 +58,10 @@
           "product": ["1234", "234"],
           "ctid": ["id"]
         },
-        "aggregation_keys": [
-          {
-            "id": "campaignCounts",
-            "key_piece": "0x159"
-          },
-          {
-            "id": "geoValue",
-            "key_piece": "0x5"
-          }
-        ]
+        "aggregation_keys": {
+          "campaignCounts": "0x159",
+          "geoValue": "0x5"
+        }
       },
       "Attribution-Reporting-Redirect": []
     },
@@ -82,16 +76,10 @@
           "product": ["1234", "234"],
           "ctid": ["id"]
         },
-        "aggregation_keys": [
-          {
-            "id": "campaignCounts",
-            "key_piece": "0x159"
-          },
-          {
-            "id": "geoValue",
-            "key_piece": "0x5"
-          }
-        ]
+        "aggregation_keys": {
+          "campaignCounts": "0x159",
+          "geoValue": "0x5"
+        }
       },
       "Attribution-Reporting-Redirect": []
     }
