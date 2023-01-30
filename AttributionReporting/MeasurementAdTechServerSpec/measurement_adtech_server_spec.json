@@ -129,7 +129,7 @@
             "EventReport": {
                 "type": "object",
                 "properties": {
-                    "attribution-destination": {
+                    "attribution_destination": {
                         "type": "string"
                     },
                     "source_event_id": {
