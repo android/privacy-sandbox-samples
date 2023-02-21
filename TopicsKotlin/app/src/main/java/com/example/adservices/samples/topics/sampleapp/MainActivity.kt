@@ -15,20 +15,20 @@
  */
 package com.example.adservices.samples.topics.sampleapp
 
-import android.adservices.topics.GetTopicsRequest
-import android.adservices.topics.GetTopicsResponse
-import android.adservices.topics.TopicsManager
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.os.OutcomeReceiver
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
+import androidx.lifecycle.lifecycleScope
+import androidx.privacysandbox.ads.adservices.topics.GetTopicsRequest
+import androidx.privacysandbox.ads.adservices.topics.TopicsManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 
 @SuppressLint("NewApi")
 
@@ -50,6 +50,9 @@ class MainActivity : AppCompatActivity() {
   //Button that launches settings UI
   private var settingsAppButton: Button? = null
   private var RB_SETTING_APP_INTENT = "android.adservices.ui.SETTINGS"
+
+  private lateinit var mTopicsManager: TopicsManager
+  private lateinit var mTopicsRequestBuilder: GetTopicsRequest.Builder
 
   //This value is passed into the GetTopicsRequest builder to indicate whether or not the caller wants to
   //be registered as having received a topic, and therefor eligible to receive one in the next epoch
@@ -76,58 +79,51 @@ class MainActivity : AppCompatActivity() {
   //TopicGetter holds all of the setup and code for creating a TopicsManager and getTopics call
   fun TopicGetter() {
     val mContext = baseContext
-    val mTopicsManager = mContext.getSystemService(
-      TopicsManager::class.java)
-    val mExecutor: Executor = Executors.newCachedThreadPool()
-    val mTopicsRequestBuilder: GetTopicsRequest.Builder = GetTopicsRequest.Builder()
-    //The following command is unavailable in the Android Privacy Sandbox Beta 1 release
-    //mTopicsRequestBuilder.setShouldRecordObservation(shouldRecordObservation)
+    mTopicsManager = TopicsManager.obtain(mContext)
+            ?: throw Exception("Device does not support AdServices APIs.")
+    mTopicsRequestBuilder = GetTopicsRequest.Builder()
+    // The following command is unavailable in the Android Privacy Sandbox Beta 1 release
+    // mTopicsRequestBuilder.setShouldRecordObservation(shouldRecordObservation)
     mTopicsRequestBuilder.setAdsSdkName(baseContext.packageName);
-    mTopicsManager.getTopics(mTopicsRequestBuilder.build(), mExecutor,
-      mCallback as OutcomeReceiver<GetTopicsResponse, Exception>
-    )
+    try {
+      makeRequest()
+    } catch (e: IllegalStateException) {
+      results.text = "No response: " + e.message
+    }
   }
 
-  //onResult is called when getTopics successfully comes back with an answer
-  var mCallback: OutcomeReceiver<*, *> =
-    object : OutcomeReceiver<GetTopicsResponse, java.lang.Exception> {
-      override fun onResult(result: GetTopicsResponse) {
-        val topicsResult = result.topics;
-        for (i in topicsResult.indices)
+  private fun makeRequest() {
+    lifecycleScope.launch(Dispatchers.Main) {
+      val result = async {
+        mTopicsManager.getTopics(mTopicsRequestBuilder.build())
+      }
+      val topicsResult = result.await().topics;
+      for (i in topicsResult.indices)
+      {
+        if(mTaxonomy.get(topicsResult[i].topicId)!=null)
         {
-          if(mTaxonomy.get(topicsResult[i].topicId)!=null)
-          {
-            Log.i("Topic", mTaxonomy.get(topicsResult[i].topicId).toString())
-            if (results.isEnabled) {
-              results.text = mTaxonomy.get(topicsResult[i].topicId)
-            }
-          }
-          else {
-            Log.i(
-              "Topic", "Topic ID " + Integer.toString(
-                result.topics[i].topicId
-              ) + " was not found in Taxonomy"
-            )
-            results.text = "Returned with value but value not found in Taxonomy"
+          Log.i("Topic", mTaxonomy.get(topicsResult[i].topicId).toString())
+          if (results.isEnabled) {
+            results.text = mTaxonomy.get(topicsResult[i].topicId)
           }
         }
-        if (topicsResult.size == 0) {
-          Log.i("Topic", "Returned Empty")
-          if (results.isEnabled) {
-            results.text = "Returned Empty"
-          }
+        else {
+          Log.i(
+                  "Topic", "Topic ID " + Integer.toString(
+                  topicsResult[i].topicId
+          ) + " was not found in Taxonomy"
+          )
+          results.text = "Returned with value but value not found in Taxonomy"
         }
       }
-
-      //onError should not be returned, even invalid topics callers should simply return empty
-      override fun onError(error: java.lang.Exception) {
-        // Handle error
-        Log.i("Topic", "Experienced an Error, and did not return successfully")
+      if (topicsResult.size == 0) {
+        Log.i("Topic", "Returned Empty")
         if (results.isEnabled) {
-          results.text = "Returned An Error: " + error.message
+          results.text = "Returned Empty"
         }
       }
     }
+  }
 
   //Does setup for button on screen that will launch settings UI to observe Topics info as an end user will
   private fun registerLaunchSettingsAppButton() {
