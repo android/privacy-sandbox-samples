@@ -17,6 +17,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -84,8 +85,8 @@ dependencies {
     //dagger
     implementation "com.google.dagger:dagger-android:2.35.1"
     implementation "com.google.dagger:dagger-android-support:2.25.2"
-    implementation "com.google.dagger:dagger-compiler:2.25.2"
-    implementation "com.google.dagger:dagger-android-processor:2.25.2"
+    kapt "com.google.dagger:dagger-compiler:2.25.2"
+    kapt "com.google.dagger:dagger-android-processor:2.25.2"
 
     implementation "com.squareup.okhttp3:okhttp:4.9.3"
     implementation "com.google.code.gson:gson:2.8.6"
