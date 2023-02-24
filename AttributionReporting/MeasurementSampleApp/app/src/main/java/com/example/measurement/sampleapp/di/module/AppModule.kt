@@ -15,9 +15,9 @@
  */
 package com.example.measurement.sampleapp.di.module
 
-import android.adservices.measurement.MeasurementManager
 import android.app.Application
 import android.content.Context
+import androidx.privacysandbox.ads.adservices.measurement.MeasurementManager
 import dagger.Module
 import dagger.Provides
 
@@ -39,5 +39,6 @@ internal class AppModule() {
 
   @Provides
   fun provideMeasurementManager(context: Context): MeasurementManager =
-   context.getSystemService(MeasurementManager::class.java)
+   MeasurementManager.obtain(context)
+       ?: throw Exception("Device does not support AdServices APIs.")
 }
