@@ -15,24 +15,24 @@
  */
 package com.example.adservices.samples.topics.sampleapp;
 
-import android.adservices.topics.GetTopicsRequest;
-import android.adservices.topics.GetTopicsResponse;
-import android.adservices.topics.TopicsManager;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.os.OutcomeReceiver;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import android.os.Bundle;
+import androidx.privacysandbox.ads.adservices.java.topics.TopicsManagerFutures;
+import androidx.privacysandbox.ads.adservices.topics.GetTopicsRequest;
+import androidx.privacysandbox.ads.adservices.topics.GetTopicsResponse;
+import androidx.privacysandbox.ads.adservices.topics.Topic;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 @SuppressLint("NewApi")
 /**
  * Android application activity for testing Topics API by sending a call to
@@ -52,6 +52,9 @@ public class MainActivity extends AppCompatActivity {
     //Button that launches settings UI
     private Button mSettingsAppButton;
     private static final String RB_SETTING_APP_INTENT = "android.adservices.ui.SETTINGS";
+
+    private TopicsManagerFutures mTopicsManager;
+    private GetTopicsRequest.Builder mTopicsRequestBuilder;
 
     //This value is passed into the GetTopicsRequest builder to indicate whether or not the caller wants to
     //be registered as having received a topic, and therefor eligible to receive one in the next epoch
@@ -73,59 +76,69 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         packageNameDisplay.setText(getBaseContext().getPackageName());
-        TopicGetter();
+        try {
+            TopicGetter();
+        } catch (Exception e) {
+            results.setText("Exception: " + e.getMessage());
+        }
     }
 
     //TopicGetter holds all of the setup and code for creating a TopicsManager and getTopics call
-    public void TopicGetter() {
+    public void TopicGetter() throws Exception {
         Context mContext = getBaseContext();
         createTaxonomy();
-        TopicsManager mTopicsManager = mContext.getSystemService(TopicsManager.class);
-        Executor mExecutor = Executors.newCachedThreadPool();
-        GetTopicsRequest.Builder mTopicsRequestBuilder = new GetTopicsRequest.Builder();
-        //The following command is unavailable in the Android Privacy Sandbox Beta 1 release
-        //mTopicsRequestBuilder.setShouldRecordObservation(shouldRecordObservation);
+        mTopicsManager = TopicsManagerFutures.from(mContext);
+        if (mTopicsManager == null) {
+            throw new Exception("Device does not support AdServices APIs.");
+        }
+        mTopicsRequestBuilder = new GetTopicsRequest.Builder();
         mTopicsRequestBuilder.setAdsSdkName(getBaseContext().getPackageName());
-        mTopicsManager.getTopics(mTopicsRequestBuilder.build(),mExecutor,mCallback);
+
+        try {
+            makeRequest();
+        } catch (IllegalStateException e) {
+            results.setText("No response: " + e.getMessage());
+        }
     }
 
-    //onResult is called when getTopics successfully comes back with an answer
-    OutcomeReceiver mCallback = new OutcomeReceiver<GetTopicsResponse, Exception>() {
-        @Override
-        public void onResult(@NonNull GetTopicsResponse result) {
-            for (int i = 0; i < result.getTopics().size(); i++) {
-                if(mTaxonomy.get((result.getTopics().get(i).getTopicId()))!=null)
-                {
-                    Log.i("Topic", mTaxonomy.get(result.getTopics().get(i).getTopicId()));
-                    if (results.isEnabled()) {
-                        //Receives the Topic ID and pulls the corresponding entry from the Topics Taxonomy
-                        results.setText(mTaxonomy.get(result.getTopics().get(i).getTopicId()));
+    private void makeRequest() {
+        ListenableFuture<GetTopicsResponse> responseFuture = mTopicsManager
+            .getTopicsAsync(mTopicsRequestBuilder.build());
+        Futures.addCallback(
+            responseFuture,
+            new FutureCallback<GetTopicsResponse>() {
+                @Override
+                public void onSuccess(GetTopicsResponse result) {
+                    for (Topic t : result.getTopics()) {
+                        if (mTaxonomy.containsKey(t.getTopicId())) {
+                            Log.i("Topic", mTaxonomy.get(t.getTopicId()));
+                            if (results.isEnabled()) {
+                                // Receives the Topic ID and pulls the corresponding entry from the Topics Taxonomy
+                                results.setText(mTaxonomy.get(t.getTopicId()));
+                            }
+                        } else {
+                            Log.i("Topic", "Topic ID " + Integer.toString(t.getTopicId()) + " was not found in Taxonomy");
+                            results.setText("Returned with value but value not found in Taxonomy");
+                        }
+                    }
+                    if (result.getTopics().size() == 0) {
+                        Log.i("Topic", "Returned Empty");
+                        if (results.isEnabled()) {
+                            results.setText("Returned Empty");
+                        }
                     }
                 }
-                else
-                {
-                    Log.i("Topic", "Topic ID " + Integer.toString(result.getTopics().get(i).getTopicId()) + " was not found in Taxonomy");
-                    results.setText("Returned with value but value not found in Taxonomy");
-                }
-            }
-            if (result.getTopics().size() == 0) {
-                Log.i("Topic", "Returned Empty");
-                if (results.isEnabled()) {
-                    results.setText("Returned Empty");
-                }
-            }
-        }
 
-        //onError should not be returned, even invalid topics callers should simply return empty
-        @Override
-        public void onError(@NonNull Exception error) {
-            // Handle error
-            Log.i("Topic", "Experienced an Error, and did not return successfully");
-            if (results.isEnabled()) {
-                results.setText("Returned An Error: " + error.getMessage());
-            }
-        }
-    };
+                @Override
+                public void onFailure(Throwable t) {
+                    Log.i("Topic", "Experienced an Error, and did not return successfully");
+                    if (results.isEnabled()) {
+                        results.setText("Returned An Error: " + t.getMessage());
+                    }
+                }
+            },
+            getBaseContext().getMainExecutor());
+    }
 
     //Does setup for button on screen that will launch settings UI to observe Topics info as an end user will
     private void registerLaunchSettingsAppButton() {
