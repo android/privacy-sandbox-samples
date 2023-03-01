@@ -122,14 +122,8 @@ android {
 
 dependencies {
 
-    constraints {
-        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0") {
-            because("kotlin-stdlib-jdk7 is now a part of kotlin-stdlib")
-        }
-        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0") {
-            because("kotlin-stdlib-jdk8 is now a part of kotlin-stdlib")
-        }
-    }
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.0")
     implementation("androidx.privacysandbox.ads:ads-adservices:1.0.0-beta01")
     implementation("androidx.privacysandbox.ads:ads-adservices-java:1.0.0-beta01")
     implementation 'androidx.appcompat:appcompat:1.4.1'

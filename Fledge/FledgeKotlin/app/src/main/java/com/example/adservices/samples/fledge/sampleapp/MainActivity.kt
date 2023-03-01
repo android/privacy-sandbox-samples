@@ -15,8 +15,6 @@
  */
 package com.example.adservices.samples.fledge.sampleapp
 
-import android.adservices.common.AdSelectionSignals
-import android.adservices.common.AdTechIdentifier
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -24,6 +22,8 @@ import android.util.Log
 import android.widget.CompoundButton
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.privacysandbox.ads.adservices.common.AdSelectionSignals
+import androidx.privacysandbox.ads.adservices.common.AdTechIdentifier
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding
 import java.io.BufferedReader
 import java.io.IOException
@@ -33,7 +33,6 @@ import java.time.Instant
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.stream.Collectors
-import kotlin.math.E
 
 
 // Log tag
@@ -79,11 +78,11 @@ private const val MISSING_FIELD_STRING_FORMAT_USE_OVERRIDES = ("ERROR: Cannot di
 @RequiresApi(api = 34)
 class MainActivity : AppCompatActivity() {
   // JSON string objects that will be used during ad selection
-  private val TRUSTED_SCORING_SIGNALS = AdSelectionSignals.fromString("{\n"
+  private val TRUSTED_SCORING_SIGNALS = AdSelectionSignals("{\n"
                                                                         + "\t\"render_uri_1\": \"signals_for_1\",\n"
                                                                         + "\t\"render_uri_2\": \"signals_for_2\"\n"
                                                                         + "}")
-  private val TRUSTED_BIDDING_SIGNALS = AdSelectionSignals.fromString("{\n"
+  private val TRUSTED_BIDDING_SIGNALS = AdSelectionSignals("{\n"
                                                                               + "\t\"example\": \"example\",\n"
                                                                               + "\t\"valid\": \"Also valid\",\n"
                                                                               + "\t\"list\": \"list\",\n"
@@ -110,15 +109,15 @@ class MainActivity : AppCompatActivity() {
    * tying the UI elements to the wrappers so that button clicks trigger the appropriate methods.
    */
   override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState);
-    context = applicationContext;
-    binding = ActivityMainBinding.inflate(layoutInflater);
-    val view = binding!!.root;
-    setContentView(view);
-    eventLog = EventLogManager(binding!!.eventLog);
+    super.onCreate(savedInstanceState)
+    context = applicationContext
+    binding = ActivityMainBinding.inflate(layoutInflater)
+    val view = binding!!.root
+    setContentView(view)
+    eventLog = EventLogManager(binding!!.eventLog)
     try {
       // Get override reporting URI
-      var reportingUriString = getIntentOrDefault("reportingUrl", REPORTING_OVERRIDE_URI)
+      val reportingUriString = getIntentOrDefault("reportingUrl", REPORTING_OVERRIDE_URI)
 
       // Replace override URIs in JS
       overrideDecisionJS = replaceReportingURI(assetFileToString(DECISION_LOGIC_FILE),
@@ -193,7 +192,7 @@ class MainActivity : AppCompatActivity() {
     setupReportImpressionButton(adWrapper!!, binding!!, eventLog!!)
 
     // Setup remote overrides by default
-    useOverrides(eventLog!! ,adWrapper!!, caWrapper!!, overrideDecisionJS!!, overrideBiddingJs!!,TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context!!);
+    useOverrides(eventLog!! ,adWrapper!!, caWrapper!!, overrideDecisionJS!!, overrideBiddingJs!!,TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context!!)
   }
 
   /**
@@ -225,7 +224,7 @@ class MainActivity : AppCompatActivity() {
      if (isChecked) {
        caWrapper.joinCa(SHOES_CA_NAME,
                         context.packageName,
-                        AdTechIdentifier.fromString(biddingUri.host!!),
+                        AdTechIdentifier(biddingUri.host!!),
                         biddingUri,
                         Uri.parse(
                           "$biddingUri/render_$SHOES_CA_NAME"),
@@ -234,7 +233,7 @@ class MainActivity : AppCompatActivity() {
                         eventLog::writeEvent,
                         calcExpiry(ONE_DAY_EXPIRY))
      } else {
-       caWrapper.leaveCa(SHOES_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), eventLog::writeEvent)
+       caWrapper.leaveCa(SHOES_CA_NAME, context.packageName, AdTechIdentifier(biddingUri.host!!), eventLog::writeEvent)
      }
     }
 
@@ -243,7 +242,7 @@ class MainActivity : AppCompatActivity() {
       if (isChecked) {
         caWrapper.joinCa(SHIRTS_CA_NAME,
                          context.packageName,
-                         AdTechIdentifier.fromString(biddingUri.host!!),
+                         AdTechIdentifier(biddingUri.host!!),
                          biddingUri,
                          Uri.parse(
                            "$biddingUri/render_$SHOES_CA_NAME"),
@@ -252,7 +251,7 @@ class MainActivity : AppCompatActivity() {
                          eventLog::writeEvent,
                          calcExpiry(ONE_DAY_EXPIRY))
       } else {
-        caWrapper.leaveCa(SHIRTS_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), eventLog::writeEvent)
+        caWrapper.leaveCa(SHIRTS_CA_NAME, context.packageName, AdTechIdentifier(biddingUri.host!!), eventLog::writeEvent)
       }
     }
 
@@ -261,7 +260,7 @@ class MainActivity : AppCompatActivity() {
       if (isChecked) {
         caWrapper.joinCa(SHORT_EXPIRING_CA_NAME,
                          context.packageName,
-                         AdTechIdentifier.fromString(biddingUri.host!!),
+                         AdTechIdentifier(biddingUri.host!!),
                          biddingUri,
                          Uri.parse(
                            "$biddingUri/render_$SHOES_CA_NAME"),
@@ -270,7 +269,7 @@ class MainActivity : AppCompatActivity() {
                          eventLog::writeEvent,
                          calcExpiry(THIRTY_SECONDS_EXPIRY))
       } else {
-        caWrapper.leaveCa(SHORT_EXPIRING_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), eventLog::writeEvent)
+        caWrapper.leaveCa(SHORT_EXPIRING_CA_NAME, context.packageName, AdTechIdentifier(biddingUri.host!!), eventLog::writeEvent)
       }
     }
 
@@ -279,14 +278,14 @@ class MainActivity : AppCompatActivity() {
       if (isChecked) {
         caWrapper.joinEmptyFieldCa(INVALID_FIELD_CA_NAME,
                                    context.packageName,
-                                   AdTechIdentifier.fromString(biddingUri.host!!),
+                                   AdTechIdentifier(biddingUri.host!!),
                                    biddingUri,
                                    Uri.parse(
                            "$biddingUri/render_$SHOES_CA_NAME"),
                                    eventLog::writeEvent,
                                    calcExpiry(THIRTY_SECONDS_EXPIRY))
       } else {
-        caWrapper.leaveCa(SHORT_EXPIRING_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), eventLog::writeEvent)
+        caWrapper.leaveCa(SHORT_EXPIRING_CA_NAME, context.packageName, AdTechIdentifier(biddingUri.host!!), eventLog::writeEvent)
       }
     }
   }
@@ -321,20 +320,41 @@ class MainActivity : AppCompatActivity() {
     adSelectionWrapper.overrideAdSelection({ event: String? ->
                                              eventLog.writeEvent(
                                                event!!)
-                                           }, decisionLogicJs, trustedScoringSignals)
-    customAudienceWrapper.addCAOverride(SHOES_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, trustedScoringSignals) { event: String? ->
+                                           }, decisionLogicJs,
+                                           android.adservices.common.AdSelectionSignals.fromString(trustedScoringSignals.toString()))
+    customAudienceWrapper.addCAOverride(
+      SHOES_CA_NAME,
+      context.packageName,
+      android.adservices.common.AdTechIdentifier.fromString(biddingUri.host!!),
+      biddingLogicJs,
+      android.adservices.common.AdSelectionSignals.fromString(trustedScoringSignals.toString())) { event: String? ->
       eventLog.writeEvent(
         event!!)
     }
-    customAudienceWrapper.addCAOverride(SHIRTS_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, trustedBiddingSignals) { event: String? ->
+    customAudienceWrapper.addCAOverride(
+      SHIRTS_CA_NAME,
+      context.packageName,
+      android.adservices.common.AdTechIdentifier.fromString(biddingUri.host!!),
+      biddingLogicJs,
+      android.adservices.common.AdSelectionSignals.fromString(trustedBiddingSignals.toString())) { event: String? ->
       eventLog.writeEvent(
         event!!)
     }
-    customAudienceWrapper.addCAOverride(SHORT_EXPIRING_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, trustedBiddingSignals) { event: String? ->
+    customAudienceWrapper.addCAOverride(
+      SHORT_EXPIRING_CA_NAME,
+      context.packageName,
+      android.adservices.common.AdTechIdentifier.fromString(biddingUri.host!!),
+      biddingLogicJs,
+      android.adservices.common.AdSelectionSignals.fromString(trustedBiddingSignals.toString())) { event: String? ->
       eventLog.writeEvent(
         event!!)
     }
-    customAudienceWrapper.addCAOverride(INVALID_FIELD_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, trustedBiddingSignals) { event: String? ->
+    customAudienceWrapper.addCAOverride(
+      INVALID_FIELD_CA_NAME,
+      context.packageName,
+      android.adservices.common.AdTechIdentifier.fromString(biddingUri.host!!),
+      biddingLogicJs,
+      android.adservices.common.AdSelectionSignals.fromString(trustedBiddingSignals.toString())) { event: String? ->
       eventLog.writeEvent(
         event!!)
     }
@@ -376,7 +396,7 @@ class MainActivity : AppCompatActivity() {
    * @param uri Uri to resolve
    */
   private fun resolveAdTechIdentifier(uri: Uri) : AdTechIdentifier{
-    return AdTechIdentifier.fromString(uri.host!!)
+    return AdTechIdentifier(uri.host!!)
   }
 
   /**

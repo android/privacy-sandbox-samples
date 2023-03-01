@@ -44,7 +44,7 @@ class TestAdSelectionClient private constructor(
    */
   fun overrideAdSelectionConfigRemoteInfo(
     request: AddAdSelectionOverrideRequest,
-  ): ListenableFuture<Void?>? {
+  ): ListenableFuture<Void?> {
     return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
       mTestAdSelectionManager.overrideAdSelectionConfigRemoteInfo(
         request,
@@ -70,7 +70,7 @@ class TestAdSelectionClient private constructor(
    */
   fun removeAdSelectionConfigRemoteInfoOverride(
     request: RemoveAdSelectionOverrideRequest,
-  ): ListenableFuture<Void?>? {
+  ): ListenableFuture<Void?> {
     return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
       mTestAdSelectionManager.removeAdSelectionConfigRemoteInfoOverride(
         request,
@@ -94,7 +94,7 @@ class TestAdSelectionClient private constructor(
    *
    * <p>This method is only available when Developer mode is enabled and the app is debuggable.
    */
-  fun resetAllAdSelectionConfigRemoteOverrides(): ListenableFuture<Void?>? {
+  fun resetAllAdSelectionConfigRemoteOverrides(): ListenableFuture<Void?> {
     return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
       mTestAdSelectionManager.resetAllAdSelectionConfigRemoteOverrides(
         mExecutor,
@@ -119,7 +119,7 @@ class TestAdSelectionClient private constructor(
     private var mExecutor: Executor? = null
 
     /** Sets the context.  */
-    fun setContext(context: Context): TestAdSelectionClient.Builder {
+    fun setContext(context: Context): Builder {
       Objects.requireNonNull(context)
       mContext = context
       return this
@@ -130,7 +130,7 @@ class TestAdSelectionClient private constructor(
      *
      * @param executor the worker executor used to run heavy background tasks.
      */
-    fun setExecutor(executor: Executor) : TestAdSelectionClient.Builder {
+    fun setExecutor(executor: Executor) : Builder {
       Objects.requireNonNull(executor)
       mExecutor = executor
       return this

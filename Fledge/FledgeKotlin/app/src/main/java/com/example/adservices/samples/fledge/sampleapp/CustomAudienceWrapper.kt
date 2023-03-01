@@ -15,17 +15,19 @@
  */
 package com.example.adservices.samples.fledge.sampleapp
 
-import android.adservices.common.AdData
-import android.adservices.common.AdSelectionSignals
-import android.adservices.common.AdTechIdentifier
 import android.adservices.customaudience.AddCustomAudienceOverrideRequest
-import android.adservices.customaudience.CustomAudience
-import android.adservices.customaudience.TrustedBiddingData
 import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.annotation.RequiresApi
-import com.example.adservices.samples.fledge.clients.CustomAudienceClient
+import androidx.privacysandbox.ads.adservices.common.AdData
+import androidx.privacysandbox.ads.adservices.common.AdSelectionSignals
+import androidx.privacysandbox.ads.adservices.common.AdTechIdentifier
+import androidx.privacysandbox.ads.adservices.customaudience.CustomAudience
+import androidx.privacysandbox.ads.adservices.customaudience.CustomAudienceManager
+import androidx.privacysandbox.ads.adservices.customaudience.JoinCustomAudienceRequest
+import androidx.privacysandbox.ads.adservices.customaudience.LeaveCustomAudienceRequest
+import androidx.privacysandbox.ads.adservices.customaudience.TrustedBiddingData
 import com.example.adservices.samples.fledge.clients.TestCustomAudienceClient
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
@@ -33,6 +35,9 @@ import java.time.Instant
 import java.util.Collections
 import java.util.concurrent.Executor
 import java.util.function.Consumer
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
 /**
@@ -40,8 +45,6 @@ import org.json.JSONObject
  * and buyer. In order to interact with the wrapper they will first need to call the create method
  * to create a CA object. After that they can call joinCA and leaveCA.
  *
- * @param owner The owner field for custom audience created by this wrapper.
- * @param buyer The buyer field for custom audience created by this wrapper.
  * @param context The application context.
  * @param executor An executor to use with the FLEDGE API calls.
  */
@@ -50,7 +53,7 @@ class CustomAudienceWrapper(
   private val executor: Executor,
   context: Context
 ) {
-  private val caClient: CustomAudienceClient
+  private val customAudienceManager : CustomAudienceManager
   private val caOverrideClient : TestCustomAudienceClient
 
   /**
@@ -78,21 +81,16 @@ class CustomAudienceWrapper(
     expiry: Instant) {
     try {
       joinCustomAudience(
-        CustomAudience.Builder()
-          .setBuyer(buyer)
-          .setName(name)
-          .setDailyUpdateUri(dailyUpdateUri)
-          .setBiddingLogicUri(biddingUri)
-          .setAds(listOf(AdData.Builder()
-                         .setRenderUri(renderUri)
-                         .setMetadata(JSONObject().toString())
-                         .build()))
+        CustomAudience.Builder(
+          buyer,
+          name,
+          dailyUpdateUri,
+          biddingUri,
+          listOf(AdData(renderUri, JSONObject().toString())))
           .setActivationTime(Instant.now())
           .setExpirationTime(expiry)
-          .setTrustedBiddingData(TrustedBiddingData.Builder()
-                                 .setTrustedBiddingKeys(Collections.singletonList("key"))
-                                 .setTrustedBiddingUri(trustedBiddingUri).build())
-          .setUserBiddingSignals(AdSelectionSignals.EMPTY)
+          .setTrustedBiddingData(TrustedBiddingData(trustedBiddingUri, Collections.singletonList("key")))
+          .setUserBiddingSignals(AdSelectionSignals("{}"))
           .build(),
         statusReceiver)
     } catch (e: Exception) {
@@ -113,11 +111,12 @@ class CustomAudienceWrapper(
   ) {
     try {
       joinCustomAudience(
-        CustomAudience.Builder()
-          .setBuyer(buyer)
-          .setName(name)
-          .setDailyUpdateUri(dailyUpdateUri)
-          .setBiddingLogicUri(biddingUri)
+        CustomAudience.Builder(
+          buyer,
+          name,
+          dailyUpdateUri,
+          biddingUri,
+          Collections.emptyList())
           .setActivationTime(Instant.now())
           .setExpirationTime(expiry)
           .build(),
@@ -138,22 +137,13 @@ class CustomAudienceWrapper(
    * string indicating the outcome of the call.
    */
   fun leaveCa(name: String, owner: String, buyer: AdTechIdentifier, statusReceiver: Consumer<String>) {
-    try {
-      Futures.addCallback(caClient.leaveCustomAudience(owner, buyer, name),
-                          object : FutureCallback<Void?> {
-                            override fun onSuccess(unused: Void?) {
-                              statusReceiver.accept("Left $name custom audience")
-                            }
+    val request = LeaveCustomAudienceRequest(buyer, name)
+    runBlocking {
+      withContext(Dispatchers.Default) {
+        customAudienceManager.leaveCustomAudience(request)
+      }
 
-                            override fun onFailure(e: Throwable) {
-                              statusReceiver.accept("Error when leaving " + name
-                                                      + " custom audience: " + e.message)
-                            }
-                          }, executor)
-    } catch (e: Exception) {
-      statusReceiver.accept("Got the following exception when trying to leave " + name
-                              + " custom audience: " + e)
-      Log.e(TAG, "Exception calling leaveCustomAudience", e)
+      statusReceiver.accept("Left $name custom audience")
     }
   }
 
@@ -169,9 +159,9 @@ class CustomAudienceWrapper(
   fun addCAOverride(
     name: String,
     owner: String,
-    buyer: AdTechIdentifier,
+    buyer: android.adservices.common.AdTechIdentifier,
     biddingLogicJs: String?,
-    trustedBiddingSignals: AdSelectionSignals,
+    trustedBiddingSignals: android.adservices.common.AdSelectionSignals,
     statusReceiver: Consumer<String?>
   ) {
     val request = AddCustomAudienceOverrideRequest.Builder()
@@ -180,17 +170,19 @@ class CustomAudienceWrapper(
       .setBiddingLogicJs(biddingLogicJs!!)
       .setTrustedBiddingSignals(trustedBiddingSignals)
       .build()
-    Futures.addCallback(caOverrideClient.overrideCustomAudienceRemoteInfo(request),
-                        object : FutureCallback<Void?> {
-                          override fun onSuccess(unused: Void?) {
-                            statusReceiver.accept("Added override for $name custom audience")
-                          }
+    caOverrideClient.overrideCustomAudienceRemoteInfo(request).let {
+      Futures.addCallback(it,
+                          object : FutureCallback<Void?> {
+                            override fun onSuccess(unused: Void?) {
+                              statusReceiver.accept("Added override for $name custom audience")
+                            }
 
-                          override fun onFailure(e: Throwable) {
-                            statusReceiver.accept("Error adding override for " + name
-                                                    + " custom audience: " + e.message)
-                          }
-                        }, executor)
+                            override fun onFailure(e: Throwable) {
+                              statusReceiver.accept("Error adding override for " + name
+                                                      + " custom audience: " + e.message)
+                            }
+                          }, executor)
+    }
   }
 
   /**
@@ -200,41 +192,39 @@ class CustomAudienceWrapper(
    * string indicating the outcome of the call.
    */
   fun resetCAOverrides(statusReceiver: Consumer<String?>) {
-    Futures.addCallback(caOverrideClient.resetAllCustomAudienceOverrides(),
-                        object : FutureCallback<Void?> {
-                          override fun onSuccess(unused: Void?) {
-                            statusReceiver.accept("Reset all CA overrides")
-                          }
+    caOverrideClient.resetAllCustomAudienceOverrides().let {
+      Futures.addCallback(it,
+                          object : FutureCallback<Void?> {
+                            override fun onSuccess(unused: Void?) {
+                              statusReceiver.accept("Reset all CA overrides")
+                            }
 
-                          override fun onFailure(e: Throwable) {
-                            statusReceiver.accept("Error while resetting all CA overrides")
-                          }
-                        }, executor)
+                            override fun onFailure(e: Throwable) {
+                              statusReceiver.accept("Error while resetting all CA overrides")
+                            }
+                          }, executor)
+    }
   }
 
   private fun joinCustomAudience(
     ca : CustomAudience,
     statusReceiver: Consumer<String>
   ) {
-    Futures.addCallback(caClient.joinCustomAudience(ca),
-                        object : FutureCallback<Void?> {
-                          override fun onSuccess(unused: Void?) {
-                            statusReceiver.accept("Joined ${ca.name} custom audience")
-                          }
+    val request = JoinCustomAudienceRequest(ca)
+    runBlocking {
+      withContext(Dispatchers.Default) {
+        customAudienceManager.joinCustomAudience(request)
+      }
 
-                          override fun onFailure(e: Throwable) {
-                            statusReceiver.accept("Error when joining " + ca.name + " custom audience: "
-                                                    + e.message)
-                            Log.e(TAG, "Exception during CA join process ", e)
-                          }
-                        }, executor)
+      statusReceiver.accept("Joined ${ca.name} custom audience")
+    }
   }
 
   /**
    * Initialize the custom audience wrapper and set the owner and buyer.
    */
   init {
-    caClient = CustomAudienceClient.Builder().setContext(context).setExecutor(executor).build()
+    customAudienceManager = CustomAudienceManager.obtain(context)!!
     caOverrideClient = TestCustomAudienceClient.Builder()
       .setContext(context)
       .setExecutor(executor)

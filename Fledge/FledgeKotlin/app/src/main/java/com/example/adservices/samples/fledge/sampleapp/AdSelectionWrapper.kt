@@ -15,23 +15,26 @@
  */
 package com.example.adservices.samples.fledge.sampleapp
 
-import android.adservices.adselection.AdSelectionConfig
-import android.adservices.adselection.AdSelectionOutcome
 import android.adservices.adselection.AddAdSelectionOverrideRequest
-import android.adservices.adselection.ReportImpressionRequest
-import android.adservices.common.AdSelectionSignals
-import android.adservices.common.AdTechIdentifier
 import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.annotation.RequiresApi
-import com.example.adservices.samples.fledge.clients.AdSelectionClient
+import androidx.privacysandbox.ads.adservices.adselection.AdSelectionConfig
+import androidx.privacysandbox.ads.adservices.adselection.AdSelectionManager
+import androidx.privacysandbox.ads.adservices.adselection.ReportImpressionRequest
+import androidx.privacysandbox.ads.adservices.common.AdSelectionSignals
+import androidx.privacysandbox.ads.adservices.common.AdTechIdentifier
 import com.example.adservices.samples.fledge.clients.TestAdSelectionClient
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 import java.util.concurrent.Executor
 import java.util.function.Consumer
 import java.util.stream.Collectors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 /**
  * Wrapper for the FLEDGE Ad Selection API. This wrapper is opinionated and makes several
@@ -50,8 +53,9 @@ class AdSelectionWrapper(
   buyers: List<AdTechIdentifier>, seller: AdTechIdentifier, decisionUri: Uri, trustedScoringUri: Uri, context: Context,
   executor: Executor
 ) {
+  private var adSelectionManager : AdSelectionManager
   private var adSelectionConfig: AdSelectionConfig
-  private val adClient: AdSelectionClient
+  private var adSelectionConfigOverride : android.adservices.adselection.AdSelectionConfig
   private val executor: Executor
   private val overrideClient: TestAdSelectionClient
 
@@ -64,26 +68,16 @@ class AdSelectionWrapper(
    * or lack thereof.
    */
   fun runAdSelection(statusReceiver: Consumer<String>, renderUriReceiver: Consumer<String>) {
-    try {
-      Futures.addCallback(adClient.selectAds(adSelectionConfig),
-                          object : FutureCallback<AdSelectionOutcome?> {
-                            override fun onSuccess(adSelectionOutcome: AdSelectionOutcome?) {
-                              statusReceiver.accept("Ran ad selection! ID: " + adSelectionOutcome!!.adSelectionId)
-                              renderUriReceiver.accept("Would display ad from " + adSelectionOutcome.renderUri)
-                              reportImpression(adSelectionOutcome.adSelectionId,
-                                               statusReceiver)
-                            }
+    runBlocking {
+      val result = async {
+        adSelectionManager.selectAds(adSelectionConfig)
+      }
 
-                            override fun onFailure(e: Throwable) {
-                              statusReceiver.accept("Error when running ad selection: " + e.message)
-                              renderUriReceiver.accept("Ad selection failed -- no ad to display")
-                              Log.e(TAG, "Exception during ad selection", e)
-                            }
-                          }, executor)
-    } catch (e: Exception) {
-      statusReceiver.accept("Got the following exception when trying to run ad selection: $e")
-      renderUriReceiver.accept("Ad selection failed -- no ad to display")
-      Log.e(TAG, "Exception calling runAdSelection", e)
+      val adSelectionOutcome = result.await()
+      statusReceiver.accept("Ran ad selection! ID: " + adSelectionOutcome.adSelectionId)
+      renderUriReceiver.accept("Would display ad from " + adSelectionOutcome.renderUri)
+      reportImpression(adSelectionOutcome.adSelectionId,
+                       statusReceiver)
     }
   }
 
@@ -99,17 +93,13 @@ class AdSelectionWrapper(
     statusReceiver: Consumer<String>
   ) {
     val request = ReportImpressionRequest(adSelectionId, adSelectionConfig)
-    Futures.addCallback(adClient.reportImpression(request),
-                        object : FutureCallback<Void?> {
-                          override fun onSuccess(unused: Void?) {
-                            statusReceiver.accept("Reported impressions from ad selection")
-                          }
+    runBlocking {
+      withContext(Dispatchers.Default) {
+        adSelectionManager.reportImpression(request)
+      }
 
-                          override fun onFailure(e: Throwable) {
-                            statusReceiver.accept("Error when reporting impressions: " + e.message)
-                            Log.e(TAG, e.toString(), e)
-                          }
-                        }, executor)
+      statusReceiver.accept("Reported impressions from ad selection")
+    }
   }
 
   /**
@@ -119,19 +109,25 @@ class AdSelectionWrapper(
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  fun overrideAdSelection(statusReceiver: Consumer<String?>, decisionLogicJS: String?, trustedScoringSignals: AdSelectionSignals?) {
-    val request = AddAdSelectionOverrideRequest(adSelectionConfig, decisionLogicJS!!, trustedScoringSignals!!);
-    Futures.addCallback(overrideClient.overrideAdSelectionConfigRemoteInfo(request),
-                        object : FutureCallback<Void?> {
-                          override fun onSuccess(unused: Void?) {
-                            statusReceiver.accept("Added override for ad selection")
-                          }
+  fun overrideAdSelection(statusReceiver: Consumer<String?>, decisionLogicJS: String?,
+                          trustedScoringSignals: android.adservices.common.AdSelectionSignals?) {
+    val request = AddAdSelectionOverrideRequest(
+      adSelectionConfigOverride,
+      decisionLogicJS!!,
+      trustedScoringSignals!!)
+    overrideClient.overrideAdSelectionConfigRemoteInfo(request).let {
+      Futures.addCallback(it,
+                          object : FutureCallback<Void?> {
+                            override fun onSuccess(unused: Void?) {
+                              statusReceiver.accept("Added override for ad selection")
+                            }
 
-                          override fun onFailure(e: Throwable) {
-                            statusReceiver.accept("Error when adding override for ad selection " + e.message)
-                            Log.e(TAG, e.toString(), e)
-                          }
-                        }, executor)
+                            override fun onFailure(e: Throwable) {
+                              statusReceiver.accept("Error when adding override for ad selection " + e.message)
+                              Log.e(TAG, e.toString(), e)
+                            }
+                          }, executor)
+    }
   }
 
   /**
@@ -141,17 +137,19 @@ class AdSelectionWrapper(
    * string indicating the outcome of the call.
    */
   fun resetAdSelectionOverrides(statusReceiver: Consumer<String?>) {
-    Futures.addCallback(overrideClient.resetAllAdSelectionConfigRemoteOverrides(),
-                        object : FutureCallback<Void?> {
-                          override fun onSuccess(unused: Void?) {
-                            statusReceiver.accept("Reset ad selection overrides")
-                          }
+    overrideClient.resetAllAdSelectionConfigRemoteOverrides().let {
+      Futures.addCallback(it,
+                          object : FutureCallback<Void?> {
+                            override fun onSuccess(unused: Void?) {
+                              statusReceiver.accept("Reset ad selection overrides")
+                            }
 
-                          override fun onFailure(e: Throwable) {
-                            statusReceiver.accept("Error when resetting all ad selection overrides " + e.message)
-                            Log.e(TAG, e.toString(), e)
-                          }
-                        }, executor)
+                            override fun onFailure(e: Throwable) {
+                              statusReceiver.accept("Error when resetting all ad selection overrides " + e.message)
+                              Log.e(TAG, e.toString(), e)
+                            }
+                          }, executor)
+    }
   }
 
   /**
@@ -168,16 +166,29 @@ class AdSelectionWrapper(
     seller: AdTechIdentifier,
     decisionUri: Uri,
     trustedScoringUri: Uri) {
-    adSelectionConfig = AdSelectionConfig.Builder()
-      .setSeller(seller)
+    adSelectionConfig = AdSelectionConfig(
+      seller,
+      decisionUri,
+      buyers,
+      AdSelectionSignals("{}"),
+      AdSelectionSignals("{}"),
+      buyers.stream()
+        .collect(Collectors.toMap(
+          {buyer: AdTechIdentifier -> buyer},
+          { AdSelectionSignals("{}") })),
+      trustedScoringUri)
+
+    adSelectionConfigOverride = android.adservices.adselection.AdSelectionConfig.Builder()
+      .setSeller(android.adservices.common.AdTechIdentifier.fromString(seller.toString()))
       .setDecisionLogicUri(decisionUri)
-      .setCustomAudienceBuyers(buyers)
-      .setAdSelectionSignals(AdSelectionSignals.EMPTY)
-      .setSellerSignals(AdSelectionSignals.EMPTY)
-      .setPerBuyerSignals(buyers.stream()
-                            .collect(Collectors.toMap(
-                              { buyer: AdTechIdentifier -> buyer },
-                              { AdSelectionSignals.EMPTY })))
+      .setCustomAudienceBuyers(buyers.stream()
+                                 .map { buyer -> android.adservices.common.AdTechIdentifier.fromString(buyer.toString()) }
+                                 .collect(Collectors.toList()))
+      .setAdSelectionSignals(android.adservices.common.AdSelectionSignals.EMPTY)
+      .setSellerSignals(android.adservices.common.AdSelectionSignals.EMPTY)
+      .setPerBuyerSignals(buyers.associate {
+        android.adservices.common.AdTechIdentifier.fromString(it.toString()) to android.adservices.common.AdSelectionSignals.EMPTY
+      })
       .setTrustedScoringSignalsUri(trustedScoringUri)
       .build()
   }
@@ -187,19 +198,31 @@ class AdSelectionWrapper(
    * endpoint.
    */
   init {
-    adSelectionConfig = AdSelectionConfig.Builder()
-      .setSeller(seller)
+    adSelectionManager = AdSelectionManager.obtain(context)!!
+    adSelectionConfig = AdSelectionConfig(
+      seller,
+      decisionUri,
+      buyers,
+      AdSelectionSignals("{}"),
+      AdSelectionSignals("{}"),
+      buyers.stream()
+        .collect(Collectors.toMap(
+          {buyer: AdTechIdentifier -> buyer},
+          {AdSelectionSignals("{}")})),
+      trustedScoringUri)
+    adSelectionConfigOverride = android.adservices.adselection.AdSelectionConfig.Builder()
+      .setSeller(android.adservices.common.AdTechIdentifier.fromString(seller.toString()))
       .setDecisionLogicUri(decisionUri)
-      .setCustomAudienceBuyers(buyers)
-      .setAdSelectionSignals(AdSelectionSignals.EMPTY)
-      .setSellerSignals(AdSelectionSignals.EMPTY)
-      .setPerBuyerSignals(buyers.stream()
-                            .collect(Collectors.toMap(
-                              { buyer: AdTechIdentifier -> buyer },
-                              { AdSelectionSignals.EMPTY })))
+      .setCustomAudienceBuyers(buyers.stream()
+                                 .map { buyer -> android.adservices.common.AdTechIdentifier.fromString(buyer.toString()) }
+                                 .collect(Collectors.toList()))
+      .setAdSelectionSignals(android.adservices.common.AdSelectionSignals.EMPTY)
+      .setSellerSignals(android.adservices.common.AdSelectionSignals.EMPTY)
+      .setPerBuyerSignals(buyers.associate {
+        android.adservices.common.AdTechIdentifier.fromString(it.toString()) to android.adservices.common.AdSelectionSignals.EMPTY
+      })
       .setTrustedScoringSignalsUri(trustedScoringUri)
       .build()
-    adClient = AdSelectionClient.Builder().setContext(context).setExecutor(executor).build()
     overrideClient = TestAdSelectionClient.Builder()
       .setContext(context)
       .setExecutor(executor)
