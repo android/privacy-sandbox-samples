@@ -15,132 +15,42 @@
 */
 package com.example.adservices.samples.fledge.clients;
 
-import android.adservices.common.AdTechIdentifier;
-import android.adservices.customaudience.CustomAudience;
-import android.adservices.customaudience.CustomAudienceManager;
-import android.adservices.customaudience.JoinCustomAudienceRequest;
-import android.adservices.customaudience.LeaveCustomAudienceRequest;
 import android.content.Context;
-import android.os.OutcomeReceiver;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.concurrent.futures.CallbackToFutureAdapter;
-
+import androidx.privacysandbox.ads.adservices.common.AdTechIdentifier;
+import androidx.privacysandbox.ads.adservices.customaudience.CustomAudience;
+import androidx.privacysandbox.ads.adservices.customaudience.JoinCustomAudienceRequest;
+import androidx.privacysandbox.ads.adservices.customaudience.LeaveCustomAudienceRequest;
+import androidx.privacysandbox.ads.adservices.java.customaudience.CustomAudienceManagerFutures;
 import com.google.common.util.concurrent.ListenableFuture;
-
-import java.util.Objects;
-import java.util.concurrent.Executor;
+import kotlin.Unit;
 
 /**
  *  The custom audience client.
  */
 @RequiresApi(api = 34)
 public class CustomAudienceClient {
-  private final CustomAudienceManager mCustomAudienceManager;
-  private final Executor mExecutor;
+  private final CustomAudienceManagerFutures mCustomAudienceManager;
 
-  private CustomAudienceClient(@NonNull Context context, @NonNull Executor executor) {
-    mExecutor = executor;
-    mCustomAudienceManager = context.getSystemService(CustomAudienceManager.class);
+  public CustomAudienceClient(@NonNull Context context) {
+    mCustomAudienceManager = CustomAudienceManagerFutures.from(context);
   }
 
-  /** Join custom audience. */
+  /** Join custom audience.
+   * @return*/
   @NonNull
-  public ListenableFuture<Void> joinCustomAudience(CustomAudience customAudience) {
-    return CallbackToFutureAdapter.getFuture(
-        completer -> {
-          JoinCustomAudienceRequest request =
-              new JoinCustomAudienceRequest.Builder()
-                  .setCustomAudience(customAudience)
-                  .build();
-          mCustomAudienceManager.joinCustomAudience(
-              request,
-              mExecutor,
-              new OutcomeReceiver<Object, Exception>() {
-                @Override
-                public void onResult(Object ignoredResult) {
-                  completer.set(null);
-                }
-
-                @Override
-                public void onError(Exception error) {
-                  completer.setException(error);
-                }
-              });
-          // This value is used only for debug purposes: it will be used in toString()
-          // of returned future or error cases.
-          return "joinCustomAudience";
-        });
+  public ListenableFuture<Unit> joinCustomAudience(CustomAudience customAudience) {
+    JoinCustomAudienceRequest request = new JoinCustomAudienceRequest(customAudience);
+    return mCustomAudienceManager.joinCustomAudienceAsync(request);
   }
 
-  /** Leave custom audience. */
+  /** Leave custom audience.
+   * @return*/
   @NonNull
-  public ListenableFuture<Void> leaveCustomAudience(
+  public ListenableFuture<Unit> leaveCustomAudience(
       @NonNull String owner, @NonNull AdTechIdentifier buyer, @NonNull String name) {
-    return CallbackToFutureAdapter.getFuture(
-        completer -> {
-          LeaveCustomAudienceRequest request =
-              new LeaveCustomAudienceRequest.Builder()
-                  .setBuyer(buyer)
-                  .setName(name)
-                  .build();
-          mCustomAudienceManager.leaveCustomAudience(
-              request,
-              mExecutor,
-              new OutcomeReceiver<Object, Exception>() {
-                @Override
-                public void onResult(Object ignoredResult) {
-                  completer.set(null);
-                }
-
-                @Override
-                public void onError(Exception error) {
-                  completer.setException(error);
-                }
-              });
-          // This value is used only for debug purposes: it will be used in toString()
-          // of returned future or error cases.
-          return "leaveCustomAudience";
-        });
-  }
-
-  /** Builder class. */
-  public static final class Builder {
-    private Context mContext;
-    private Executor mExecutor;
-
-    /** Empty-arg constructor with an empty body for Builder */
-    public Builder() {
-    }
-
-    /** Sets the context. */
-    @NonNull
-    public Builder setContext(@NonNull Context context) {
-      Objects.requireNonNull(context);
-      mContext = context;
-      return this;
-    }
-
-    /**
-     * Sets the worker executor.
-     *
-     * @param executor the worker executor used to run heavy background tasks.
-     */
-    @NonNull
-    public Builder setExecutor(@NonNull Executor executor) {
-      Objects.requireNonNull(executor);
-      mExecutor = executor;
-      return this;
-    }
-
-    /** Builds a {@link CustomAudienceClient} instance */
-    @NonNull
-    public CustomAudienceClient build() {
-      Objects.requireNonNull(mContext);
-      Objects.requireNonNull(mExecutor);
-
-      return new CustomAudienceClient(mContext, mExecutor);
-    }
+    LeaveCustomAudienceRequest request = new LeaveCustomAudienceRequest(buyer, name);
+    return mCustomAudienceManager.leaveCustomAudienceAsync(request);
   }
 }

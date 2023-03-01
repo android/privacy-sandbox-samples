@@ -15,17 +15,17 @@
  */
 package com.example.adservices.samples.fledge.sampleapp;
 
-import android.adservices.common.AdData;
-import android.adservices.common.AdSelectionSignals;
-import android.adservices.common.AdTechIdentifier;
 import android.adservices.customaudience.AddCustomAudienceOverrideRequest;
-import android.adservices.customaudience.CustomAudience;
-import android.adservices.customaudience.TrustedBiddingData;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.privacysandbox.ads.adservices.common.AdData;
+import androidx.privacysandbox.ads.adservices.common.AdSelectionSignals;
+import androidx.privacysandbox.ads.adservices.common.AdTechIdentifier;
+import androidx.privacysandbox.ads.adservices.customaudience.CustomAudience;
+import androidx.privacysandbox.ads.adservices.customaudience.TrustedBiddingData;
 import com.example.adservices.samples.fledge.clients.CustomAudienceClient;
 import com.example.adservices.samples.fledge.clients.TestCustomAudienceClient;
 import com.google.common.util.concurrent.FutureCallback;
@@ -34,6 +34,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
+import kotlin.Unit;
 import org.json.JSONObject;
 
 /**
@@ -55,7 +56,7 @@ public class CustomAudienceWrapper {
    */
   public CustomAudienceWrapper(Context context, Executor executor) {
     mExecutor = executor;
-    mCaClient = new CustomAudienceClient.Builder().setContext(context).setExecutor(executor).build();
+    mCaClient = new CustomAudienceClient(context);
     mCaOverrideClient = new TestCustomAudienceClient.Builder().setContext(context).setExecutor(executor).build();
   }
 
@@ -77,21 +78,16 @@ public class CustomAudienceWrapper {
       Instant expiry) {
     try {
       joinCustomAudience(
-          new CustomAudience.Builder()
-              .setBuyer(buyer)
-              .setName(name)
-              .setDailyUpdateUri(dailyUpdateUri)
-              .setBiddingLogicUri(biddingUri)
-              .setAds(Collections.singletonList(new AdData.Builder()
-                  .setRenderUri(renderUri)
-                  .setMetadata(new JSONObject().toString())
-                  .build()))
+          new CustomAudience.Builder(
+              buyer,
+              name,
+              dailyUpdateUri,
+              biddingUri,
+              Collections.singletonList(new AdData(renderUri, new JSONObject().toString())))
               .setActivationTime(Instant.now())
               .setExpirationTime(expiry)
-              .setTrustedBiddingData(new TrustedBiddingData.Builder()
-                  .setTrustedBiddingKeys(Collections.singletonList("key"))
-                  .setTrustedBiddingUri(trustedBiddingUri).build())
-              .setUserBiddingSignals(AdSelectionSignals.EMPTY)
+              .setTrustedBiddingData(new TrustedBiddingData(trustedBiddingUri, Collections.singletonList("key")))
+              .setUserBiddingSignals(new AdSelectionSignals("{}"))
               .build(),
           statusReceiver);
     } catch (Exception e) {
@@ -114,11 +110,12 @@ public class CustomAudienceWrapper {
       Uri dailyUpdateUri, Consumer<String> statusReceiver, Instant expiry) {
     try {
       joinCustomAudience(
-          new CustomAudience.Builder()
-            .setBuyer(buyer)
-            .setName(name)
-            .setDailyUpdateUri(dailyUpdateUri)
-            .setBiddingLogicUri(biddingUri)
+          new CustomAudience.Builder(
+              buyer,
+              name,
+              dailyUpdateUri,
+              biddingUri,
+              Collections.emptyList())
             .setActivationTime(Instant.now())
             .setExpirationTime(expiry)
             .build(),
@@ -140,8 +137,8 @@ public class CustomAudienceWrapper {
   public void leaveCa(String name, String owner, AdTechIdentifier buyer, Consumer<String> statusReceiver) {
     try {
       Futures.addCallback(mCaClient.leaveCustomAudience(owner, buyer, name),
-          new FutureCallback<Void>() {
-            public void onSuccess(Void unused) {
+          new FutureCallback<Unit>() {
+            public void onSuccess(Unit unused) {
               statusReceiver.accept("Left " + name + " custom audience");
             }
 
@@ -166,7 +163,8 @@ public class CustomAudienceWrapper {
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  public void addCAOverride(String name, String owner, AdTechIdentifier buyer, String biddingLogicJs, AdSelectionSignals trustedBiddingSignals,
+  public void addCAOverride(String name, String owner, android.adservices.common.AdTechIdentifier buyer,
+      String biddingLogicJs, android.adservices.common.AdSelectionSignals trustedBiddingSignals,
       Consumer<String> statusReceiver) {
     try {
       AddCustomAudienceOverrideRequest request =
@@ -220,8 +218,8 @@ public class CustomAudienceWrapper {
 
   private void joinCustomAudience(CustomAudience ca, Consumer<String> statusReceiver) {
     Futures.addCallback(mCaClient.joinCustomAudience(ca),
-        new FutureCallback<Void>() {
-          public void onSuccess(Void unused) {
+        new FutureCallback<Unit>() {
+          public void onSuccess(Unit unused) {
             statusReceiver.accept("Joined " + ca.getName() + " custom audience");
           }
 

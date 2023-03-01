@@ -23,6 +23,7 @@ import android.content.Context;
 import android.os.OutcomeReceiver;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.concurrent.futures.CallbackToFutureAdapter;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -33,6 +34,7 @@ import java.util.concurrent.Executor;
 /**
  * Client for override APIs.
  */
+@RequiresApi(api = 34)
 public class TestCustomAudienceClient {
   private final TestCustomAudienceManager mTestCustomAudienceManager;
   private final Context mContext;

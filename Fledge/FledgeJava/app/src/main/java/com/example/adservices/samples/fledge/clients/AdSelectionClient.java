@@ -17,137 +17,47 @@
 package com.example.adservices.samples.fledge.clients;
 
 
-import android.adservices.adselection.AdSelectionConfig;
-import android.adservices.adselection.AdSelectionManager;
-import android.adservices.adselection.AdSelectionOutcome;
-import android.adservices.adselection.ReportImpressionRequest;
 import android.content.Context;
-import android.os.OutcomeReceiver;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-import androidx.concurrent.futures.CallbackToFutureAdapter;
-
+import androidx.privacysandbox.ads.adservices.adselection.AdSelectionConfig;
+import androidx.privacysandbox.ads.adservices.adselection.AdSelectionOutcome;
+import androidx.privacysandbox.ads.adservices.adselection.ReportImpressionRequest;
+import androidx.privacysandbox.ads.adservices.java.adselection.AdSelectionManagerFutures;
 import com.google.common.util.concurrent.ListenableFuture;
-
-import java.util.Objects;
-import java.util.concurrent.Executor;
-
+import kotlin.Unit;
 
 /**
  * The ad selection client.
  */
 @RequiresApi(api = 34)
 public class AdSelectionClient {
-  private final AdSelectionManager mAdSelectionManager;
-  private final Executor mExecutor;
+  private final AdSelectionManagerFutures mAdSelectionManager;
 
-  private AdSelectionClient(@NonNull Context context, @NonNull Executor executor) {
-    mExecutor = executor;
-    mAdSelectionManager = context.getSystemService(AdSelectionManager.class);
+  public AdSelectionClient(@NonNull Context context) {
+    mAdSelectionManager = AdSelectionManagerFutures.from(context);
   }
 
   /**
-   * Invokes the {@code selectAds} method of {@link AdSelectionManager}, and returns a future with
+   * Invokes the {@code selectAdsAsync} method of {@link AdSelectionManagerFutures}, and returns a future with
    * {@link AdSelectionOutcome} if succeeds, or an {@link Exception} if fails.
    */
   @NonNull
   public ListenableFuture<AdSelectionOutcome> selectAds(
       @NonNull AdSelectionConfig adSelectionConfig) {
-    return CallbackToFutureAdapter.getFuture(
-        completer -> {
-          mAdSelectionManager.selectAds(
-              adSelectionConfig,
-              mExecutor,
-              new OutcomeReceiver<AdSelectionOutcome, Exception>() {
-
-                @Override
-                public void onResult(@NonNull AdSelectionOutcome result) {
-                  completer.set(
-                      new AdSelectionOutcome.Builder()
-                          .setAdSelectionId(result.getAdSelectionId())
-                          .setRenderUri(result.getRenderUri())
-                          .build());
-                }
-
-                @Override
-                public void onError(@NonNull Exception error) {
-                  completer.setException(error);
-                }
-              });
-          return "Ad Selection";
-        });
+    return mAdSelectionManager.selectAdsAsync(adSelectionConfig);
   }
 
 
   /**
-   * Invokes the {@code reportImpression} method of {@link AdSelectionManager}, and returns a Void
+   * Invokes the {@code reportImpression} method of {@link AdSelectionManagerFutures}, and returns a Unit
    * future
+   * @return
    */
   @NonNull
-  public ListenableFuture<Void> reportImpression(
+  public ListenableFuture<Unit> reportImpression(
       @NonNull ReportImpressionRequest input) {
-    return CallbackToFutureAdapter.getFuture(
-        completer -> {
-          mAdSelectionManager.reportImpression(
-              input,
-              mExecutor,
-              new OutcomeReceiver<Object, Exception>() {
-                @Override
-                public void onResult(@NonNull Object ignoredResult) {
-                  completer.set(null);
-                }
-
-                @Override
-                public void onError(@NonNull Exception error) {
-                  completer.setException(error);
-                }
-              });
-          return "reportImpression";
-        });
+    return mAdSelectionManager.reportImpressionAsync(input);
   }
 
-  /** Builder class. */
-  public static final class Builder {
-    private Context mContext;
-    private Executor mExecutor;
-
-    /** Empty-arg constructor with an empty body for Builder */
-    public Builder() {}
-
-    /** Sets the context. */
-    @NonNull
-    public AdSelectionClient.Builder setContext(@NonNull Context context) {
-      Objects.requireNonNull(context);
-
-      mContext = context;
-      return this;
-    }
-
-    /**
-     * Sets the worker executor.
-     *
-     * @param executor the worker executor used to run heavy background tasks.
-     */
-    @NonNull
-    public AdSelectionClient.Builder setExecutor(@NonNull Executor executor) {
-      Objects.requireNonNull(executor);
-
-      mExecutor = executor;
-      return this;
-    }
-
-    /**
-     * Builds the Ad Selection Client.
-     *
-     * @throws NullPointerException if {@code mContext} is null or if {@code mExecutor} is null
-     */
-    @NonNull
-    public AdSelectionClient build() {
-      Objects.requireNonNull(mContext);
-      Objects.requireNonNull(mExecutor);
-
-      return new AdSelectionClient(mContext, mExecutor);
-    }
-  }
 }
