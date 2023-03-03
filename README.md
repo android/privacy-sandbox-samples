@@ -5,6 +5,8 @@ This repository contains a set of individual Android Studio projects to help you
 
 The Privacy Sandbox on Android is currently in Alpha and it is not recommended to deploy or use these samples other than to test your own infrastructure.
 
+The samples for working with the PPAPIs use the [privacysandbox ads jetpack library](https://developer.android.com/jetpack/androidx/releases/privacysandbox-ads) beta01 release, with the exception of a few test-specific APIs to simplify server setup. 
+
 Note: It is recommended to use [Android Studio
 Canary](https://developer.android.com/studio/preview). As we work to support the
 latest features for Privacy Sandbox, there may be some issues using Stable
