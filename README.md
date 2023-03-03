@@ -3,6 +3,18 @@ SDK Runtime and Privacy Preserving APIs Repository
 
 This repository contains a set of individual Android Studio projects to help you get started writing apps using the SDK Runtime and Privacy Preserving APIs (PPAPIs).
 
+Branches
+-----------
+Due to the dynamic nature of this project, there are three branches provided.
+Please ensure you are using the correct branch for your needs.
+
+* [main](https://github.com/android/privacy-sandbox-samples) - contains sample
+  applications targeting Beta releases.
+* [dev-preview-main](https://github.com/android/privacy-sandbox-samples/tree/dev-preview-main) - contains
+sample applications targeting Developer Preview releases. This provides early access to new features for early testing.
+* [jetpack-main](https://github.com/android/privacy-sandbox-samples/tree/jetpack-main) - contains
+versions of the sample applications that utilize Jetpack libraries to interface with the Privacy Sandbox.
+
 The Privacy Sandbox on Android is currently in Alpha and it is not recommended to deploy or use these samples other than to test your own infrastructure.
 
 Note: It is recommended to use [Android Studio
