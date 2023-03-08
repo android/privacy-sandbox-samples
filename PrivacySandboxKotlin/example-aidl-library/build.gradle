@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 plugins {
     id 'com.android.library'
 }
-
 android {
     namespace 'com.example.myaidllibrary'
     sourceSets {
@@ -25,31 +23,24 @@ android {
             aidl.srcDirs = ['src']
         }
     }
-    compileSdkPreview "TiramisuPrivacySandbox"
-
+    compileSdk = 33
+    compileSdkExtension = 5
     defaultConfig {
-        minSdkPreview "TiramisuPrivacySandbox"
-        targetSdkPreview "TiramisuPrivacySandbox"
-        versionCode 1
-        versionName "1.0"
-        
+        minSdkVersion 33
+        targetSdkVersion 33
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
     flavorDimensions 'androidSdk'
-
     productFlavors {
         preview {
             dimension 'androidSdk'
         }
-
         oem {
             dimension 'androidSdk'
             minSdkVersion 33
             targetSdkVersion 33
         }
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -59,5 +50,8 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildFeatures {
+        aidl = true
     }
 }

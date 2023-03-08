@@ -17,33 +17,27 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
 }
-
 android {
     namespace 'com.example.sdkimplementation'
-    compileSdkPreview "TiramisuPrivacySandbox"
-
+    compileSdk = 33
+    compileSdkExtension = 5
     defaultConfig {
-        minSdkPreview "TiramisuPrivacySandbox"
-        targetSdkPreview "TiramisuPrivacySandbox"
-
+        minSdkVersion 33
+        targetSdkVersion 33
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
-
     flavorDimensions 'androidSdk'
-
     productFlavors {
         preview {
             dimension 'androidSdk'
         }
-
         oem {
             dimension 'androidSdk'
             minSdkVersion 33
             targetSdkVersion 33
         }
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -55,7 +49,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
-
 dependencies {
     implementation project(':example-aidl-library')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"

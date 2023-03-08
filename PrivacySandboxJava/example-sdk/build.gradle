@@ -13,14 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 import com.android.build.api.attributes.ProductFlavorAttr
 import javax.inject.Inject
-
 plugins {
     id 'com.android.privacy-sandbox-sdk'
 }
-
 /*
  * This class serves to disambiguate which flavor of the underlying libraries to build against.
  * OEMs will need to update the "params" value of the dependencies.attributesSchema snippet below
@@ -40,26 +37,23 @@ class FlavorPicker implements AttributeDisambiguationRule<ProductFlavorAttr> {
         }
     }
 }
-
 android {
-    compileSdkPreview 'TiramisuPrivacySandbox'
-    minSdkPreview 'TiramisuPrivacySandbox'
+    compileSdk = 33
+    compileSdkExtension = 5
+    minSdk 33
     namespace = "com.example.example-sdk"
-
     bundle {
         packageName = "com.example.privacysandbox.provider"
         sdkProviderClassName = "com.example.sdkimplementation.SdkProviderImpl"
         setVersion(1, 0, 0)
     }
 }
-
 dependencies.attributesSchema
         .attribute(ProductFlavorAttr.of("androidSdk"))
         .disambiguationRules
         .add(FlavorPicker.class) {
             params = ["preview"] // OEMs will need to update this value to "oem"
         }
-
 dependencies {
     include project(':sdk-implementation')
 }

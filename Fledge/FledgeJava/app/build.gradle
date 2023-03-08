@@ -17,34 +17,28 @@ plugins {
     id 'com.android.application'
 }
 apply plugin: 'kotlin-android'
-
 android {
-    compileSdkPreview "TiramisuPrivacySandbox"
-
+    compileSdk = 33
+    compileSdkExtension = 5
     defaultConfig {
         applicationId "com.example.adservices.samples.fledge.sampleapp"
-        minSdkPreview "TiramisuPrivacySandbox"
-        targetSdkPreview "TiramisuPrivacySandbox"
+        targetSdkVersion 33
+        minSdkVersion 33
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-
     flavorDimensions 'androidSdk'
-
     productFlavors {
         preview {
             dimension 'androidSdk'
         }
-
         oem {
             dimension 'androidSdk'
             minSdkVersion 33
             targetSdkVersion 33
         }
     }
-
     buildTypes {
         release {
             minifyEnabled false
@@ -55,18 +49,15 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
     buildFeatures {
         viewBinding = true
     }
 }
-
 dependencies {
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'com.google.guava:guava:29.0-android'
     implementation "androidx.concurrent:concurrent-futures:1.1.0"
 }
-
 repositories {
     mavenCentral()
 }

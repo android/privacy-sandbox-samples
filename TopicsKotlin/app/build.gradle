@@ -17,38 +17,31 @@ plugins {
     id 'com.android.application'
 }
 apply plugin: 'kotlin-android'
-
 android {
-    compileSdkPreview "TiramisuPrivacySandbox"
-
+    compileSdk = 33
+    compileSdkExtension = 5
     defaultConfig {
         applicationId "com.example.adservices.samples.topics.sampleapp"
-        minSdkPreview "TiramisuPrivacySandbox"
-        targetSdkPreview "TiramisuPrivacySandbox"
         versionCode 2
         versionName "1.01"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        targetSdk 33
+        minSdk 33
     }
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
     flavorDimensions 'sampleapps', 'androidSdk'
-
     productFlavors {
         preview {
             dimension 'androidSdk'
         }
-
         oem {
             dimension 'androidSdk'
             minSdkVersion 33
             targetSdkVersion 33
         }
-
         sampleapp1_ {
             dimension 'sampleapps'
             applicationId 'com.example.adservices.samples.topics.sampleapp1'
@@ -58,7 +51,6 @@ android {
             dimension 'sampleapps'
             applicationId 'com.example.adservices.samples.topics.sampleapp2'
             resValue "string", "app_name", "sampleapp2"
-
         }
         sampleapp3_ {
             dimension 'sampleapps'
@@ -69,13 +61,11 @@ android {
             dimension 'sampleapps'
             applicationId 'com.example.adservices.samples.topics.sampleapp4'
             resValue "string", "app_name", "sampleapp4"
-
         }
         sampleapp5_ {
             dimension 'sampleapps'
             applicationId 'com.example.adservices.samples.topics.sampleapp5'
             resValue "string", "app_name", "sampleapp5"
-
         }
         sampleapp_ {
             dimension 'sampleapps'
@@ -91,37 +81,30 @@ android {
             dimension 'sampleapps'
             applicationId 'com.example.adservices.samples.topics.sampleapp7'
             resValue "string", "app_name", "sampleapp7"
-
         }
         sampleapp8_ {
             dimension 'sampleapps'
             applicationId 'com.example.adservices.samples.topics.sampleapp8'
             resValue "string", "app_name", "sampleapp8"
-
         }
         sampleapp9_ {
             dimension 'sampleapps'
             applicationId 'com.example.adservices.samples.topics.sampleapp9'
             resValue "string", "app_name", "sampleapp9"
-
         }
         sampleapp10_ {
             dimension 'sampleapps'
             applicationId 'com.example.adservices.samples.topics.sampleapp10'
             resValue "string", "app_name", "sampleapp10"
-
         }
         sampleapp0_ {
             dimension 'sampleapps'
             applicationId 'com.example.adservices.samples.topics.sampleapp'
             resValue "string", "app_name", "sampleapp"
-
         }
     }
 }
-
 dependencies {
-
     implementation 'androidx.appcompat:appcompat:1.4.1'
     implementation 'com.google.android.material:material:1.5.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
