@@ -16,7 +16,6 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'kotlin-android-extensions'
     id 'kotlin-kapt'
 }
 android {
@@ -25,7 +24,7 @@ android {
     defaultConfig {
         applicationId "com.example.measurement.sampleapp"
         minSdkVersion 33
-        targetVersion 33
+        targetSdkVersion 33
         versionCode 3
         versionName "1.02"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
