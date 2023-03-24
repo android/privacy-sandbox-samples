@@ -15,8 +15,10 @@
  */
 package com.example.adservices.samples.fledge.sampleapp;
 
+import android.adservices.common.AdFilters;
 import android.adservices.common.AdSelectionSignals;
 import android.adservices.common.AdTechIdentifier;
+import android.adservices.common.AppInstallFilters;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -64,11 +66,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String BIDDING_LOGIC_FILE = "BiddingLogic.js";
     private static final String DECISION_LOGIC_FILE = "DecisionLogic.js";
 
-    // The names for the shirts and shoes custom audience
+    // The custom audience names
     private static final String SHOES_CA_NAME = "shoes";
     private static final String SHIRTS_CA_NAME = "shirts";
     private static final String SHORT_EXPIRING_CA_NAME = "short_expiring";
     private static final String INVALID_FIELD_CA_NAME = "invalid_fields";
+    private static final String APP_INSTALL_CA_NAME = "app_install";
 
     // Expiry durations
     private static final Duration ONE_DAY_EXPIRY = Duration.ofDays(1);
@@ -179,18 +182,33 @@ public class MainActivity extends AppCompatActivity {
         // Set up Custom Audience Wrapper(CAs)
         caWrapper = new CustomAudienceWrapper(context, EXECUTOR);
 
-        // Set up CA buttons
+        // Set up the app install switch
+        setupAppInstallSwitch(mBiddingLogicUri, eventLog);
+
+        // Set up CA switches
         setupCASwitches(caWrapper, eventLog, binding, mBiddingLogicUri, context);
 
         // Set up remote overrides by default
-        useOverrides(eventLog,adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs,TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context);
+        useOverrides(eventLog,adWrapper, caWrapper, overrideDecisionJS, overrideBiddingJs, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context);
+    }
+
+    private void setupAppInstallSwitch(Uri biddingUri, EventLogManager eventLog) {
+        // Shoes
+        binding.appInstallSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            if (isChecked) {
+                adWrapper.setAppInstallAdvertisers(Collections.singleton(AdTechIdentifier.fromString(biddingUri.getHost())),
+                    eventLog::writeEvent);
+            } else {
+                adWrapper.setAppInstallAdvertisers(Collections.EMPTY_SET, eventLog::writeEvent);
+            }
+        });
     }
 
     private void setupCASwitches(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding, Uri biddingUri, Context context) {
         // Shoes
         binding.shoesCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             if (isChecked) {
-                caWrapper.joinCa(SHOES_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                caWrapper.joinCa(SHOES_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
                     Uri.parse(biddingUri + "/render_" + SHOES_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
                     eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY));
             } else {
@@ -200,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
         // Shirts
         binding.shirtsCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             if (isChecked) {
-                caWrapper.joinCa(SHIRTS_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                caWrapper.joinCa(SHIRTS_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
                     Uri.parse(biddingUri + "/render_" + SHIRTS_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
                     eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY));
             } else {
@@ -210,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
         // Short expiring CA
         binding.shortExpiryCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             if (isChecked) {
-                caWrapper.joinCa(SHORT_EXPIRING_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                caWrapper.joinCa(SHORT_EXPIRING_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
                     Uri.parse(biddingUri + "/render_" + SHORT_EXPIRING_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
                     eventLog::writeEvent, calcExpiry(THIRTY_SECONDS_EXPIRY));
             } else {
@@ -220,10 +238,26 @@ public class MainActivity extends AppCompatActivity {
         // Invalid fields CA
         binding.invalidFieldsCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             if (isChecked) {
-                caWrapper.joinEmptyFieldsCa(INVALID_FIELD_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                caWrapper.joinEmptyFieldsCa(INVALID_FIELD_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
                     Uri.parse(biddingUri + "/daily"), eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY));
             } else {
                 caWrapper.leaveCa(INVALID_FIELD_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+            }
+        });
+        // App Install CA
+        binding.appInstallCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            AdFilters filters = new AdFilters.Builder()
+                .setAppInstallFilters(new AppInstallFilters.Builder()
+                    .setPackageNames(Collections.singleton(context.getPackageName()))
+                    .build()
+                )
+                .build();
+            if (isChecked) {
+                caWrapper.joinCa(APP_INSTALL_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                    Uri.parse(biddingUri + "/render_" + APP_INSTALL_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
+                    eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY), filters);
+            } else {
+                caWrapper.leaveCa(APP_INSTALL_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
             }
         });
     }
@@ -246,11 +280,12 @@ public class MainActivity extends AppCompatActivity {
     private void useOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper,
         CustomAudienceWrapper customAudienceWrapper, String decisionLogicJs, String biddingLogicJs,
         AdSelectionSignals trustedScoringSignals, AdSelectionSignals trustedBiddingSignals, Uri biddingUri, Context context) {
-        adSelectionWrapper.overrideAdSelection(eventLog::writeEvent,decisionLogicJs, trustedScoringSignals);
-        customAudienceWrapper.addCAOverride(SHOES_CA_NAME,context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
-        customAudienceWrapper.addCAOverride(SHIRTS_CA_NAME,context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
-        customAudienceWrapper.addCAOverride(SHORT_EXPIRING_CA_NAME,context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
-        customAudienceWrapper.addCAOverride(INVALID_FIELD_CA_NAME,context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs,trustedBiddingSignals,eventLog::writeEvent);
+        adSelectionWrapper.overrideAdSelection(eventLog::writeEvent, decisionLogicJs, trustedScoringSignals);
+        customAudienceWrapper.addCAOverride(SHOES_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, trustedBiddingSignals, eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(SHIRTS_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, trustedBiddingSignals, eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(SHORT_EXPIRING_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, trustedBiddingSignals, eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(INVALID_FIELD_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, trustedBiddingSignals, eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(APP_INSTALL_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, trustedBiddingSignals, eventLog::writeEvent);
     }
 
     private void resetOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper, CustomAudienceWrapper customAudienceWrapper) {

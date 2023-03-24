@@ -19,6 +19,7 @@ import android.adservices.adselection.AdSelectionConfig;
 import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.adselection.AddAdSelectionOverrideRequest;
 import android.adservices.adselection.ReportImpressionRequest;
+import android.adservices.adselection.SetAppInstallAdvertisersRequest;
 import android.adservices.common.AdSelectionSignals;
 import android.adservices.common.AdTechIdentifier;
 import android.content.Context;
@@ -31,6 +32,7 @@ import com.example.adservices.samples.fledge.clients.TestAdSelectionClient;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -146,6 +148,31 @@ public class AdSelectionWrapper {
 
           public void onFailure(@NonNull Throwable e) {
             statusReceiver.accept("Error when reporting impressions: " + e.getMessage());
+            Log.e(MainActivity.TAG, e.toString(), e);
+          }
+        }, mExecutor);
+  }
+
+  /**
+   * Helper function of {@link  AdSelectionClient#setAppInstallAdvertisers}. Set which adtechs
+   * can filter on this apps presence
+   *
+   * @param adtechs The set of adtechs that can filter
+   * @param statusReceiver A consumer function that is run after that reports how the call went
+   * after it is completed
+   */
+  public void setAppInstallAdvertisers(Set<AdTechIdentifier> adtechs, Consumer<String> statusReceiver) {
+    SetAppInstallAdvertisersRequest request = new SetAppInstallAdvertisersRequest(adtechs);
+
+    Futures.addCallback(mAdClient.setAppInstallAdvertisers(request),
+        new FutureCallback<Void>() {
+          public void onSuccess(Void unused) {
+            statusReceiver.accept("Set this app's app install advertisers to: " + adtechs);
+          }
+
+          public void onFailure(@NonNull Throwable e) {
+            statusReceiver.accept("Error when setting app install advertisers: "
+                + e.getMessage());
             Log.e(MainActivity.TAG, e.toString(), e);
           }
         }, mExecutor);

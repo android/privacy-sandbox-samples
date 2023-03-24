@@ -22,6 +22,7 @@ import android.adservices.adselection.AdSelectionFromOutcomesConfig;
 import android.adservices.adselection.AdSelectionManager;
 import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.adselection.ReportImpressionRequest;
+import android.adservices.adselection.SetAppInstallAdvertisersRequest;
 import android.content.Context;
 import android.os.OutcomeReceiver;
 
@@ -129,6 +130,35 @@ public class AdSelectionClient {
           return "reportImpression";
         });
   }
+
+
+  /**
+   * Invokes the {@code setAppInstallAdvertiser} method of {@link AdSelectionManager}, and returns
+   * a Void future.
+   */
+  @NonNull
+  public ListenableFuture<Void> setAppInstallAdvertisers(
+      @NonNull SetAppInstallAdvertisersRequest setAppInstallAdvertisersRequest) {
+    return CallbackToFutureAdapter.getFuture(
+        completer -> {
+          mAdSelectionManager.setAppInstallAdvertisers(
+              setAppInstallAdvertisersRequest,
+              mExecutor,
+              new OutcomeReceiver<Object, Exception>() {
+                @Override
+                public void onResult(@NonNull Object ignoredResult) {
+                  completer.set(null);
+                }
+
+                @Override
+                public void onError(@NonNull Exception error) {
+                  completer.setException(error);
+                }
+              });
+          return "setAppInstallAdvertisers";
+        });
+  }
+
 
   /** Builder class. */
   public static final class Builder {

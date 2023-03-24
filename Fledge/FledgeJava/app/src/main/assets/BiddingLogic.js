@@ -21,6 +21,8 @@ function generateBid(ad, auction_signals, per_buyer_signals,
   var bid = 5;
   if (custom_audience_bidding_signals.name === "shoes") {
     bid = 10;
+  } else if (custom_audience_bidding_signals.name === "app_install") {
+    bid = 15;
   }
   return {'status': 0, 'ad': ad, 'bid': bid };
 }
