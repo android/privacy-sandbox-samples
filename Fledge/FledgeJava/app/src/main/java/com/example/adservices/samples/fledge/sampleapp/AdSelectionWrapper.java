@@ -25,13 +25,14 @@ import static android.adservices.common.FrequencyCapFilters.AD_EVENT_TYPE_WIN;
 import android.adservices.adselection.AdSelectionConfig;
 import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.adselection.AddAdSelectionOverrideRequest;
+import android.adservices.adselection.BuyersDecisionLogic;
+import android.adservices.adselection.ContextualAds;
 import android.adservices.adselection.ReportImpressionRequest;
-import android.adservices.adselection.SetAppInstallAdvertisersRequest;
 import android.adservices.adselection.ReportInteractionRequest;
+import android.adservices.adselection.SetAppInstallAdvertisersRequest;
 import android.adservices.adselection.UpdateAdCounterHistogramRequest;
 import android.adservices.common.AdSelectionSignals;
 import android.adservices.common.AdTechIdentifier;
-import android.adservices.common.FrequencyCapFilters;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
@@ -41,12 +42,12 @@ import com.example.adservices.samples.fledge.clients.AdSelectionClient;
 import com.example.adservices.samples.fledge.clients.TestAdSelectionClient;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import org.json.JSONObject;
 
 /**
  * Wrapper for the FLEDGE Ad Selection API. This wrapper is opinionated and makes several
@@ -70,8 +71,8 @@ public class AdSelectionWrapper {
    * @param context The application context.
    * @param executor An executor to use with the FLEDGE API calls.
    */
-  public AdSelectionWrapper(List<AdTechIdentifier> buyers, AdTechIdentifier seller, Uri decisionUri, Uri trustedDataUri, Context context,
-      Executor executor) {
+  public AdSelectionWrapper(List<AdTechIdentifier> buyers, AdTechIdentifier seller, Uri decisionUri, Uri trustedDataUri, ContextualAds contextualAds,
+      Context context, Executor executor) {
 
     mAdSelectionConfig = new AdSelectionConfig.Builder()
         .setSeller(seller)
@@ -82,6 +83,7 @@ public class AdSelectionWrapper {
         .setPerBuyerSignals(buyers.stream()
             .collect(Collectors.toMap(buyer -> buyer, buyer -> AdSelectionSignals.EMPTY)))
         .setTrustedScoringSignalsUri(trustedDataUri)
+        .setBuyerContextualAds(Collections.singletonMap(contextualAds.getBuyer(), contextualAds))
         .build();
     mAdClient = new AdSelectionClient.Builder().setContext(context).setExecutor(executor).build();
     mOverrideClient = new TestAdSelectionClient.Builder().setContext(context).setExecutor(executor).build();
@@ -94,7 +96,8 @@ public class AdSelectionWrapper {
    *
    * @param decisionUri the new {@code Uri} to be used
    */
-  public void resetAdSelectionConfig(List<AdTechIdentifier> buyers, AdTechIdentifier seller,  Uri decisionUri, Uri trustedScoringUri) {
+  public void resetAdSelectionConfig(List<AdTechIdentifier> buyers, AdTechIdentifier seller,  Uri decisionUri, Uri trustedScoringUri,
+      ContextualAds contextualAds) {
     mAdSelectionConfig = new AdSelectionConfig.Builder()
         .setSeller(seller)
         .setDecisionLogicUri(decisionUri)
@@ -104,6 +107,7 @@ public class AdSelectionWrapper {
         .setPerBuyerSignals(buyers.stream()
             .collect(Collectors.toMap(buyer -> buyer, buyer -> AdSelectionSignals.EMPTY)))
         .setTrustedScoringSignalsUri(trustedScoringUri)
+        .setBuyerContextualAds(Collections.singletonMap(contextualAds.getBuyer(), contextualAds))
         .build();
   }
 
@@ -259,9 +263,9 @@ public class AdSelectionWrapper {
    * string indicating the outcome of the call.
    */
   public void overrideAdSelection(Consumer<String> statusReceiver, String decisionLogicJS,
-      AdSelectionSignals trustedScoringSignals) {
-    AddAdSelectionOverrideRequest request =
-        new AddAdSelectionOverrideRequest(mAdSelectionConfig, decisionLogicJS, trustedScoringSignals);
+      AdSelectionSignals trustedScoringSignals, BuyersDecisionLogic contextualLogic) {
+    AddAdSelectionOverrideRequest request = new AddAdSelectionOverrideRequest(mAdSelectionConfig, decisionLogicJS,
+          trustedScoringSignals, contextualLogic);
     try {
       Futures.addCallback(mOverrideClient.overrideAdSelectionConfigRemoteInfo(request),
           new FutureCallback<Void>() {
