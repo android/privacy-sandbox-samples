@@ -16,6 +16,7 @@
 package com.example.adservices.samples.fledge.sampleapp
 
 import android.adservices.common.AdData
+import android.adservices.common.AdFilters
 import android.adservices.common.AdSelectionSignals
 import android.adservices.common.AdTechIdentifier
 import android.adservices.customaudience.AddCustomAudienceOverrideRequest
@@ -57,7 +58,6 @@ class CustomAudienceWrapper(
    * Joins a CA.
    *
    * @param name The name of the CA to join.
-   * @param owner The owner of the CA
    * @param buyer The buyer of ads
    * @param biddingUri The URL to retrieve the bidding logic
    * @param renderUri The URL to render the ad
@@ -65,10 +65,10 @@ class CustomAudienceWrapper(
    * @param trustedBiddingUri The URL to retrieve trusted bidding data
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
+   * @param expiry The time when the CA will expire
    */
   fun joinCa(
     name: String,
-    owner: String,
     buyer: AdTechIdentifier,
     biddingUri: Uri,
     renderUri: Uri,
@@ -76,6 +76,35 @@ class CustomAudienceWrapper(
     trustedBiddingUri: Uri,
     statusReceiver: Consumer<String>,
     expiry: Instant) {
+      joinCa(name, buyer, biddingUri, renderUri, dailyUpdateUri, trustedBiddingUri, statusReceiver, expiry, null);
+  }
+
+  /**
+   * Joins a CA.
+   *
+   * @param name The name of the CA to join.
+   * @param buyer The buyer of ads
+   * @param biddingUri The URL to retrieve the bidding logic
+   * @param renderUri The URL to render the ad
+   * @param dailyUpdateUri The URL for daily updates for the CA
+   * @param trustedBiddingUri The URL to retrieve trusted bidding data
+   * @param statusReceiver A consumer function that is run after the API call and returns a
+   * string indicating the outcome of the call.
+   * @param expiry The time when the CA will expire
+   * @param filters {@link AdFilters} that should be applied to the ad in the CA
+   * string indicating the outcome of the call.
+   */
+  fun joinCa(
+    name: String,
+    buyer: AdTechIdentifier,
+    biddingUri: Uri,
+    renderUri: Uri,
+    dailyUpdateUri: Uri,
+    trustedBiddingUri: Uri,
+    statusReceiver: Consumer<String>,
+    expiry: Instant,
+    filters: AdFilters?
+  ) {
     try {
       joinCustomAudience(
         CustomAudience.Builder()
@@ -84,14 +113,15 @@ class CustomAudienceWrapper(
           .setDailyUpdateUri(dailyUpdateUri)
           .setBiddingLogicUri(biddingUri)
           .setAds(listOf(AdData.Builder()
-                         .setRenderUri(renderUri)
-                         .setMetadata(JSONObject().toString())
-                         .build()))
+                           .setRenderUri(renderUri)
+                           .setMetadata(JSONObject().toString())
+                           .setAdFilters(filters)
+                           .build()))
           .setActivationTime(Instant.now())
           .setExpirationTime(expiry)
           .setTrustedBiddingData(TrustedBiddingData.Builder()
-                                 .setTrustedBiddingKeys(Collections.singletonList("key"))
-                                 .setTrustedBiddingUri(trustedBiddingUri).build())
+                                   .setTrustedBiddingKeys(Collections.singletonList("key"))
+                                   .setTrustedBiddingUri(trustedBiddingUri).build())
           .setUserBiddingSignals(AdSelectionSignals.EMPTY)
           .build(),
         statusReceiver)
@@ -104,7 +134,6 @@ class CustomAudienceWrapper(
 
   fun joinEmptyFieldCa(
     name: String,
-    owner: String,
     buyer: AdTechIdentifier,
     biddingUri: Uri,
     dailyUpdateUri: Uri,

@@ -155,7 +155,7 @@ public class AdSelectionWrapper {
 
   /**
    * Helper function of {@link  AdSelectionClient#setAppInstallAdvertisers}. Set which adtechs
-   * can filter on this apps presence
+   * can filter on this app's presence.
    *
    * @param adtechs The set of adtechs that can filter
    * @param statusReceiver A consumer function that is run after that reports how the call went

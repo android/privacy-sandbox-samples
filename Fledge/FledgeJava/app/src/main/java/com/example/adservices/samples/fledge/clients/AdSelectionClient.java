@@ -133,7 +133,7 @@ public class AdSelectionClient {
 
 
   /**
-   * Invokes the {@code setAppInstallAdvertiser} method of {@link AdSelectionManager}, and returns
+   * Invokes the {@code setAppInstallAdvertisers} method of {@link AdSelectionManager}, and returns
    * a Void future.
    */
   @NonNull
