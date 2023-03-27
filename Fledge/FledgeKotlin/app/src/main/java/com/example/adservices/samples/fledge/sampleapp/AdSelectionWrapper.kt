@@ -19,6 +19,7 @@ import android.adservices.adselection.AdSelectionConfig
 import android.adservices.adselection.AdSelectionOutcome
 import android.adservices.adselection.AddAdSelectionOverrideRequest
 import android.adservices.adselection.ReportImpressionRequest
+import android.adservices.adselection.SetAppInstallAdvertisersRequest
 import android.adservices.common.AdSelectionSignals
 import android.adservices.common.AdTechIdentifier
 import android.content.Context
@@ -107,6 +108,31 @@ class AdSelectionWrapper(
 
                           override fun onFailure(e: Throwable) {
                             statusReceiver.accept("Error when reporting impressions: " + e.message)
+                            Log.e(TAG, e.toString(), e)
+                          }
+                        }, executor)
+  }
+
+  /**
+   * Helper function of [.setAppInstallAdvertisers]. Set which adtechs can filter on this app's presence.
+   *
+   * @param adtechs The set of adtechs that can filter
+   * @param statusReceiver A consumer function that is run after that reports how the call went
+   * after it is completed
+   */
+  fun setAppInstallAdvertisers(
+    adtechs: Set<AdTechIdentifier>,
+    statusReceiver: Consumer<String>
+  ) {
+    val request = SetAppInstallAdvertisersRequest(adtechs)
+    Futures.addCallback(adClient.setAppInstallAdvertisers(request),
+                        object : FutureCallback<Void?> {
+                          override fun onSuccess(unused: Void?) {
+                            statusReceiver.accept("Set this app's app install advertisers to: $adtechs")
+                          }
+
+                          override fun onFailure(e: Throwable) {
+                            statusReceiver.accept("Error when setting app install advertisers: " + e.message)
                             Log.e(TAG, e.toString(), e)
                           }
                         }, executor)

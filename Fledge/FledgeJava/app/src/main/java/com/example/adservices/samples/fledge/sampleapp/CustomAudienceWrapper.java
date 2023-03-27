@@ -71,6 +71,7 @@ public class CustomAudienceWrapper {
    * @param trustedBiddingUri The URL to retrieve trusted bidding data
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
+   * @param expiry The time when the CA will expire
    */
   public void joinCa(String name, AdTechIdentifier buyer, Uri biddingUri,
       Uri renderUri, Uri dailyUpdateUri, Uri trustedBiddingUri, Consumer<String> statusReceiver,
@@ -88,6 +89,7 @@ public class CustomAudienceWrapper {
    * @param dailyUpdateUri The URL for daily updates for the CA
    * @param trustedBiddingUri The URL to retrieve trusted bidding data
    * @param statusReceiver A consumer function that is run after the API call and returns a
+   * @param expiry The time when the CA will expire
    * @param filters {@link AdFilters} that should be applied to the ad in the CA
    * string indicating the outcome of the call.
    */

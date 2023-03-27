@@ -193,7 +193,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupAppInstallSwitch(Uri biddingUri, EventLogManager eventLog) {
-        // Shoes
         binding.appInstallSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             if (isChecked) {
                 adWrapper.setAppInstallAdvertisers(Collections.singleton(AdTechIdentifier.fromString(biddingUri.getHost())),

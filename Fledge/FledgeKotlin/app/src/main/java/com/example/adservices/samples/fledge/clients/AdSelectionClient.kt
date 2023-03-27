@@ -20,6 +20,7 @@ import android.adservices.adselection.AdSelectionFromOutcomesConfig
 import android.adservices.adselection.AdSelectionManager
 import android.adservices.adselection.AdSelectionOutcome
 import android.adservices.adselection.ReportImpressionRequest
+import android.adservices.adselection.SetAppInstallAdvertisersRequest
 import android.content.Context
 import android.os.OutcomeReceiver
 import androidx.annotation.RequiresApi
@@ -115,6 +116,30 @@ class AdSelectionClient private constructor(
           }
         })
       "reportImpression"
+    }
+  }
+
+  /**
+   * Invokes the `setAppInstallAdvertisers` method of [AdSelectionManager], and returns a Void
+   * future
+   */
+  fun setAppInstallAdvertisers(
+    input: SetAppInstallAdvertisersRequest
+  ): ListenableFuture<Void?> {
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
+      adSelectionManager.setAppInstallAdvertisers(
+        input,
+        executor,
+        object : NullableOutcomeReceiver<Any?, java.lang.Exception?> {
+          override fun onResult(result: Any?) {
+            completer.set(null)
+          }
+
+          override fun onError(error: java.lang.Exception?) {
+            completer.setException(error!!)
+          }
+        })
+      "setAppInstallAdvertisers"
     }
   }
 
