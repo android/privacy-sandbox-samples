@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * Generates a bid of 10 for the shoes CA, and a bid of 5 otherwise
- */
 function generateBid(ad, auction_signals, per_buyer_signals,
   trusted_bidding_signals, contextual_signals, custom_audience_bidding_signals) {
   var bid = 5;

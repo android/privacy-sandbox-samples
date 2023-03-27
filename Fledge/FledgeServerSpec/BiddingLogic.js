@@ -22,14 +22,13 @@ const simulateDelay = (ms) => {
   }
 }
 
-/**
- * Generates a bid of 10 for the shoes CA, and a bid of 5 otherwise
- */
 function generateBid(ad, auction_signals, per_buyer_signals,
   trusted_bidding_signals, contextual_signals, custom_audience_bidding_signals) {
   var bid = 5;
   if (custom_audience_bidding_signals.name === "shoes") {
-      bid = 10;
+    bid = 10;
+  } else if (custom_audience_bidding_signals.name === "app_install") {
+    bid = 15;
   }
   simulateDelay(0);
   return {'status': 0, 'ad': ad, 'bid': bid };
