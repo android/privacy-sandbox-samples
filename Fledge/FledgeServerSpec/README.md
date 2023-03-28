@@ -68,10 +68,10 @@ up 7 HTTPS endpoints that your test device or emulator can access. They are:
 4. A [scoring signals](https://developer.android.com/design-for-safety/privacy-sandbox/fledge#ad-selection-ad-tech-platform-managed-trusted-server)
    endpoint that serves the sample `ScoringSignals.json` in this directory.
 
-5. A winning buyer impression reporting endpoint. Modify the reporting_address
+5. A winning buyer reporting endpoint. Modify the reporting_address
    variable in the `BiddingLogic.js` file to match this endpoint.
 
-6. A seller impression reporting endpoint. Modify the reporting_address variable
+6. A seller reporting endpoint. Modify the reporting_address variable
    in the `ScoringLogic.js` file to match this endpoint.
 
 7. A buyer daily fetch endpoint that serves the sample `DailyUpdateResponse.json`

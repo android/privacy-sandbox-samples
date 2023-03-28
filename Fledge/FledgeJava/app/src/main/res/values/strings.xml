@@ -30,7 +30,9 @@
   <string name="ca_switch_invalid_fields_text">CA with invalid fields</string>
   <string name="app_install_ca_switch_text">CA with app install filtering</string>
   <string name="edit_text_ad_selection_input_hint">Enter Ad Selection Id</string>
+  <string name="edit_text_interaction_data_input_hint">Enter Interaction Data</string>
   <string name="report_impression_button_text">Report Impression</string>
+  <string name="report_click_button_text">Report Click</string>
   <string name="network_a_text">Network A\n(buyer: Nike)</string>
   <string name="network_a_buyer">Nike</string>
   <string name="network_bid_hint">Bid</string>

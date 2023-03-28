@@ -15,11 +15,15 @@
  */
 package com.example.adservices.samples.fledge.sampleapp;
 
+import static android.adservices.adselection.ReportInteractionRequest.FLAG_REPORTING_DESTINATION_BUYER;
+import static android.adservices.adselection.ReportInteractionRequest.FLAG_REPORTING_DESTINATION_SELLER;
+
 import android.adservices.adselection.AdSelectionConfig;
 import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.adselection.AddAdSelectionOverrideRequest;
 import android.adservices.adselection.ReportImpressionRequest;
 import android.adservices.adselection.SetAppInstallAdvertisersRequest;
+import android.adservices.adselection.ReportInteractionRequest;
 import android.adservices.common.AdSelectionSignals;
 import android.adservices.common.AdTechIdentifier;
 import android.content.Context;
@@ -36,6 +40,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.json.JSONObject;
 
 /**
  * Wrapper for the FLEDGE Ad Selection API. This wrapper is opinionated and makes several
@@ -131,7 +136,7 @@ public class AdSelectionWrapper {
   }
 
   /**
-   * Helper function of {@link #runAdSelection}. Runs impression reporting.
+   * Runs impression reporting and reports a view interaction upon success.
    *
    * @param adSelectionId The auction to report impression on.
    * @param statusReceiver A consumer function that is run after impression reporting
@@ -143,7 +148,12 @@ public class AdSelectionWrapper {
     Futures.addCallback(mAdClient.reportImpression(request),
         new FutureCallback<Void>() {
           public void onSuccess(Void unused) {
-            statusReceiver.accept("Reported impressions from ad selection");
+            statusReceiver.accept("Reported impressions from ad selection.");
+            statusReceiver.accept("Registered beacons successfully.");
+            String viewInteraction = "view";
+            String interactionData = "{\"viewTimeSeconds\":1}";
+            reportInteraction(adSelectionId, viewInteraction, interactionData,
+                FLAG_REPORTING_DESTINATION_SELLER | FLAG_REPORTING_DESTINATION_BUYER, statusReceiver);
           }
 
           public void onFailure(@NonNull Throwable e) {
@@ -173,6 +183,31 @@ public class AdSelectionWrapper {
           public void onFailure(@NonNull Throwable e) {
             statusReceiver.accept("Error when setting app install advertisers: "
                 + e.getMessage());
+          }
+        }, mExecutor);
+  }
+
+  /*
+   * Runs interaction reporting.
+   *
+   * @param adSelectionId The auction associated with the ad.
+   * @param interactionKey The type of interaction to be reported.
+   * @param interactionData Data associated with the interaction.
+   * @param reportingDestinations the destinations to report to, (buyer/seller)
+   * @param statusReceiver A consumer function that is run after interaction reporting
+   * with a string describing how the reporting went.
+   */
+  public void reportInteraction(long adSelectionId, String interactionKey, String interactionData, int reportingDestinations, Consumer<String> statusReceiver) {
+    ReportInteractionRequest request = new ReportInteractionRequest(adSelectionId, interactionKey, interactionData, reportingDestinations);
+
+    Futures.addCallback(mAdClient.reportInteraction(request),
+        new FutureCallback<Void>() {
+          public void onSuccess(Void unused) {
+            statusReceiver.accept(String.format("Reported %s interaction.", interactionKey));
+          }
+
+          public void onFailure(@NonNull Throwable e) {
+            statusReceiver.accept("Error when reporting interaction: " + e.getMessage());
             Log.e(MainActivity.TAG, e.toString(), e);
           }
         }, mExecutor);

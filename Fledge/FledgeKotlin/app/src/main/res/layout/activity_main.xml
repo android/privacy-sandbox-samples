@@ -173,7 +173,7 @@
       android:layout_height="0dp"
       android:orientation="horizontal">
     <EditText
-        android:id="@+id/ad_selection_id_input"
+        android:id="@+id/ad_selection_id_impression_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight=".45"
@@ -191,6 +191,42 @@
         android:layout_marginStart="5dp"
         android:layout_marginBottom="5dp"
         android:text="@string/report_impression_button_text" />
+  </LinearLayout>
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_weight=".10"
+      android:layout_height="0dp"
+      android:orientation="horizontal">
+    <EditText
+        android:id="@+id/ad_selection_id_click_input"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".45"
+        android:hint="@string/edit_text_ad_selection_input_hint"
+        android:inputType="numberSigned"
+        android:minHeight="48dp"
+        android:textColorHint="#78909C"
+        android:importantForAutofill="no" />
+    <EditText
+        android:id="@+id/interaction_data_input"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".45"
+        android:hint="@string/edit_text_interaction_data_input_hint"
+        android:inputType="text"
+        android:minHeight="48dp"
+        android:textColorHint="#78909C"
+        android:importantForAutofill="no" />
+    <Button
+        android:id="@+id/run_report_click_button"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight=".55"
+        android:layout_marginEnd="5dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginBottom="5dp"
+        android:text="@string/report_click_button_text" />
   </LinearLayout>
 
 </LinearLayout>

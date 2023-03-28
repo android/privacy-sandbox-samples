@@ -38,6 +38,11 @@ function reportWin(ad_selection_signals, per_buyer_signals, signals_for_buyer,
  contextual_signals, custom_audience_reporting_signals) {
   // Add the address of your reporting server here
   let reporting_address = 'https://reporting.example.com';
+  // Register beacons
+  let clickUri = reporting_address + '/buyerInteraction?click';
+  let viewUri = reporting_address + '/buyerInteraction?view';
+  registerAdBeacon('click', clickUri);
+  registerAdBeacon('view', viewUri);
   simulateDelay(0);
   return {'status': 0, 'results': {'reporting_uri':
          reporting_address + '/reportWin?ca=' + custom_audience_reporting_signals.name} };

@@ -20,6 +20,7 @@ import android.adservices.adselection.AdSelectionOutcome
 import android.adservices.adselection.AddAdSelectionOverrideRequest
 import android.adservices.adselection.ReportImpressionRequest
 import android.adservices.adselection.SetAppInstallAdvertisersRequest
+import android.adservices.adselection.ReportInteractionRequest
 import android.adservices.common.AdSelectionSignals
 import android.adservices.common.AdTechIdentifier
 import android.content.Context
@@ -48,7 +49,11 @@ import java.util.stream.Collectors
  */
 @RequiresApi(api = 34)
 class AdSelectionWrapper(
-  buyers: List<AdTechIdentifier>, seller: AdTechIdentifier, decisionUri: Uri, trustedScoringUri: Uri, context: Context,
+  buyers: List<AdTechIdentifier>,
+  seller: AdTechIdentifier,
+  decisionUri: Uri,
+  trustedScoringUri: Uri,
+  context: Context,
   executor: Executor
 ) {
   private var adSelectionConfig: AdSelectionConfig
@@ -89,7 +94,7 @@ class AdSelectionWrapper(
   }
 
   /**
-   * Helper function of [.runAdSelection]. Runs impression reporting.
+   * Runs impression reporting and reports a view interaction upon success.
    *
    * @param adSelectionId The auction to report impression on.
    * @param statusReceiver A consumer function that is run after impression reporting
@@ -103,7 +108,15 @@ class AdSelectionWrapper(
     Futures.addCallback(adClient.reportImpression(request),
                         object : FutureCallback<Void?> {
                           override fun onSuccess(unused: Void?) {
-                            statusReceiver.accept("Reported impressions from ad selection")
+                            statusReceiver.accept("Reported impressions from ad selection.")
+                            statusReceiver.accept("Registered beacons successfully.")
+                            val viewInteraction = "view"
+                            val interactionData = "{\"viewTimeSeconds\":1}"
+                            reportInteraction(adSelectionId,
+                                              viewInteraction,
+                                              interactionData,
+                                              ReportInteractionRequest.FLAG_REPORTING_DESTINATION_SELLER or ReportInteractionRequest.FLAG_REPORTING_DESTINATION_BUYER,
+                                              statusReceiver)
                           }
 
                           override fun onFailure(e: Throwable) {
@@ -133,6 +146,40 @@ class AdSelectionWrapper(
 
                           override fun onFailure(e: Throwable) {
                             statusReceiver.accept("Error when setting app install advertisers: " + e.message)
+                          }
+                        },
+                        executor)
+  }
+
+  /*
+   * Runs interaction reporting.
+   *
+   * @param adSelectionId The auction associated with the ad.
+   * @param interactionKey The type of interaction to be reported.
+   * @param interactionData Data associated with the interaction.
+   * @param reportingDestinations the destinations to report to, (buyer/seller)
+   * @param statusReceiver A consumer function that is run after interaction reporting
+   * with a string describing how the reporting went.
+   */
+  fun reportInteraction(
+    adSelectionId: Long,
+    interactionKey: String,
+    interactionData: String,
+    reportingDestinations: Int,
+    statusReceiver: Consumer<String>,
+  ) {
+    val request = ReportInteractionRequest(adSelectionId,
+                                           interactionKey,
+                                           interactionData, reportingDestinations)
+    Futures.addCallback(adClient.reportInteraction(request),
+                        object : FutureCallback<Void?> {
+                          override fun onSuccess(unused: Void?) {
+                            statusReceiver.accept(String.format("Reported %s interaction.",
+                                                                interactionKey))
+                          }
+
+                          override fun onFailure(e: Throwable) {
+                            statusReceiver.accept("Error when reporting interaction: " + e.message)
                             Log.e(TAG, e.toString(), e)
                           }
                         }, executor)
@@ -146,7 +193,7 @@ class AdSelectionWrapper(
    * string indicating the outcome of the call.
    */
   fun overrideAdSelection(statusReceiver: Consumer<String?>, decisionLogicJS: String?, trustedScoringSignals: AdSelectionSignals?) {
-    val request = AddAdSelectionOverrideRequest(adSelectionConfig, decisionLogicJS!!, trustedScoringSignals!!);
+    val request = AddAdSelectionOverrideRequest(adSelectionConfig, decisionLogicJS!!, trustedScoringSignals!!)
     Futures.addCallback(overrideClient.overrideAdSelectionConfigRemoteInfo(request),
                         object : FutureCallback<Void?> {
                           override fun onSuccess(unused: Void?) {

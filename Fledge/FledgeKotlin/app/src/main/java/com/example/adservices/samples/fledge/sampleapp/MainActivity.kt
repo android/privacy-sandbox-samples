@@ -15,6 +15,7 @@
  */
 package com.example.adservices.samples.fledge.sampleapp
 
+import android.adservices.adselection.ReportInteractionRequest
 import android.adservices.common.AdFilters
 import android.adservices.common.AdSelectionSignals
 import android.adservices.common.AdTechIdentifier
@@ -120,6 +121,9 @@ class MainActivity : AppCompatActivity() {
 
       // Setup report impressions button
       setupReportImpressionButton(adWrapper!!, binding!!, eventLog!!)
+
+      // Setup report click button
+      setupReportClickButton(adWrapper!!, binding!!, eventLog!!)
 
       // Set up Override Switch
       binding!!.overrideSwitch.setOnCheckedChangeListener(this::toggleOverrideSwitch)
@@ -324,7 +328,7 @@ class MainActivity : AppCompatActivity() {
   ) {
     binding.runReportImpressionButton.setOnClickListener {
       try {
-        val adSelectionIdInput = binding.adSelectionIdInput.text.toString()
+        val adSelectionIdInput = binding.adSelectionIdImpressionInput.text.toString()
         val adSelectionId = adSelectionIdInput.toLong()
         adSelectionWrapper.reportImpression(adSelectionId) { event: String? ->
           eventLog.writeEvent(event!!)
@@ -332,6 +336,33 @@ class MainActivity : AppCompatActivity() {
       } catch (e: NumberFormatException) {
         Log.e(TAG, String.format("Error while parsing the ad selection id: %s", e))
         eventLog.writeEvent("Invalid AdSelectionId. Cannot run report impressions!")
+      }
+    }
+  }
+
+  private fun setupReportClickButton(
+    adSelectionWrapper: AdSelectionWrapper,
+    binding: ActivityMainBinding,
+    eventLog: EventLogManager,
+  ) {
+    binding.runReportClickButton.setOnClickListener { l ->
+      try {
+        val adSelectionIdInput = binding.adSelectionIdClickInput.text.toString()
+        val interactionData = binding.interactionDataInput.text.toString()
+        val clickInteraction = "click"
+        val adSelectionId = adSelectionIdInput.toLong()
+        adSelectionWrapper.reportInteraction(adSelectionId,
+                                             clickInteraction,
+                                             interactionData,
+                                             ReportInteractionRequest.FLAG_REPORTING_DESTINATION_SELLER or ReportInteractionRequest.FLAG_REPORTING_DESTINATION_BUYER
+        ) { event: String? ->
+          eventLog.writeEvent(
+            event!!)
+        }
+      } catch (e: java.lang.NumberFormatException) {
+        Log.e(TAG,
+              String.format("Error while parsing the ad selection id: %s", e))
+        eventLog.writeEvent("Invalid AdSelectionId. Cannot run report interaction!")
       }
     }
   }

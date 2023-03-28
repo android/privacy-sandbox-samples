@@ -43,7 +43,7 @@
                 "schema": {
                   "type": "string"
                 },
-                "example": "\nconst simulateDelay = (ms) => {\n  var start = new Date().getTime();\n  var end = start;\n  while(end < start + ms) {\n      end = new Date().getTime();\n  }\n}\n\n/**\n * Generates a bid of 10 for the shoes CA, and a bid of 5 otherwise\n */\nfunction generateBid(ad, auction_signals, per_buyer_signals,\n  trusted_bidding_signals, contextual_signals, custom_audience_bidding_signals) {\n  var bid = 5;\n  if (custom_audience_bidding_signals.name === \"shoes\") {\n      bid = 10;\n  }\n  simulateDelay(0);\n  return {'status': 0, 'ad': ad, 'bid': bid };\n}\n\nfunction reportWin(ad_selection_signals, per_buyer_signals, signals_for_buyer,\n contextual_signals, custom_audience_reporting_signals) {\n  // Add the address of your reporting server here\n  let reporting_address = 'https://reporting.example.com';\n  simulateDelay(0);\n  return {'status': 0, 'results': {'reporting_uri':\n         reporting_address + '/reportWin?ca=' + custom_audience_reporting_signals.name} };\n}\n"
+                "example": "\nconst simulateDelay = (ms) => {\n  var start = new Date().getTime();\n  var end = start;\n  while(end < start + ms) {\n      end = new Date().getTime();\n  }\n}\n\n/**\n * Generates a bid of 10 for the shoes CA, and a bid of 5 otherwise\n */\nfunction generateBid(ad, auction_signals, per_buyer_signals,\n  trusted_bidding_signals, contextual_signals, custom_audience_bidding_signals) {\n  var bid = 5;\n  if (custom_audience_bidding_signals.name === \"shoes\") {\n      bid = 10;\n  }\n  simulateDelay(0);\n  return {'status': 0, 'ad': ad, 'bid': bid };\n}\n\nfunction reportWin(ad_selection_signals, per_buyer_signals, signals_for_buyer,\n contextual_signals, custom_audience_reporting_signals) {\n  // Add the address of your reporting server here\n  let reporting_address = 'https://reporting.example.com';\n  // Register beacons\n  let clickUri = reporting_address + '/buyerInteraction?click';\n  let viewUri = reporting_address + '/buyerInteraction?view';\n  registerAdBeacon('click', clickUri);\n  registerAdBeacon('view', viewUri);\n  simulateDelay(0);\n  return {'status': 0, 'results': {'reporting_uri':\n         reporting_address + '/reportWin?ca=' + custom_audience_reporting_signals.name} };\n}\n"
               }
             }
           }
@@ -63,7 +63,7 @@
                 "schema": {
                   "type": "string"
                 },
-                "example": "\n const simulateDelay = (ms) => {\n   var start = new Date().getTime();\n   var end = start;\n   while(end < start + ms) {\n       end = new Date().getTime();\n   }\n }\n\n\n/**\n * Trivial scoring function -- scores each ad with the value of its bid.\n */\nfunction scoreAd(ad, bid, auction_config, seller_signals, trusted_scoring_signals,\n  contextual_signal, user_signal, custom_audience_scoring_signals) {\n  simulateDelay(0);\n  return {'status': 0, 'score': bid };\n}\n\n\nfunction reportResult(ad_selection_config, render_uri, bid, contextual_signals) {\n  // Add the address of your reporting server here\n  let reporting_address = 'https://reporting.example.com';\n  simulateDelay(0);\n  return {'status': 0, 'results': {'signals_for_buyer': '{\"signals_for_buyer\" : 1}'\n          , 'reporting_uri': reporting_address + '/reportResult?render_uri='\n              + render_uri + '?bid=' + bid } };\n}\n"
+                "example": "\n const simulateDelay = (ms) => {\n   var start = new Date().getTime();\n   var end = start;\n   while(end < start + ms) {\n       end = new Date().getTime();\n   }\n }\n\n\n/**\n * Trivial scoring function -- scores each ad with the value of its bid.\n */\nfunction scoreAd(ad, bid, auction_config, seller_signals, trusted_scoring_signals,\n  contextual_signal, user_signal, custom_audience_scoring_signals) {\n  simulateDelay(0);\n  return {'status': 0, 'score': bid };\n}\n\n\nfunction reportResult(ad_selection_config, render_uri, bid, contextual_signals) {\n  // Add the address of your reporting server here\n  let reporting_address = 'https://reporting.example.com';\n  // Register beacons\n  let clickUri = reporting_address + '/sellerInteraction?click';\n  let viewUri = reporting_address + '/sellerInteraction?view';\n  registerAdBeacon('click', clickUri);\n  registerAdBeacon('view', viewUri);\n  simulateDelay(0);\n  return {'status': 0, 'results': {'signals_for_buyer': '{\"signals_for_buyer\" : 1}'\n          , 'reporting_uri': reporting_address + '/reportResult?render_uri='\n              + render_uri + '?bid=' + bid } };\n}\n"
               }
             }
           }
@@ -165,6 +165,46 @@
           "default"
         ],
         "summary": "/reportWin",
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": ""
+              }
+            }
+          }
+        }
+      }
+    },
+    "/buyerInteraction": {
+      "post": {
+        "tags": [
+          "default"
+        ],
+        "summary": "/buyerInteraction",
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": ""
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sellerInteraction": {
+      "post": {
+        "tags": [
+          "default"
+        ],
+        "summary": "/sellerInteraction",
         "responses": {
           "200": {
             "content": {
