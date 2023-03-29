@@ -37,7 +37,12 @@ import java.util.concurrent.TimeUnit;
  */
 @RequiresApi(api = 34)
 public class MediationSdk extends NetworkAdapter {
-
+  private static final String AD_SELECTION_PREBUILT_SCHEMA = "ad-selection-prebuilt";
+  private static final String AD_SELECTION_FROM_OUTCOMES_USE_CASE = "ad-selection-from-outcomes";
+  private static final String AD_OUTCOME_SELECTION_WATERFALL_MEDIATION_TRUNCATION = "waterfall-mediation-truncation";
+  private static final String BID_FLOOR_SIGNALS_FORMAT = "{%s:%s}";
+  private static final String BID_FLOOR_PARAM_KEY = "bidFloor";
+  private static final String BID_FLOOR_SIGNAL_KEY = "bid_floor";
   private final WaterfallMediationActivityBinding binding;
   private final boolean useOnlyAdditionalIds;
 
@@ -82,7 +87,7 @@ public class MediationSdk extends NetworkAdapter {
 
   public AdSelectionOutcome runSelectOutcome(AdSelectionOutcome outcome1p, NetworkAdapter network3p)
       throws Exception {
-    AdSelectionFromOutcomesConfig config = prepareWaterfallConfig(outcome1p.getAdSelectionId(), network3p.getBidFloorSignals());
+    AdSelectionFromOutcomesConfig config = prepareWaterfallConfig(outcome1p.getAdSelectionId(), network3p.getBidFloor());
 
     if (useOverrides) {
       addAdSelectionFromOutcomesOverride(config);
@@ -113,7 +118,7 @@ public class MediationSdk extends NetworkAdapter {
     }
   }
 
-  private AdSelectionFromOutcomesConfig prepareWaterfallConfig(Long outcome1pId, AdSelectionSignals bidFloorSignals) {
+  private AdSelectionFromOutcomesConfig prepareWaterfallConfig(Long outcome1pId, double bidFloor) {
     // inject a flag to run only with "Additional ad selection ids from the UX"
     List<Long> outcomeIds = new ArrayList<>();
     writeEvent("useOnlyAdditionalIds flag: " + useOnlyAdditionalIds);
@@ -123,8 +128,8 @@ public class MediationSdk extends NetworkAdapter {
     return new AdSelectionFromOutcomesConfig.Builder()
         .setSeller(AdTechIdentifier.fromString(getSelectionLogicUri().getHost()))
         .setAdSelectionIds(outcomeIds)
-        .setSelectionSignals(bidFloorSignals)
-        .setSelectionLogicUri(getSelectionLogicUri())
+        .setSelectionSignals(getSignalsForPrebuiltUri(bidFloor))
+        .setSelectionLogicUri(getPrebuiltUriForWaterfallTruncation())
         .build();
   }
 
@@ -149,5 +154,20 @@ public class MediationSdk extends NetworkAdapter {
 
   private Uri getSelectionLogicUri() {
     return baseUri.buildUpon().appendPath(OUTCOME_SELECTION_URI_SUFFIX).build();
+  }
+
+  private AdSelectionSignals getSignalsForPrebuiltUri(double bidFloor) {
+    return AdSelectionSignals.fromString(String.format(BID_FLOOR_SIGNALS_FORMAT, BID_FLOOR_SIGNAL_KEY, bidFloor));
+  }
+
+  private Uri getPrebuiltUriForWaterfallTruncation() {
+    return Uri.parse(
+        String.format(
+            "%s://%s/%s/?%s=%s",
+            AD_SELECTION_PREBUILT_SCHEMA,
+            AD_SELECTION_FROM_OUTCOMES_USE_CASE,
+            AD_OUTCOME_SELECTION_WATERFALL_MEDIATION_TRUNCATION,
+            BID_FLOOR_PARAM_KEY,
+            BID_FLOOR_SIGNAL_KEY));
   }
 }
