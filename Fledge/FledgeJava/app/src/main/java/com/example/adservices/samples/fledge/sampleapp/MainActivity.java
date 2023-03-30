@@ -22,6 +22,8 @@ import android.adservices.common.AdFilters;
 import android.adservices.common.AdSelectionSignals;
 import android.adservices.common.AdTechIdentifier;
 import android.adservices.common.AppInstallFilters;
+import android.adservices.common.FrequencyCapFilters;
+import android.adservices.common.KeyedFrequencyCap;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -31,6 +33,7 @@ import android.widget.CompoundButton;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding;
+import com.google.common.collect.ImmutableSet;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -75,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String SHORT_EXPIRING_CA_NAME = "short_expiring";
     private static final String INVALID_FIELD_CA_NAME = "invalid_fields";
     private static final String APP_INSTALL_CA_NAME = "app_install";
+    private static final String FREQ_CAP_CA_NAME = "freq_cap";
 
     // Expiry durations
     private static final Duration ONE_DAY_EXPIRY = Duration.ofDays(1);
@@ -134,6 +138,8 @@ public class MainActivity extends AppCompatActivity {
 
             // Setup Report Click button and text boxes
             setupReportClickButton(adWrapper, binding, eventLog);
+            // Set up Update Ad Counter Histogram button and text box
+            setupUpdateClickHistogramButton(adWrapper, binding, eventLog);
 
             // Set up Override Switch
             binding.overrideSwitch.setOnCheckedChangeListener(this::toggleOverrideSwitch);
@@ -265,6 +271,39 @@ public class MainActivity extends AppCompatActivity {
                 caWrapper.leaveCa(APP_INSTALL_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
             }
         });
+        // Frequency Capped CA
+        binding.freqCapCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            String adCounterKey = "key";
+
+            // Caps is exceeded after 2 impression events
+            KeyedFrequencyCap keyedFrequencyCapImpression =
+                new KeyedFrequencyCap.Builder().setAdCounterKey(adCounterKey)
+                    .setMaxCount(1)
+                    .setInterval(Duration.ofSeconds(10))
+                    .build();
+
+            // Caps is exceeded after 1 click event
+            KeyedFrequencyCap keyedFrequencyCapClick =
+                new KeyedFrequencyCap.Builder().setAdCounterKey(adCounterKey)
+                    .setMaxCount(0)
+                    .setInterval(Duration.ofSeconds(10))
+                    .build();
+
+            AdFilters filters = new AdFilters.Builder()
+                .setFrequencyCapFilters(new FrequencyCapFilters.Builder()
+                    .setKeyedFrequencyCapsForImpressionEvents(ImmutableSet.of(keyedFrequencyCapImpression))
+                    .setKeyedFrequencyCapsForClickEvents(ImmutableSet.of(keyedFrequencyCapClick))
+                    .build()
+                )
+                .build();
+            if (isChecked) {
+                caWrapper.joinFilteringCa(FREQ_CAP_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                    Uri.parse(biddingUri + "/render_" + FREQ_CAP_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
+                    eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY), filters, ImmutableSet.of(adCounterKey));
+            } else {
+                caWrapper.leaveCa(FREQ_CAP_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+            }
+        });
     }
 
     private void setupReportImpressionButton(AdSelectionWrapper adSelectionWrapper, ActivityMainBinding binding, EventLogManager eventLog) {
@@ -299,6 +338,22 @@ public class MainActivity extends AppCompatActivity {
             });
     }
 
+    private void setupUpdateClickHistogramButton(AdSelectionWrapper adSelectionWrapper, ActivityMainBinding binding, EventLogManager eventLog) {
+        binding.runUpdateAdCounterHistogramButton.setOnClickListener(
+            (l) ->  {
+                try {
+                    String adSelectionIdInput = binding.adSelectionIdHistogramInput.getText().toString();
+                    long adSelectionId = Long.parseLong(adSelectionIdInput);
+                    adSelectionWrapper.updateAdCounterHistogram(adSelectionId, FrequencyCapFilters.AD_EVENT_TYPE_CLICK, eventLog::writeEvent);
+                } catch (NumberFormatException e) {
+                    Log.e(TAG, String.format("Error while parsing the ad selection id: %s", e));
+                    eventLog.writeEvent("Invalid AdSelectionId. Cannot run update ad counter histogram!");
+                }
+
+            });
+    }
+
+
     private void useOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper,
         CustomAudienceWrapper customAudienceWrapper, String decisionLogicJs, String biddingLogicJs,
         AdSelectionSignals trustedScoringSignals, AdSelectionSignals trustedBiddingSignals, Uri biddingUri, Context context) {
@@ -308,6 +363,7 @@ public class MainActivity extends AppCompatActivity {
         customAudienceWrapper.addCAOverride(SHORT_EXPIRING_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, trustedBiddingSignals, eventLog::writeEvent);
         customAudienceWrapper.addCAOverride(INVALID_FIELD_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, trustedBiddingSignals, eventLog::writeEvent);
         customAudienceWrapper.addCAOverride(APP_INSTALL_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, trustedBiddingSignals, eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(FREQ_CAP_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, trustedBiddingSignals, eventLog::writeEvent);
     }
 
     private void resetOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper, CustomAudienceWrapper customAudienceWrapper) {

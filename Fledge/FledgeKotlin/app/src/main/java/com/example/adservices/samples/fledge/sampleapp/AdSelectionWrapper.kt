@@ -19,10 +19,12 @@ import android.adservices.adselection.AdSelectionConfig
 import android.adservices.adselection.AdSelectionOutcome
 import android.adservices.adselection.AddAdSelectionOverrideRequest
 import android.adservices.adselection.ReportImpressionRequest
-import android.adservices.adselection.SetAppInstallAdvertisersRequest
 import android.adservices.adselection.ReportInteractionRequest
+import android.adservices.adselection.SetAppInstallAdvertisersRequest
+import android.adservices.adselection.UpdateAdCounterHistogramRequest
 import android.adservices.common.AdSelectionSignals
 import android.adservices.common.AdTechIdentifier
+import android.adservices.common.FrequencyCapFilters
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -54,7 +56,7 @@ class AdSelectionWrapper(
   decisionUri: Uri,
   trustedScoringUri: Uri,
   context: Context,
-  executor: Executor
+  executor: Executor,
 ) {
   private var adSelectionConfig: AdSelectionConfig
   private val adClient: AdSelectionClient
@@ -63,9 +65,9 @@ class AdSelectionWrapper(
 
   /**
    * Runs ad selection and passes a string describing its status to the input receivers. If ad
-   * selection succeeds, also report impressions.
-   * @param statusReceiver A consumer function that is run after ad selection and impression reporting
-   * with a string describing how the auction and reporting went.
+   * selection succeeds, updates the ad histogram with an impression event and reports the impression.
+   * @param statusReceiver A consumer function that is run after ad selection, histogram updating, and impression reporting
+   * with a string describing how the auction, histogram updating, and reporting went.
    * @param renderUriReceiver A consumer function that is run after ad selection with a message describing the render URI
    * or lack thereof.
    */
@@ -76,6 +78,9 @@ class AdSelectionWrapper(
                             override fun onSuccess(adSelectionOutcome: AdSelectionOutcome?) {
                               statusReceiver.accept("Ran ad selection! ID: " + adSelectionOutcome!!.adSelectionId)
                               renderUriReceiver.accept("Would display ad from " + adSelectionOutcome.renderUri)
+                              updateAdCounterHistogram(adSelectionOutcome.adSelectionId,
+                                                       FrequencyCapFilters.AD_EVENT_TYPE_IMPRESSION,
+                                                       statusReceiver)
                               reportImpression(adSelectionOutcome.adSelectionId,
                                                statusReceiver)
                             }
@@ -102,7 +107,7 @@ class AdSelectionWrapper(
    */
   fun reportImpression(
     adSelectionId: Long,
-    statusReceiver: Consumer<String>
+    statusReceiver: Consumer<String>,
   ) {
     val request = ReportImpressionRequest(adSelectionId, adSelectionConfig)
     Futures.addCallback(adClient.reportImpression(request),
@@ -135,7 +140,7 @@ class AdSelectionWrapper(
    */
   fun setAppInstallAdvertisers(
     adtechs: Set<AdTechIdentifier>,
-    statusReceiver: Consumer<String>
+    statusReceiver: Consumer<String>,
   ) {
     val request = SetAppInstallAdvertisersRequest(adtechs)
     Futures.addCallback(adClient.setAppInstallAdvertisers(request),
@@ -180,6 +185,44 @@ class AdSelectionWrapper(
 
                           override fun onFailure(e: Throwable) {
                             statusReceiver.accept("Error when reporting interaction: " + e.message)
+                            Log.e(TAG, e.toString(), e)
+                          }
+                        }, executor)
+  }
+
+  /**
+   * Helper function of [AdSelectionClient.updateAdCounterHistogram].
+   * Updates the counter histograms for an ad.
+   *
+   * @param adSelectionId The identifier associated with the winning ad.
+   * @param adEventType identifies which histogram should be updated
+   * @param statusReceiver A consumer function that is run after that reports how the call went
+   * after it is completed
+   */
+  fun updateAdCounterHistogram(
+    adSelectionId: Long,
+    adEventType: Int,
+    statusReceiver: Consumer<String>,
+  ) {
+    val callerAdTech: AdTechIdentifier = adSelectionConfig.seller
+
+    val request = UpdateAdCounterHistogramRequest.Builder()
+      .setAdSelectionId(adSelectionId)
+      .setAdEventType(adEventType)
+      .setCallerAdTech(callerAdTech)
+      .build()
+    Futures.addCallback(adClient.updateAdCounterHistogram(request),
+                        object : FutureCallback<Void?> {
+                          override fun onSuccess(unused: Void?) {
+                            statusReceiver.accept(String.format("Updated ad counter histogram with %s event for adtech:%s",
+                                                                fCapEventToString(adEventType),
+                                                                callerAdTech.toString()))
+
+                          }
+
+                          override fun onFailure(e: Throwable) {
+                            statusReceiver.accept("Error when updating ad counter histogram: "
+                                                    + e.toString())
                             Log.e(TAG, e.toString(), e)
                           }
                         }, executor)
@@ -240,7 +283,8 @@ class AdSelectionWrapper(
     buyers: List<AdTechIdentifier>,
     seller: AdTechIdentifier,
     decisionUri: Uri,
-    trustedScoringUri: Uri) {
+    trustedScoringUri: Uri,
+  ) {
     adSelectionConfig = AdSelectionConfig.Builder()
       .setSeller(seller)
       .setDecisionLogicUri(decisionUri)
@@ -253,6 +297,17 @@ class AdSelectionWrapper(
                               { AdSelectionSignals.EMPTY })))
       .setTrustedScoringSignalsUri(trustedScoringUri)
       .build()
+  }
+
+  private fun fCapEventToString(eventType: Int): String? {
+    val result: String = when (eventType) {
+      FrequencyCapFilters.AD_EVENT_TYPE_WIN -> "win"
+      FrequencyCapFilters.AD_EVENT_TYPE_CLICK -> "click"
+      FrequencyCapFilters.AD_EVENT_TYPE_IMPRESSION -> "impression"
+      FrequencyCapFilters.AD_EVENT_TYPE_VIEW -> "view"
+      else -> "unknown"
+    }
+    return result
   }
 
   /**

@@ -20,6 +20,8 @@ function generateBid(ad, auction_signals, per_buyer_signals,
     bid = 10;
   } else if (custom_audience_bidding_signals.name === "app_install") {
     bid = 15;
+  } else if (custom_audience_bidding_signals.name === "freq_cap") {
+    bid = 20;
   }
   return {'status': 0, 'ad': ad, 'bid': bid };
 }

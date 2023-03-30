@@ -17,6 +17,10 @@ package com.example.adservices.samples.fledge.sampleapp;
 
 import static android.adservices.adselection.ReportInteractionRequest.FLAG_REPORTING_DESTINATION_BUYER;
 import static android.adservices.adselection.ReportInteractionRequest.FLAG_REPORTING_DESTINATION_SELLER;
+import static android.adservices.common.FrequencyCapFilters.AD_EVENT_TYPE_CLICK;
+import static android.adservices.common.FrequencyCapFilters.AD_EVENT_TYPE_IMPRESSION;
+import static android.adservices.common.FrequencyCapFilters.AD_EVENT_TYPE_VIEW;
+import static android.adservices.common.FrequencyCapFilters.AD_EVENT_TYPE_WIN;
 
 import android.adservices.adselection.AdSelectionConfig;
 import android.adservices.adselection.AdSelectionOutcome;
@@ -24,8 +28,10 @@ import android.adservices.adselection.AddAdSelectionOverrideRequest;
 import android.adservices.adselection.ReportImpressionRequest;
 import android.adservices.adselection.SetAppInstallAdvertisersRequest;
 import android.adservices.adselection.ReportInteractionRequest;
+import android.adservices.adselection.UpdateAdCounterHistogramRequest;
 import android.adservices.common.AdSelectionSignals;
 import android.adservices.common.AdTechIdentifier;
+import android.adservices.common.FrequencyCapFilters;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
@@ -104,9 +110,9 @@ public class AdSelectionWrapper {
 
   /**
    * Runs ad selection and passes a string describing its status to the input receivers. If ad
-   * selection succeeds, also report impressions.
-   * @param statusReceiver A consumer function that is run after ad selection and impression reporting
-   * with a string describing how the auction and reporting went.
+   * selection succeeds, updates the ad histogram with an impression event and reports the impression.
+   * @param statusReceiver A consumer function that is run after ad selection, histogram updating, and impression reporting
+   * with a string describing how the auction, histogram updating, and reporting went.
    * @param renderUriReceiver A consumer function that is run after ad selection with a message describing the render URI
    * or lack thereof.
    */
@@ -117,7 +123,7 @@ public class AdSelectionWrapper {
             public void onSuccess(AdSelectionOutcome adSelectionOutcome) {
               statusReceiver.accept("Ran ad selection! Id: " + adSelectionOutcome.getAdSelectionId());
               renderUriReceiver.accept("Would display ad from " + adSelectionOutcome.getRenderUri());
-
+              updateAdCounterHistogram(adSelectionOutcome.getAdSelectionId(), AD_EVENT_TYPE_IMPRESSION, statusReceiver);
               reportImpression(adSelectionOutcome.getAdSelectionId(), statusReceiver);
             }
 
@@ -214,6 +220,38 @@ public class AdSelectionWrapper {
   }
 
   /**
+   * Helper function of {@link  AdSelectionClient#updateAdCounterHistogram}.
+   * Updates the counter histograms for an ad.
+   *
+   * @param adSelectionId The identifier associated with the winning ad.
+   * @param adEventType identifies which histogram should be updated
+   * @param statusReceiver A consumer function that is run after that reports how the call went
+   * after it is completed
+   */
+  public void updateAdCounterHistogram(long adSelectionId, int adEventType, Consumer<String> statusReceiver) {
+    AdTechIdentifier callerAdTech = mAdSelectionConfig.getSeller();
+
+    UpdateAdCounterHistogramRequest request = new UpdateAdCounterHistogramRequest.Builder()
+        .setAdSelectionId(adSelectionId)
+        .setAdEventType(adEventType)
+        .setCallerAdTech(callerAdTech)
+        .build();
+
+    Futures.addCallback(mAdClient.updateAdCounterHistogram(request),
+        new FutureCallback<Void>() {
+          public void onSuccess(Void unused) {
+            statusReceiver.accept(String.format("Updated ad counter histogram with %s event for adtech:%s", fCapEventToString(adEventType), callerAdTech.toString()));
+          }
+
+          public void onFailure(@NonNull Throwable e) {
+            statusReceiver.accept("Error when updating ad counter histogram: "
+                + e.toString());
+            Log.e(MainActivity.TAG, e.toString(), e);
+          }
+        }, mExecutor);
+  }
+
+  /**
    * Overrides remote info for an ad selection config.
    *
    * @param decisionLogicJS The overriding decision logic javascript
@@ -263,5 +301,25 @@ public class AdSelectionWrapper {
       statusReceiver.accept("Got the following exception when trying to reset all ad selection overrides: " + e);
       Log.e(MainActivity.TAG, "Exception calling resetAllAdSelectionConfigRemoteOverrides", e);
     }
+  }
+
+  private String fCapEventToString(int eventType) {
+    String result;
+    switch (eventType) {
+      case AD_EVENT_TYPE_WIN:
+        result = "win";
+        break;
+      case AD_EVENT_TYPE_CLICK:
+        result = "click";
+        break;
+      case AD_EVENT_TYPE_IMPRESSION:
+        result = "impression";
+        break;
+      case AD_EVENT_TYPE_VIEW:
+        result = "view";
+        break;
+      default: result = "unknown";
+    }
+    return result;
   }
 }

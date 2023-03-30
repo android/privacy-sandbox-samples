@@ -33,6 +33,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import org.json.JSONObject;
@@ -106,6 +107,51 @@ public class CustomAudienceWrapper {
                   .setRenderUri(renderUri)
                   .setMetadata(new JSONObject().toString())
                   .setAdFilters(filters)
+                  .build()))
+              .setActivationTime(Instant.now())
+              .setExpirationTime(expiry)
+              .setTrustedBiddingData(new TrustedBiddingData.Builder()
+                  .setTrustedBiddingKeys(Collections.singletonList("key"))
+                  .setTrustedBiddingUri(trustedBiddingUri).build())
+              .setUserBiddingSignals(AdSelectionSignals.EMPTY)
+              .build(),
+          statusReceiver);
+    } catch (Exception e) {
+      statusReceiver.accept("Got the following exception when trying to join " + name
+          + " custom audience: " + e);
+      Log.e(MainActivity.TAG, "Exception calling joinCustomAudience", e);
+    }
+  }
+
+  /**
+   * Joins a CA.
+   *
+   * @param name The name of the CA to join.
+   * @param buyer The buyer of ads
+   * @param biddingUri The URL to retrieve the bidding logic
+   * @param renderUri The URL to render the ad
+   * @param dailyUpdateUri The URL for daily updates for the CA
+   * @param trustedBiddingUri The URL to retrieve trusted bidding data
+   * @param statusReceiver A consumer function that is run after the API call and returns a
+   * @param expiry The time when the CA will expire
+   * @param filters {@link AdFilters} that should be applied to the ad in the CA
+   * @param adCounterKeys set of keys used in counting events
+   * string indicating the outcome of the call.
+   */
+  public void joinFilteringCa(String name, AdTechIdentifier buyer, Uri biddingUri, Uri renderUri, Uri dailyUpdateUri,
+      Uri trustedBiddingUri, Consumer<String> statusReceiver, Instant expiry, AdFilters filters, Set<String> adCounterKeys) {
+    try {
+      joinCustomAudience(
+          new CustomAudience.Builder()
+              .setBuyer(buyer)
+              .setName(name)
+              .setDailyUpdateUri(dailyUpdateUri)
+              .setBiddingLogicUri(biddingUri)
+              .setAds(Collections.singletonList(new AdData.Builder()
+                  .setRenderUri(renderUri)
+                  .setMetadata(new JSONObject().toString())
+                  .setAdFilters(filters)
+                  .setAdCounterKeys(adCounterKeys)
                   .build()))
               .setActivationTime(Instant.now())
               .setExpirationTime(expiry)

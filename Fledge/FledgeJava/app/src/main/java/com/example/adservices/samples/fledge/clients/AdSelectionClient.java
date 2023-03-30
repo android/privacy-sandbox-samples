@@ -24,6 +24,7 @@ import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.adselection.ReportImpressionRequest;
 import android.adservices.adselection.SetAppInstallAdvertisersRequest;
 import android.adservices.adselection.ReportInteractionRequest;
+import android.adservices.adselection.UpdateAdCounterHistogramRequest;
 import android.content.Context;
 import android.os.OutcomeReceiver;
 
@@ -184,6 +185,33 @@ public class AdSelectionClient {
                 }
               });
           return "reportInteraction";
+        });
+  }
+
+  /**
+   * Invokes the {@code updateAdCounterHistogram} method of {@link AdSelectionManager}, and returns
+   * a Void future.
+   */
+  @NonNull
+  public ListenableFuture<Void> updateAdCounterHistogram(
+      @NonNull UpdateAdCounterHistogramRequest updateAdCounterHistogramRequest) {
+    return CallbackToFutureAdapter.getFuture(
+        completer -> {
+          mAdSelectionManager.updateAdCounterHistogram(
+              updateAdCounterHistogramRequest,
+              mExecutor,
+              new OutcomeReceiver<Object, Exception>() {
+                @Override
+                public void onResult(@NonNull Object ignoredResult) {
+                  completer.set(null);
+                }
+
+                @Override
+                public void onError(@NonNull Exception error) {
+                  completer.setException(error);
+                }
+              });
+          return "updateAdCounterHistogram";
         });
   }
 

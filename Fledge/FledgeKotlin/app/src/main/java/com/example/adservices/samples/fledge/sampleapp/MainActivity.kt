@@ -20,6 +20,8 @@ import android.adservices.common.AdFilters
 import android.adservices.common.AdSelectionSignals
 import android.adservices.common.AdTechIdentifier
 import android.adservices.common.AppInstallFilters
+import android.adservices.common.FrequencyCapFilters
+import android.adservices.common.KeyedFrequencyCap
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -28,6 +30,7 @@ import android.widget.CompoundButton
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding
+import com.google.common.collect.ImmutableSet
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -47,6 +50,7 @@ private const val SHIRTS_CA_NAME = "shirts"
 private const val SHORT_EXPIRING_CA_NAME = "short_expiring"
 private const val INVALID_FIELD_CA_NAME = "invalid_fields"
 private const val APP_INSTALL_CA_NAME = "app_install"
+private const val FREQ_CAP_CA_NAME = "freq_cap"
 
 // Expiry durations
 private val ONE_DAY_EXPIRY: Duration = Duration.ofDays(1)
@@ -121,6 +125,9 @@ class MainActivity : AppCompatActivity() {
 
       // Setup report impressions button
       setupReportImpressionButton(adWrapper!!, binding!!, eventLog!!)
+
+      // Set up Update Ad Counter Histogram button and text box
+      setupUpdateClickHistogramButton(adWrapper!!, binding!!, eventLog!!)
 
       // Setup report click button
       setupReportClickButton(adWrapper!!, binding!!, eventLog!!)
@@ -319,6 +326,58 @@ class MainActivity : AppCompatActivity() {
         caWrapper.leaveCa(APP_INSTALL_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), eventLog::writeEvent)
       }
     }
+
+    // Frequency Capped CA
+    binding.freqCapCaSwitch.setOnCheckedChangeListener { compoundButton, isChecked ->
+      val adCounterKey = "key"
+
+      // Caps is exceeded after 2 impression events
+      val keyedFrequencyCapImpression =
+        KeyedFrequencyCap.Builder().setAdCounterKey(adCounterKey)
+          .setMaxCount(1)
+          .setInterval(Duration.ofSeconds(10))
+          .build()
+
+      // Caps is exceeded after 1 click event
+      val keyedFrequencyCapClick =
+        KeyedFrequencyCap.Builder().setAdCounterKey(adCounterKey)
+          .setMaxCount(0)
+          .setInterval(Duration.ofSeconds(10))
+          .build()
+      val filters = AdFilters.Builder()
+        .setFrequencyCapFilters(FrequencyCapFilters.Builder()
+                                  .setKeyedFrequencyCapsForImpressionEvents(ImmutableSet.of(
+                                    keyedFrequencyCapImpression))
+                                  .setKeyedFrequencyCapsForClickEvents(ImmutableSet.of(
+                                    keyedFrequencyCapClick))
+                                  .build()
+        )
+        .build()
+      if (isChecked) {
+        caWrapper.joinFilteringCa(FREQ_CAP_CA_NAME,
+                                  AdTechIdentifier.fromString(biddingUri.host!!),
+                                  biddingUri,
+                                  Uri.parse(biddingUri.toString() + "/render_" + FREQ_CAP_CA_NAME),
+                                  Uri.parse("$biddingUri/daily"),
+                                  Uri.parse("$biddingUri/trusted"),
+                                  { event: String? ->
+                           eventLog.writeEvent(
+                             event!!)
+                         },
+                                  calcExpiry(ONE_DAY_EXPIRY),
+                                  filters,
+                                  ImmutableSet.of(adCounterKey))
+      } else {
+        caWrapper.leaveCa(FREQ_CAP_CA_NAME,
+                          context.packageName,
+                          AdTechIdentifier.fromString(
+                            biddingUri.host!!)
+        ) { event: String? ->
+          eventLog.writeEvent(
+            event!!)
+        }
+      }
+    }
   }
 
   private fun setupReportImpressionButton(
@@ -367,6 +426,30 @@ class MainActivity : AppCompatActivity() {
     }
   }
 
+  private fun setupUpdateClickHistogramButton(
+    adSelectionWrapper: AdSelectionWrapper,
+    binding: ActivityMainBinding,
+    eventLog: EventLogManager,
+  ) {
+    binding.runUpdateAdCounterHistogramButton.setOnClickListener { l ->
+      try {
+        val adSelectionIdInput =
+          binding.adSelectionIdHistogramInput.text.toString()
+        val adSelectionId = adSelectionIdInput.toLong()
+        adSelectionWrapper.updateAdCounterHistogram(adSelectionId,
+                                                    FrequencyCapFilters.AD_EVENT_TYPE_CLICK
+        ) { event: String? ->
+          eventLog.writeEvent(
+            event!!)
+        }
+      } catch (e: java.lang.NumberFormatException) {
+        Log.e(TAG,
+              String.format("Error while parsing the ad selection id: %s", e))
+        eventLog.writeEvent("Invalid AdSelectionId. Cannot run update ad counter histogram!")
+      }
+    }
+  }
+
   private fun useOverrides(
     eventLog: EventLogManager,
     adSelectionWrapper: AdSelectionWrapper,
@@ -399,6 +482,10 @@ class MainActivity : AppCompatActivity() {
         event!!)
     }
     customAudienceWrapper.addCAOverride(APP_INSTALL_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, trustedBiddingSignals) { event: String? ->
+      eventLog.writeEvent(
+        event!!)
+    }
+    customAudienceWrapper.addCAOverride(FREQ_CAP_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, trustedBiddingSignals) { event: String? ->
       eventLog.writeEvent(
         event!!)
     }
