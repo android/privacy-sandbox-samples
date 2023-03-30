@@ -56,8 +56,9 @@ check the call logs for the reporting endpoint.
 To instead use a mock server for ad selection and reporting, you will need to set
 up 7 HTTPS endpoints that your test device or emulator can access. They are:
 
-1. A buyer bidding logic endpoint that serves the sample `BiddingLogic.js`
-   JavaScript in this directory.
+1. A buyer bidding logic endpoint that serves the sample `BiddingLogicV2.js` and `BiddingLogicV3.js` JavaScript in this directory, depending on the header received.
+ 1. If the request has header `x_fledge_buyer_bidding_logic_version:3`, the server should return `BiddingLogicV3.js` with header `x_fledge_buyer_bidding_logic_version:3`;
+ 2. Otherwise, should return `BiddingLogicV2.js` with no additional header.
 
 2. A [bidding signals](https://developer.android.com/design-for-safety/privacy-sandbox/fledge#ad-selection-ad-tech-platform-managed-trusted-server)
    endpoint that serves the sample `BiddingSignals.json` in this directory.
@@ -101,6 +102,15 @@ domain of the server.
    the URL of the server.
 5. Monitor the call log of the server to see data reported by FLEDGE.
 
+##### Buyer Bidding Logic Version Config
+Due to the limitation of OpenAPI spec, returning a response with varied headers is not supported. The default version on the spec is V3 response with V3 header. However, we included a V2 logic in the spec which is commented out. Follow the instructions in the above section to add support for multiple versions.
+
+###### Option 1: (Default) Return the latest JavaScript Version
+Following the mock server set up. The server spec is configured to support the latest JavaScript
+
+###### Option 2: Return previous JavaScript version
+You can do this via switching the comment out section while adding the header if using V3 logic
+and removing the header for V2 logic.
 
 ##  Waterfall Mediation
 To demonstrate Waterfall mediation you need to create at least 2 SSPs; one 
@@ -117,3 +127,6 @@ Follow Single SSP Auction, Option 2 to set up mock servers. Repeat that process
 for each SSP. For the SSP that will orchestrate the waterfall mediation, Add a 
 waterfall mediation logic endpoint that serves the sample 
 `WaterfallMediationOutcomeSelectionLogic.js` JavaScript in this directory.
+
+
+

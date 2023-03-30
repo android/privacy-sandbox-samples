@@ -43,6 +43,7 @@
       android:layout_width="match_parent"
       android:layout_weight=".10"
       android:layout_height="0dp">
+
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/app_install_switch"
         android:layout_width="match_parent"
@@ -52,8 +53,8 @@
         android:layout_centerInParent="true"
         android:checked="false"
         android:text="@string/app_install_switch_text"
-        android:textOff="@string/override_switch_off"
-        android:textOn="@string/override_switch_on" />
+        android:textOff="@string/app_install_switch_off"
+        android:textOn="@string/app_install_switch_on" />
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
@@ -90,18 +91,41 @@
   <RelativeLayout
       android:layout_width="match_parent"
       android:layout_weight=".10"
-      android:layout_height="0dp">
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/override_switch"
+      android:layout_height="0dp"
+      android:orientation="vertical">
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/override_select_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
         android:layout_marginStart="5dp"
-        android:layout_centerInParent="true"
-        android:checked="true"
-        android:text="@string/override_switch_text"
-        android:textOff="@string/override_switch_off"
-        android:textOn="@string/override_switch_on" />
+        android:layout_centerHorizontal="true"
+        android:textAlignment="viewStart"
+        android:textAppearance="@style/TextAppearance.AppCompat.Widget.Switch"
+        android:text="@string/override_switch_text"/>
+    <RadioGroup
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/override_select_title"
+        android:id="@+id/override_select"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+      <com.google.android.material.radiobutton.MaterialRadioButton
+          android:id="@+id/override_off"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/override_off"/>
+      <com.google.android.material.radiobutton.MaterialRadioButton
+          android:id="@+id/override_v2_bidding_logic"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:checked="true"
+          android:text="@string/override_v2_bidding_logic"/>
+      <com.google.android.material.radiobutton.MaterialRadioButton
+          android:id="@+id/override_v3_bidding_logic"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/override_v3_bidding_logic"/>
+    </RadioGroup>
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"

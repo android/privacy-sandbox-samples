@@ -31,7 +31,8 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.widget.CompoundButton
+import android.view.View
+import android.widget.RadioGroup
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding
@@ -69,7 +70,8 @@ private val ONE_DAY_EXPIRY: Duration = Duration.ofDays(1)
 private val THIRTY_SECONDS_EXPIRY: Duration = Duration.ofSeconds(30)
 
 // JS files
-private const val BIDDING_LOGIC_FILE = "BiddingLogic.js"
+private const val BIDDING_LOGIC_FILE_V2 = "BiddingLogicV2.js"
+private const val BIDDING_LOGIC_FILE_V3 = "BiddingLogicV3.js"
 private const val DECISION_LOGIC_FILE = "DecisionLogic.js"
 private const val CONTEXTUAL_LOGIC_FILE = "ContextualLogic.js"
 
@@ -108,8 +110,9 @@ class MainActivity : AppCompatActivity() {
   private var adWrapper: AdSelectionWrapper? = null
   private var caWrapper: CustomAudienceWrapper? = null
   private var overrideDecisionJS: String? = null
-  private var overrideBiddingJs: String? = null
   private var overrideContextualJs: String? = null
+  private var overrideBiddingJsV2: String? = null
+  private var overrideBiddingJsV3: String? = null
   private var context: Context? = null
   private var binding: ActivityMainBinding? = null
   private var eventLog: EventLogManager? = null
@@ -132,14 +135,16 @@ class MainActivity : AppCompatActivity() {
       val reportingUriString = getIntentOrError("baseUrl", eventLog!!, MISSING_FIELD_STRING_FORMAT_RESTART_APP)
       // Replace override URIs in JS
       overrideDecisionJS = replaceReportingURI(assetFileToString(DECISION_LOGIC_FILE),
-                                               reportingUriString)
-      overrideBiddingJs = replaceReportingURI(assetFileToString(BIDDING_LOGIC_FILE),
-                                              reportingUriString)
+              reportingUriString)
       overrideContextualJs = replaceReportingURI(assetFileToString(CONTEXTUAL_LOGIC_FILE),
-                                                 reportingUriString)
+              reportingUriString)
+      overrideBiddingJsV2 = replaceReportingURI(assetFileToString(BIDDING_LOGIC_FILE_V2),
+              reportingUriString)
+      overrideBiddingJsV3 = replaceReportingURI(assetFileToString(BIDDING_LOGIC_FILE_V3),
+              reportingUriString)
 
       // Setup overrides since they are on by default
-      setupOverrideFlow()
+      setupOverrideFlow(2L);
 
       // Setup report impressions button
       setupReportImpressionButton(adWrapper!!, binding!!, eventLog!!)
@@ -151,19 +156,17 @@ class MainActivity : AppCompatActivity() {
       setupReportClickButton(adWrapper!!, binding!!, eventLog!!)
 
       // Set up Override Switch
-      binding!!.overrideSwitch.setOnCheckedChangeListener(this::toggleOverrideSwitch)
+      binding!!.overrideSelect.setOnCheckedChangeListener(this::toggleOverrideSwitch)
     } catch (e: Exception) {
       Log.e(TAG, "Error when setting up app", e)
     }
   }
 
   private fun toggleOverrideSwitch(
-    buttonView: CompoundButton,
-    isChecked: Boolean,
+          radioGroup: RadioGroup,
+          checkedId: Int
   ) {
-    if (isChecked) {
-      setupOverrideFlow()
-    } else {
+    if (binding!!.overrideOff.isChecked) {
       try {
         val baseUri = getIntentOrError("baseUrl",
                                        eventLog!!,
@@ -196,14 +199,18 @@ class MainActivity : AppCompatActivity() {
         // Set up the contextual ads switches
         setupContextualAdsSwitches(baseUri, eventLog!!);
 
-      } catch (e: java.lang.Exception) {
-        binding!!.overrideSwitch.isChecked = true
+      } catch (e: Exception) {
+        binding!!.overrideV2BiddingLogic.isChecked = true
         Log.e(TAG, "Cannot disable overrides because mock URLs not provided", e)
       }
+    } else if (binding!!.overrideV2BiddingLogic.isChecked) {
+      setupOverrideFlow(2L)
+    } else if (binding!!.overrideV3BiddingLogic.isChecked) {
+      setupOverrideFlow(3L)
     }
   }
 
-  private fun setupOverrideFlow() {
+  private fun setupOverrideFlow(biddingLogicVersion: Long) {
     // Set override URIS since overrides are on by default
     val overrideUriBase = getIntentOrError("baseUrl",
                                            eventLog!!,
@@ -239,8 +246,11 @@ class MainActivity : AppCompatActivity() {
     // Set up CA switches
     setupCASwitches(caWrapper!!, eventLog!!, binding!!, mBiddingLogicUri, context!!)
 
+    // Decide which js file to use.
+    val biddingLogicJs = if (biddingLogicVersion == 2L) overrideBiddingJsV2 else overrideBiddingJsV3
+
     // Setup remote overrides by default
-    useOverrides(eventLog!! ,adWrapper!!, caWrapper!!, overrideDecisionJS!!, overrideBiddingJs!!, overrideContextualJs!!, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context!!);
+    useOverrides(eventLog!! ,adWrapper!!, caWrapper!!, overrideDecisionJS!!, biddingLogicJs!!, biddingLogicVersion, overrideContextualJs!!, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context!!);
   }
 
   private fun setupContextualAdsSwitches(baseUri: String, eventLog: EventLogManager) {
@@ -527,6 +537,7 @@ class MainActivity : AppCompatActivity() {
     customAudienceWrapper: CustomAudienceWrapper,
     decisionLogicJs: String,
     biddingLogicJs: String,
+    biddingLogicJsVersion: Long,
     contextualLogicJs: String,
     trustedScoringSignals: AdSelectionSignals,
     trustedBiddingSignals: AdSelectionSignals,
@@ -540,27 +551,27 @@ class MainActivity : AppCompatActivity() {
                                              eventLog.writeEvent(
                                                event!!)
                                            }, decisionLogicJs, trustedScoringSignals, buyersDecisionLogic)
-    customAudienceWrapper.addCAOverride(SHOES_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, trustedScoringSignals) { event: String? ->
+    customAudienceWrapper.addCAOverride(SHOES_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, biddingLogicJsVersion, trustedScoringSignals) { event: String? ->
       eventLog.writeEvent(
         event!!)
     }
-    customAudienceWrapper.addCAOverride(SHIRTS_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, trustedBiddingSignals) { event: String? ->
+    customAudienceWrapper.addCAOverride(SHIRTS_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, biddingLogicJsVersion,  trustedBiddingSignals) { event: String? ->
       eventLog.writeEvent(
         event!!)
     }
-    customAudienceWrapper.addCAOverride(SHORT_EXPIRING_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, trustedBiddingSignals) { event: String? ->
+    customAudienceWrapper.addCAOverride(SHORT_EXPIRING_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, biddingLogicJsVersion,  trustedBiddingSignals) { event: String? ->
       eventLog.writeEvent(
         event!!)
     }
-    customAudienceWrapper.addCAOverride(INVALID_FIELD_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, trustedBiddingSignals) { event: String? ->
+    customAudienceWrapper.addCAOverride(INVALID_FIELD_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, biddingLogicJsVersion,  trustedBiddingSignals) { event: String? ->
       eventLog.writeEvent(
         event!!)
     }
-    customAudienceWrapper.addCAOverride(APP_INSTALL_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, trustedBiddingSignals) { event: String? ->
+    customAudienceWrapper.addCAOverride(APP_INSTALL_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, biddingLogicJsVersion,  trustedBiddingSignals) { event: String? ->
       eventLog.writeEvent(
         event!!)
     }
-    customAudienceWrapper.addCAOverride(FREQ_CAP_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, trustedBiddingSignals) { event: String? ->
+    customAudienceWrapper.addCAOverride(FREQ_CAP_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, biddingLogicJsVersion,  trustedBiddingSignals) { event: String? ->
       eventLog.writeEvent(
         event!!)
     }

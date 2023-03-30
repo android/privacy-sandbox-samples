@@ -246,6 +246,7 @@ class CustomAudienceWrapper(
    *
    * @param name The name of the CA to override remote info.
    * @param biddingLogicJs The overriding bidding logic javascript
+   * @param biddingLogicJsVersion The override bidding logic javascript version
    * @param trustedBiddingSignals The overriding trusted bidding signals
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
@@ -255,6 +256,7 @@ class CustomAudienceWrapper(
     owner: String,
     buyer: AdTechIdentifier,
     biddingLogicJs: String?,
+    biddingLogicJsVersion: Long,
     trustedBiddingSignals: AdSelectionSignals,
     statusReceiver: Consumer<String?>,
   ) {
@@ -262,6 +264,7 @@ class CustomAudienceWrapper(
       .setBuyer(buyer)
       .setName(name)
       .setBiddingLogicJs(biddingLogicJs!!)
+      .setBiddingLogicJsVersion(biddingLogicJsVersion)
       .setTrustedBiddingSignals(trustedBiddingSignals)
       .build()
     Futures.addCallback(caOverrideClient.overrideCustomAudienceRemoteInfo(request),

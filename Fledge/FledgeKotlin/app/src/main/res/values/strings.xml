@@ -22,8 +22,11 @@
   <string name="app_install_switch_text">Set App Install Advertisers</string>
   <string name="contextual_ad_switch_text">Contextual Ad</string>
   <string name="contextual_ad_ai_switch_text">Contextual Ad With App Install</string>
-  <string name="override_switch_on">ON</string>
-  <string name="override_switch_off">Off</string>
+  <string name="app_install_switch_on">ON</string>
+  <string name="app_install_switch_off">OFF</string>
+  <string name="override_off">OFF</string>
+  <string name="override_v2_bidding_logic">V2 Bidding Logic</string>
+  <string name="override_v3_bidding_logic">V3 Bidding Logic</string>
   <string name="ca_switch_on">JOINED</string>
   <string name="ca_switch_off">LEFT</string>
   <string name="ca_switch_shoes_text">Shoes CA</string>
