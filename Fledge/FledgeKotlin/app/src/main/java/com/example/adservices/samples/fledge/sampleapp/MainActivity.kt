@@ -261,7 +261,7 @@ class MainActivity : AppCompatActivity() {
                          AdTechIdentifier.fromString(biddingUri.host!!),
                          biddingUri,
                          Uri.parse(
-                           "$biddingUri/render_$SHOES_CA_NAME"),
+                           "$biddingUri/render_$SHIRTS_CA_NAME"),
                          Uri.parse("$biddingUri/daily"),
                          Uri.parse("$biddingUri/trusted"),
                          eventLog::writeEvent,
