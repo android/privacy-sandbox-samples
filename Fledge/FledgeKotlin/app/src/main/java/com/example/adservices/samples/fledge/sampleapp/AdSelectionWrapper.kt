@@ -18,6 +18,8 @@ package com.example.adservices.samples.fledge.sampleapp
 import android.adservices.adselection.AdSelectionConfig
 import android.adservices.adselection.AdSelectionOutcome
 import android.adservices.adselection.AddAdSelectionOverrideRequest
+import android.adservices.adselection.BuyersDecisionLogic
+import android.adservices.adselection.ContextualAds
 import android.adservices.adselection.ReportImpressionRequest
 import android.adservices.adselection.ReportInteractionRequest
 import android.adservices.adselection.SetAppInstallAdvertisersRequest
@@ -55,8 +57,9 @@ class AdSelectionWrapper(
   seller: AdTechIdentifier,
   decisionUri: Uri,
   trustedScoringUri: Uri,
+  contextualAds: ContextualAds,
   context: Context,
-  executor: Executor,
+  executor: Executor
 ) {
   private var adSelectionConfig: AdSelectionConfig
   private val adClient: AdSelectionClient
@@ -235,8 +238,8 @@ class AdSelectionWrapper(
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  fun overrideAdSelection(statusReceiver: Consumer<String?>, decisionLogicJS: String?, trustedScoringSignals: AdSelectionSignals?) {
-    val request = AddAdSelectionOverrideRequest(adSelectionConfig, decisionLogicJS!!, trustedScoringSignals!!)
+  fun overrideAdSelection(statusReceiver: Consumer<String?>, decisionLogicJS: String?, trustedScoringSignals: AdSelectionSignals?, contextualLogic: BuyersDecisionLogic) {
+    val request = AddAdSelectionOverrideRequest(adSelectionConfig, decisionLogicJS!!, trustedScoringSignals!!, contextualLogic)
     Futures.addCallback(overrideClient.overrideAdSelectionConfigRemoteInfo(request),
                         object : FutureCallback<Void?> {
                           override fun onSuccess(unused: Void?) {
@@ -284,6 +287,7 @@ class AdSelectionWrapper(
     seller: AdTechIdentifier,
     decisionUri: Uri,
     trustedScoringUri: Uri,
+    contextualAds: ContextualAds
   ) {
     adSelectionConfig = AdSelectionConfig.Builder()
       .setSeller(seller)
@@ -296,6 +300,7 @@ class AdSelectionWrapper(
                               { buyer: AdTechIdentifier -> buyer },
                               { AdSelectionSignals.EMPTY })))
       .setTrustedScoringSignalsUri(trustedScoringUri)
+      .setBuyerContextualAds(mapOf(Pair(contextualAds.buyer, contextualAds)))
       .build()
   }
 
@@ -326,6 +331,7 @@ class AdSelectionWrapper(
                               { buyer: AdTechIdentifier -> buyer },
                               { AdSelectionSignals.EMPTY })))
       .setTrustedScoringSignalsUri(trustedScoringUri)
+      .setBuyerContextualAds(mapOf(Pair(contextualAds.buyer, contextualAds)))
       .build()
     adClient = AdSelectionClient.Builder().setContext(context).setExecutor(executor).build()
     overrideClient = TestAdSelectionClient.Builder()

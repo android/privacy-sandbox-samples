@@ -20,6 +20,8 @@
   <string name="run_ads_button_text">Run Ad Selection</string>
   <string name="override_switch_text">Use Remote Overrides</string>
   <string name="app_install_switch_text">Set App Install Advertisers</string>
+  <string name="contextual_ad_switch_text">Contextual Ad</string>
+  <string name="contextual_ad_ai_switch_text">Contextual Ad With App Install</string>
   <string name="override_switch_on">ON</string>
   <string name="override_switch_off">Off</string>
   <string name="ca_switch_on">JOINED</string>

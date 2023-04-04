@@ -15,7 +15,12 @@
  */
 package com.example.adservices.samples.fledge.sampleapp
 
+import android.adservices.adselection.AdWithBid
+import android.adservices.adselection.BuyersDecisionLogic
+import android.adservices.adselection.ContextualAds
+import android.adservices.adselection.DecisionLogic
 import android.adservices.adselection.ReportInteractionRequest
+import android.adservices.common.AdData
 import android.adservices.common.AdFilters
 import android.adservices.common.AdSelectionSignals
 import android.adservices.common.AdTechIdentifier
@@ -39,6 +44,7 @@ import java.time.Instant
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.stream.Collectors
+import org.json.JSONObject
 
 
 // Log tag
@@ -52,6 +58,12 @@ private const val INVALID_FIELD_CA_NAME = "invalid_fields"
 private const val APP_INSTALL_CA_NAME = "app_install"
 private const val FREQ_CAP_CA_NAME = "freq_cap"
 
+// Contextual Ad data
+private const val NO_FILTER_BID: Long = 20
+private const val APP_INSTALL_BID: Long = 25
+private const val NO_FILTER_RENDER_SUFFIX = "/contextual_ad"
+private const val APP_INSTALL_RENDER_SUFFIX = "/app_install_contextual_ad"
+
 // Expiry durations
 private val ONE_DAY_EXPIRY: Duration = Duration.ofDays(1)
 private val THIRTY_SECONDS_EXPIRY: Duration = Duration.ofSeconds(30)
@@ -59,6 +71,7 @@ private val THIRTY_SECONDS_EXPIRY: Duration = Duration.ofSeconds(30)
 // JS files
 private const val BIDDING_LOGIC_FILE = "BiddingLogic.js"
 private const val DECISION_LOGIC_FILE = "DecisionLogic.js"
+private const val CONTEXTUAL_LOGIC_FILE = "ContextualLogic.js"
 
 // Executor to be used for API calls
 private val EXECUTOR: Executor = Executors.newCachedThreadPool()
@@ -89,15 +102,18 @@ class MainActivity : AppCompatActivity() {
   private var mBiddingLogicUri: Uri = Uri.EMPTY
   private var mScoringLogicUri: Uri = Uri.EMPTY
   private var mTrustedDataUri: Uri = Uri.EMPTY
+  private var mContextualLogicUri: Uri = Uri.EMPTY
   private var mBuyer: AdTechIdentifier? = null
   private var mSeller: AdTechIdentifier? = null
   private var adWrapper: AdSelectionWrapper? = null
   private var caWrapper: CustomAudienceWrapper? = null
   private var overrideDecisionJS: String? = null
   private var overrideBiddingJs: String? = null
+  private var overrideContextualJs: String? = null
   private var context: Context? = null
   private var binding: ActivityMainBinding? = null
   private var eventLog: EventLogManager? = null
+  private var contextualAds: ContextualAds? = null
 
   /**
    * Does the initial setup for the app. This includes reading the Javascript server URIs from the
@@ -119,6 +135,8 @@ class MainActivity : AppCompatActivity() {
                                                reportingUriString)
       overrideBiddingJs = replaceReportingURI(assetFileToString(BIDDING_LOGIC_FILE),
                                               reportingUriString)
+      overrideContextualJs = replaceReportingURI(assetFileToString(CONTEXTUAL_LOGIC_FILE),
+                                                 reportingUriString)
 
       // Setup overrides since they are on by default
       setupOverrideFlow()
@@ -154,18 +172,30 @@ class MainActivity : AppCompatActivity() {
         mBiddingLogicUri = Uri.parse("$baseUri/bidding")
         mScoringLogicUri = Uri.parse("$baseUri/scoring")
         mTrustedDataUri = Uri.parse("$mBiddingLogicUri/trusted")
+        mContextualLogicUri = Uri.parse("$baseUri/contextual")
         mBuyer = resolveAdTechIdentifier(mBiddingLogicUri)
         mSeller = resolveAdTechIdentifier(mScoringLogicUri)
+
+        contextualAds = ContextualAds.Builder()
+          .setBuyer(AdTechIdentifier.fromString(mBiddingLogicUri.host!!))
+          .setDecisionLogicUri(mContextualLogicUri)
+          .setAdsWithBid(ArrayList())
+          .build()
 
         // Set with new scoring uri
         adWrapper!!.resetAdSelectionConfig(listOf(mBuyer!!),
                                            mSeller!!,
                                            mScoringLogicUri,
-                                           mTrustedDataUri)
+                                           mTrustedDataUri,
+                                           contextualAds!!)
 
         // Reset CA switches as they rely on different biddingLogicUri
         setupCASwitches(caWrapper!!, eventLog!!, binding!!, mBiddingLogicUri, context!!)
         resetOverrides(eventLog!!, adWrapper!!, caWrapper!!)
+
+        // Set up the contextual ads switches
+        setupContextualAdsSwitches(baseUri, eventLog!!);
+
       } catch (e: java.lang.Exception) {
         binding!!.overrideSwitch.isChecked = true
         Log.e(TAG, "Cannot disable overrides because mock URLs not provided", e)
@@ -182,12 +212,19 @@ class MainActivity : AppCompatActivity() {
     mBiddingLogicUri = Uri.parse("$overrideUriBase/bidding")
     mScoringLogicUri = Uri.parse("$overrideUriBase/scoring")
     mTrustedDataUri = Uri.parse("$mBiddingLogicUri/trusted")
+    mContextualLogicUri = Uri.parse("$overrideUriBase/contextual");
 
     mBuyer = resolveAdTechIdentifier(mBiddingLogicUri)
     mSeller = resolveAdTechIdentifier(mScoringLogicUri)
 
     // Set up ad selection
-    adWrapper = AdSelectionWrapper(listOf(mBuyer!!), mSeller!!, mScoringLogicUri, mTrustedDataUri, context!!, EXECUTOR)
+    contextualAds = ContextualAds.Builder()
+      .setBuyer(AdTechIdentifier.fromString(mBiddingLogicUri.host!!))
+      .setDecisionLogicUri(mContextualLogicUri)
+      .setAdsWithBid(ArrayList())
+      .build()
+    adWrapper = AdSelectionWrapper(listOf(mBuyer!!), mSeller!!, mScoringLogicUri, mTrustedDataUri,
+                                   contextualAds!!, context!!, EXECUTOR)
     binding!!.runAdsButton.setOnClickListener{ _ -> adWrapper!!.runAdSelection(eventLog!!::writeEvent, binding!!.adSpace::setText)}
 
     // Set up Custom Audience Wrapper
@@ -196,13 +233,53 @@ class MainActivity : AppCompatActivity() {
     // Set up the app install switch
     setupAppInstallSwitch(mBiddingLogicUri, eventLog!!)
 
+    // Set up the contextual ads switches
+    setupContextualAdsSwitches(overrideUriBase, eventLog!!);
+
     // Set up CA switches
     setupCASwitches(caWrapper!!, eventLog!!, binding!!, mBiddingLogicUri, context!!)
 
     // Setup remote overrides by default
-    useOverrides(eventLog!! ,adWrapper!!, caWrapper!!, overrideDecisionJS!!, overrideBiddingJs!!, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context!!);
+    useOverrides(eventLog!! ,adWrapper!!, caWrapper!!, overrideDecisionJS!!, overrideBiddingJs!!, overrideContextualJs!!, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context!!);
   }
 
+  private fun setupContextualAdsSwitches(baseUri: String, eventLog: EventLogManager) {
+    val noFilterAd = AdData.Builder()
+      .setMetadata(JSONObject().toString())
+      .setRenderUri(Uri.parse(baseUri + NO_FILTER_RENDER_SUFFIX))
+      .build()
+    val noFilterAdWithBid = AdWithBid(noFilterAd, NO_FILTER_BID.toDouble())
+    val appInstallAd = AdData.Builder()
+      .setMetadata(JSONObject().toString())
+      .setRenderUri(Uri.parse(baseUri + APP_INSTALL_RENDER_SUFFIX))
+      .setAdFilters(getAppInstallFilterForThisApp())
+      .build()
+    val appInstallAdWithBid = AdWithBid(appInstallAd, APP_INSTALL_BID.toDouble())
+    binding!!.contextualAdSwitch.setOnCheckedChangeListener { compoundButton, isChecked ->
+      if (isChecked && !contextualAds!!.adsWithBid.contains(noFilterAdWithBid)) {
+        eventLog.writeEvent("Will insert a normal contextual ad into all auctions")
+        contextualAds!!.adsWithBid.add(noFilterAdWithBid)
+      } else {
+        eventLog.writeEvent("Will stop inserting a normal contextual ad into all auctions")
+        contextualAds!!.adsWithBid.remove(noFilterAdWithBid)
+      }
+      adWrapper = AdSelectionWrapper(
+        listOf(mBuyer!!),
+        mSeller!!, mScoringLogicUri, mTrustedDataUri, contextualAds!!, context!!, EXECUTOR)
+    }
+    binding!!.contextualAdAiSwitch.setOnCheckedChangeListener { compoundButton, isChecked ->
+      if (isChecked && !contextualAds!!.adsWithBid.contains(appInstallAdWithBid)) {
+        eventLog.writeEvent("Will insert an app install contextual ad into all auctions")
+        contextualAds!!.adsWithBid.add(appInstallAdWithBid)
+      } else {
+        eventLog.writeEvent("Will stop inserting an app install contextual ad into all auctions")
+        contextualAds!!.adsWithBid.remove(appInstallAdWithBid)
+      }
+      adWrapper = AdSelectionWrapper(
+        listOf(mBuyer!!),
+        mSeller!!, mScoringLogicUri, mTrustedDataUri, contextualAds!!, context!!, EXECUTOR)
+    }
+  }
   /**
    * Gets a given intent extra or notifies the user that it is missing
    * @param intent The intent to get
@@ -305,12 +382,6 @@ class MainActivity : AppCompatActivity() {
 
     // App Install CA
     binding.appInstallCaSwitch.setOnCheckedChangeListener{ _ , isChecked: Boolean ->
-      val filters = AdFilters.Builder()
-        .setAppInstallFilters(AppInstallFilters.Builder()
-                                .setPackageNames(setOf(context.packageName))
-                                .build()
-        )
-        .build()
       if (isChecked) {
         caWrapper.joinCa(APP_INSTALL_CA_NAME,
                                    AdTechIdentifier.fromString(biddingUri.host!!),
@@ -321,7 +392,7 @@ class MainActivity : AppCompatActivity() {
                                    Uri.parse("$biddingUri/trusted"),
                                    eventLog::writeEvent,
                                    calcExpiry(ONE_DAY_EXPIRY),
-                                   filters)
+                                   getAppInstallFilterForThisApp())
       } else {
         caWrapper.leaveCa(APP_INSTALL_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), eventLog::writeEvent)
       }
@@ -456,15 +527,19 @@ class MainActivity : AppCompatActivity() {
     customAudienceWrapper: CustomAudienceWrapper,
     decisionLogicJs: String,
     biddingLogicJs: String,
+    contextualLogicJs: String,
     trustedScoringSignals: AdSelectionSignals,
     trustedBiddingSignals: AdSelectionSignals,
     biddingUri: Uri,
     context: Context,
   ) {
+    val buyersDecisionLogic = BuyersDecisionLogic(mapOf(Pair(mBuyer,
+                                                             DecisionLogic(
+                                                               contextualLogicJs))))
     adSelectionWrapper.overrideAdSelection({ event: String? ->
                                              eventLog.writeEvent(
                                                event!!)
-                                           }, decisionLogicJs, trustedScoringSignals)
+                                           }, decisionLogicJs, trustedScoringSignals, buyersDecisionLogic)
     customAudienceWrapper.addCAOverride(SHOES_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), biddingLogicJs, trustedScoringSignals) { event: String? ->
       eventLog.writeEvent(
         event!!)
@@ -548,5 +623,13 @@ class MainActivity : AppCompatActivity() {
 
   private fun calcExpiry(duration: Duration) : Instant {
     return Instant.now().plus(duration)
+  }
+
+  private fun getAppInstallFilterForThisApp(): AdFilters? {
+    return AdFilters.Builder()
+      .setAppInstallFilters(AppInstallFilters.Builder()
+                              .setPackageNames(setOf(context!!.packageName))
+                              .build())
+      .build()
   }
 }
