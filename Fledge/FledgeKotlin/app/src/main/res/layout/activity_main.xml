@@ -32,7 +32,7 @@
   <TextView
       android:id="@+id/event_log"
       android:layout_width="match_parent"
-      android:layout_weight=".20"
+      android:layout_weight=".40"
       android:layout_height="0dp"
       android:layout_marginTop="5dp"
       android:layout_marginStart="5dp"
@@ -48,10 +48,42 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:layout_marginStart="119dp"
+        android:layout_marginStart="5dp"
         android:layout_centerInParent="true"
         android:checked="false"
         android:text="@string/app_install_switch_text"
+        android:textOff="@string/override_switch_off"
+        android:textOn="@string/override_switch_on" />
+  </RelativeLayout>
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_weight=".10"
+      android:layout_height="0dp">
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/contextual_ad_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginStart="5dp"
+        android:layout_centerInParent="true"
+        android:checked="false"
+        android:text="@string/contextual_ad_switch_text"
+        android:textOff="@string/override_switch_off"
+        android:textOn="@string/override_switch_on" />
+  </RelativeLayout>
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_weight=".10"
+      android:layout_height="0dp">
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/contextual_ad_ai_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginStart="5dp"
+        android:layout_centerInParent="true"
+        android:checked="false"
+        android:text="@string/contextual_ad_ai_switch_text"
         android:textOff="@string/override_switch_off"
         android:textOn="@string/override_switch_on" />
   </RelativeLayout>
@@ -64,7 +96,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:layout_marginStart="119dp"
+        android:layout_marginStart="5dp"
         android:layout_centerInParent="true"
         android:checked="true"
         android:text="@string/override_switch_text"
@@ -81,7 +113,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:layout_marginStart="119dp"
+        android:layout_marginStart="5dp"
         android:layout_centerInParent="true"
         android:checked="false"
         android:text="@string/ca_switch_shoes_text"
@@ -97,7 +129,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:layout_marginStart="119dp"
+        android:layout_marginStart="5dp"
         android:layout_centerInParent="true"
         android:checked="false"
         android:text="@string/ca_switch_shirts_text"
@@ -113,7 +145,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:layout_marginStart="119dp"
+        android:layout_marginStart="5dp"
         android:layout_centerInParent="true"
         android:checked="false"
         android:text="@string/ca_switch_short_expiry_text"
@@ -129,7 +161,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:layout_marginStart="119dp"
+        android:layout_marginStart="5dp"
         android:layout_centerInParent="true"
         android:checked="false"
         android:text="@string/ca_switch_invalid_fields_text"
@@ -145,7 +177,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:layout_marginStart="119dp"
+        android:layout_marginStart="5dp"
         android:layout_centerInParent="true"
         android:checked="false"
         android:text="@string/app_install_ca_switch_text"
@@ -161,7 +193,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:layout_marginStart="119dp"
+        android:layout_marginStart="5dp"
         android:layout_centerInParent="true"
         android:checked="false"
         android:text="@string/freq_cap_ca_switch_text"
@@ -170,7 +202,7 @@
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
-      android:layout_weight=".10"
+      android:layout_weight=".15"
       android:layout_height="0dp">
     <Button
         android:id="@+id/run_ads_button"
