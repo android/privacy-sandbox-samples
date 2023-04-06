@@ -28,16 +28,18 @@
       android:layout_marginEnd="5dp"
       android:background="@color/purple_200"
       android:text="@string/ad_space_text"
-      android:textColor="#311B92" />
+      android:textColor="#311B92"
+      android:textSize="11sp"/>
   <TextView
       android:id="@+id/event_log"
       android:layout_width="match_parent"
-      android:layout_weight=".40"
+      android:layout_weight=".60"
       android:layout_height="0dp"
       android:layout_marginTop="5dp"
       android:layout_marginStart="5dp"
       android:layout_marginEnd="5dp"
       android:textIsSelectable="true"
+      android:textSize="11sp"
       android:text="@string/event_log_text" />
   <RelativeLayout
       android:layout_width="match_parent"
@@ -48,13 +50,10 @@
         android:id="@+id/app_install_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="5dp"
+        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/app_install_switch_text"
-        android:textOff="@string/app_install_switch_off"
-        android:textOn="@string/app_install_switch_on" />
+        android:text="@string/app_install_switch_text" />
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
@@ -64,13 +63,10 @@
         android:id="@+id/contextual_ad_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="5dp"
+        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/contextual_ad_switch_text"
-        android:textOff="@string/override_switch_off"
-        android:textOn="@string/override_switch_on" />
+        android:text="@string/contextual_ad_switch_text" />
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
@@ -80,69 +76,38 @@
         android:id="@+id/contextual_ad_ai_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="5dp"
+        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/contextual_ad_ai_switch_text"
-        android:textOff="@string/override_switch_off"
-        android:textOn="@string/override_switch_on" />
+        android:text="@string/contextual_ad_ai_switch_text" />
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
-      android:layout_weight=".10"
-      android:layout_height="0dp"
-      android:orientation="vertical">
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/override_select_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="5dp"
-        android:layout_centerHorizontal="true"
-        android:textAlignment="viewStart"
-        android:textAppearance="@style/TextAppearance.AppCompat.Widget.Switch"
-        android:text="@string/override_switch_text"/>
-    <RadioGroup
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/override_select_title"
-        android:id="@+id/override_select"
-        android:orientation="horizontal"
+      android:layout_weight=".11"
+      android:layout_height="0dp">
+    <EditText
+        android:id="@+id/contextual_ai_data_input"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
-      <com.google.android.material.radiobutton.MaterialRadioButton
-          android:id="@+id/override_off"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="@string/override_off"/>
-      <com.google.android.material.radiobutton.MaterialRadioButton
-          android:id="@+id/override_v2_bidding_logic"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:checked="true"
-          android:text="@string/override_v2_bidding_logic"/>
-      <com.google.android.material.radiobutton.MaterialRadioButton
-          android:id="@+id/override_v3_bidding_logic"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="@string/override_v3_bidding_logic"/>
-    </RadioGroup>
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:hint="@string/edit_text_package_name_hint"
+        android:inputType="text"
+        android:minHeight="48dp"
+        android:textColorHint="#78909C"
+        android:importantForAutofill="no"/>
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
       android:layout_weight=".10"
       android:layout_height="0dp">
-
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/shoes_ca_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="5dp"
+        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/ca_switch_shoes_text"
-        android:textOff="@string/ca_switch_off"
-        android:textOn="@string/ca_switch_on" />
+        android:text="@string/ca_switch_shoes_text" />
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
@@ -152,13 +117,10 @@
         android:id="@+id/shirts_ca_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="5dp"
+        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/ca_switch_shirts_text"
-        android:textOff="@string/ca_switch_off"
-        android:textOn="@string/ca_switch_on" />
+        android:text="@string/ca_switch_shirts_text" />
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
@@ -168,13 +130,10 @@
         android:id="@+id/short_expiry_ca_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="5dp"
+        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/ca_switch_short_expiry_text"
-        android:textOff="@string/ca_switch_off"
-        android:textOn="@string/ca_switch_on" />
+        android:text="@string/ca_switch_short_expiry_text" />
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
@@ -184,13 +143,10 @@
         android:id="@+id/invalid_fields_ca_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="5dp"
+        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/ca_switch_invalid_fields_text"
-        android:textOff="@string/ca_switch_off"
-        android:textOn="@string/ca_switch_on" />
+        android:text="@string/ca_switch_invalid_fields_text" />
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
@@ -200,13 +156,25 @@
         android:id="@+id/app_install_ca_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="5dp"
+        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/app_install_ca_switch_text"
-        android:textOff="@string/ca_switch_off"
-        android:textOn="@string/ca_switch_on" />
+        android:text="@string/app_install_ca_switch_text" />
+  </RelativeLayout>
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_weight=".11"
+      android:layout_height="0dp">
+    <EditText
+        android:id="@+id/ca_ai_data_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:hint="@string/edit_text_package_name_hint"
+        android:inputType="text"
+        android:minHeight="48dp"
+        android:textColorHint="#78909C"
+        android:importantForAutofill="no"/>
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
@@ -216,13 +184,53 @@
         android:id="@+id/freq_cap_ca_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="5dp"
+        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/freq_cap_ca_switch_text"
-        android:textOff="@string/ca_switch_off"
-        android:textOn="@string/ca_switch_on" />
+        android:text="@string/freq_cap_ca_switch_text" />
+  </RelativeLayout>
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_weight=".12"
+      android:layout_height="0dp"
+      android:orientation="vertical">
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/override_select_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="11sp"
+        android:layout_marginStart="5dp"
+        android:layout_centerHorizontal="true"
+        android:textAlignment="viewStart"
+        android:text="@string/override_switch_text"/>
+    <RadioGroup
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/override_select_title"
+        android:id="@+id/override_select"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="11sp">
+      <com.google.android.material.radiobutton.MaterialRadioButton
+          android:id="@+id/override_off"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:textSize="11sp"
+          android:text="@string/override_off"/>
+      <com.google.android.material.radiobutton.MaterialRadioButton
+          android:id="@+id/override_v2_bidding_logic"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:checked="true"
+          android:textSize="11sp"
+          android:text="@string/override_v2_bidding_logic"/>
+      <com.google.android.material.radiobutton.MaterialRadioButton
+          android:id="@+id/override_v3_bidding_logic"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:textSize="11sp"
+          android:text="@string/override_v3_bidding_logic"/>
+    </RadioGroup>
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
@@ -236,12 +244,13 @@
         android:layout_marginStart="5dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
+        android:textSize="11sp"
         android:text="@string/run_ads_button_text" />
   </RelativeLayout>
 
   <LinearLayout
       android:layout_width="match_parent"
-      android:layout_weight=".10"
+      android:layout_weight=".13"
       android:layout_height="0dp"
       android:orientation="horizontal">
     <EditText
@@ -253,7 +262,8 @@
         android:inputType="numberSigned"
         android:minHeight="48dp"
         android:textColorHint="#78909C"
-        android:importantForAutofill="no" />
+        android:importantForAutofill="no"
+        android:textSize="11sp"/>
     <Button
         android:id="@+id/run_report_impression_button"
         android:layout_width="0dp"
@@ -262,12 +272,13 @@
         android:layout_marginEnd="5dp"
         android:layout_marginStart="5dp"
         android:layout_marginBottom="5dp"
-        android:text="@string/report_impression_button_text" />
+        android:text="@string/report_impression_button_text"
+        android:textSize="11sp"/>
   </LinearLayout>
 
   <LinearLayout
       android:layout_width="match_parent"
-      android:layout_weight=".10"
+      android:layout_weight=".13"
       android:layout_height="0dp"
       android:orientation="horizontal">
     <EditText
@@ -279,7 +290,8 @@
         android:inputType="numberSigned"
         android:minHeight="48dp"
         android:textColorHint="#78909C"
-        android:importantForAutofill="no" />
+        android:importantForAutofill="no"
+        android:textSize="11sp"/>
     <Button
         android:id="@+id/run_update_ad_counter_histogram_button"
         android:layout_width="0dp"
@@ -288,12 +300,13 @@
         android:layout_marginEnd="5dp"
         android:layout_marginStart="5dp"
         android:layout_marginBottom="5dp"
-        android:text="@string/update_ad_counter_histogram_button_text" />
+        android:text="@string/update_ad_counter_histogram_button_text"
+        android:textSize="11sp"/>
   </LinearLayout>
 
   <LinearLayout
       android:layout_width="match_parent"
-      android:layout_weight=".10"
+      android:layout_weight=".13"
       android:layout_height="0dp"
       android:orientation="horizontal">
     <EditText
@@ -305,7 +318,8 @@
         android:inputType="numberSigned"
         android:minHeight="48dp"
         android:textColorHint="#78909C"
-        android:importantForAutofill="no" />
+        android:importantForAutofill="no"
+        android:textSize="11sp"/>
     <EditText
         android:id="@+id/interaction_data_input"
         android:layout_width="0dp"
@@ -315,7 +329,8 @@
         android:inputType="text"
         android:minHeight="48dp"
         android:textColorHint="#78909C"
-        android:importantForAutofill="no" />
+        android:importantForAutofill="no"
+        android:textSize="11sp"/>
     <Button
         android:id="@+id/run_report_click_button"
         android:layout_width="0dp"
@@ -324,7 +339,8 @@
         android:layout_marginEnd="5dp"
         android:layout_marginStart="5dp"
         android:layout_marginBottom="5dp"
-        android:text="@string/report_click_button_text" />
+        android:text="@string/report_click_button_text"
+        android:textSize="11sp"/>
   </LinearLayout>
 
 </LinearLayout>

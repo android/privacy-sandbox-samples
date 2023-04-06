@@ -31,7 +31,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.RadioGroup
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -157,14 +156,22 @@ class MainActivity : AppCompatActivity() {
 
       // Set up Override Switch
       binding!!.overrideSelect.setOnCheckedChangeListener(this::toggleOverrideSwitch)
+
+      // Set package names
+      setupPackageNames();
     } catch (e: Exception) {
       Log.e(TAG, "Error when setting up app", e)
     }
   }
+  private fun setupPackageNames() {
+    binding!!.contextualAiDataInput.setText(context!!.packageName)
+    binding!!.caAiDataInput.setText(context!!.packageName)
+  }
+
 
   private fun toggleOverrideSwitch(
-          radioGroup: RadioGroup,
-          checkedId: Int
+    radioGroup: RadioGroup,
+    checkedId: Int,
   ) {
     if (binding!!.overrideOff.isChecked) {
       try {
@@ -250,22 +257,16 @@ class MainActivity : AppCompatActivity() {
     val biddingLogicJs = if (biddingLogicVersion == 2L) overrideBiddingJsV2 else overrideBiddingJsV3
 
     // Setup remote overrides by default
-    useOverrides(eventLog!! ,adWrapper!!, caWrapper!!, overrideDecisionJS!!, biddingLogicJs!!, biddingLogicVersion, overrideContextualJs!!, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context!!);
+    useOverrides(eventLog!! ,adWrapper!!, caWrapper!!, overrideDecisionJS!!, biddingLogicJs!!, overrideContextualJs!!, biddingLogicVersion, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context!!);
   }
 
   private fun setupContextualAdsSwitches(baseUri: String, eventLog: EventLogManager) {
-    val noFilterAd = AdData.Builder()
-      .setMetadata(JSONObject().toString())
-      .setRenderUri(Uri.parse(baseUri + NO_FILTER_RENDER_SUFFIX))
-      .build()
-    val noFilterAdWithBid = AdWithBid(noFilterAd, NO_FILTER_BID.toDouble())
-    val appInstallAd = AdData.Builder()
-      .setMetadata(JSONObject().toString())
-      .setRenderUri(Uri.parse(baseUri + APP_INSTALL_RENDER_SUFFIX))
-      .setAdFilters(getAppInstallFilterForThisApp())
-      .build()
-    val appInstallAdWithBid = AdWithBid(appInstallAd, APP_INSTALL_BID.toDouble())
     binding!!.contextualAdSwitch.setOnCheckedChangeListener { compoundButton, isChecked ->
+      val noFilterAd = AdData.Builder()
+        .setMetadata(JSONObject().toString())
+        .setRenderUri(Uri.parse(baseUri + NO_FILTER_RENDER_SUFFIX))
+        .build()
+      val noFilterAdWithBid = AdWithBid(noFilterAd, NO_FILTER_BID.toDouble())
       if (isChecked && !contextualAds!!.adsWithBid.contains(noFilterAdWithBid)) {
         eventLog.writeEvent("Will insert a normal contextual ad into all auctions")
         contextualAds!!.adsWithBid.add(noFilterAdWithBid)
@@ -278,12 +279,20 @@ class MainActivity : AppCompatActivity() {
         mSeller!!, mScoringLogicUri, mTrustedDataUri, contextualAds!!, context!!, EXECUTOR)
     }
     binding!!.contextualAdAiSwitch.setOnCheckedChangeListener { compoundButton, isChecked ->
+      val appInstallAd = AdData.Builder()
+        .setMetadata(JSONObject().toString())
+        .setRenderUri(Uri.parse(baseUri + APP_INSTALL_RENDER_SUFFIX))
+        .setAdFilters(getAppInstallFilterForPackage(binding!!.contextualAiDataInput.text.toString()))
+        .build()
+      val appInstallAdWithBid = AdWithBid(appInstallAd, APP_INSTALL_BID.toDouble())
       if (isChecked && !contextualAds!!.adsWithBid.contains(appInstallAdWithBid)) {
         eventLog.writeEvent("Will insert an app install contextual ad into all auctions")
         contextualAds!!.adsWithBid.add(appInstallAdWithBid)
+        binding!!.contextualAiDataInput.isEnabled = false;
       } else {
         eventLog.writeEvent("Will stop inserting an app install contextual ad into all auctions")
         contextualAds!!.adsWithBid.remove(appInstallAdWithBid)
+        binding!!.contextualAiDataInput.isEnabled = true;
       }
       adWrapper = AdSelectionWrapper(
         listOf(mBuyer!!),
@@ -402,9 +411,11 @@ class MainActivity : AppCompatActivity() {
                                    Uri.parse("$biddingUri/trusted"),
                                    eventLog::writeEvent,
                                    calcExpiry(ONE_DAY_EXPIRY),
-                                   getAppInstallFilterForThisApp())
+                                   getAppInstallFilterForPackage(binding.caAiDataInput.getText().toString()))
+        binding.caAiDataInput.isEnabled = false;
       } else {
         caWrapper.leaveCa(APP_INSTALL_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), eventLog::writeEvent)
+        binding.caAiDataInput.isEnabled = true;
       }
     }
 
@@ -537,8 +548,8 @@ class MainActivity : AppCompatActivity() {
     customAudienceWrapper: CustomAudienceWrapper,
     decisionLogicJs: String,
     biddingLogicJs: String,
-    biddingLogicJsVersion: Long,
     contextualLogicJs: String,
+    biddingLogicJsVersion: Long,
     trustedScoringSignals: AdSelectionSignals,
     trustedBiddingSignals: AdSelectionSignals,
     biddingUri: Uri,
@@ -636,10 +647,10 @@ class MainActivity : AppCompatActivity() {
     return Instant.now().plus(duration)
   }
 
-  private fun getAppInstallFilterForThisApp(): AdFilters? {
+  private fun getAppInstallFilterForPackage(packageName: String): AdFilters? {
     return AdFilters.Builder()
       .setAppInstallFilters(AppInstallFilters.Builder()
-                              .setPackageNames(setOf(context!!.packageName))
+                              .setPackageNames(setOf(packageName))
                               .build())
       .build()
   }

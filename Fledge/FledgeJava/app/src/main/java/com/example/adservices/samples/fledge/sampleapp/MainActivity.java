@@ -35,7 +35,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.RadioGroup;
-
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding;
@@ -167,9 +166,17 @@ public class MainActivity extends AppCompatActivity {
 
             // Set up Override Switch
             binding.overrideSelect.setOnCheckedChangeListener(this::toggleOverrideSwitch);
+
+            // Set package names
+            setupPackageNames();
         } catch (Exception e) {
             Log.e(TAG, "Error when setting up app", e);
         }
+    }
+
+    private void setupPackageNames() {
+        binding.contextualAiDataInput.setText(context.getPackageName());
+        binding.caAiDataInput.setText(context.getPackageName());
     }
 
     private void toggleOverrideSwitch(RadioGroup buttonView, int checkedId) {
@@ -247,22 +254,16 @@ public class MainActivity extends AppCompatActivity {
         String biddingLogicJs = biddingLogicVersion == 2 ? overrideBiddingJsV2 : overrideBiddingJsV3;
 
         // Set up remote overrides by default
-        useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, biddingLogicJs, biddingLogicVersion, overrideContextualJs, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context);
+        useOverrides(eventLog, adWrapper, caWrapper, overrideDecisionJS, biddingLogicJs, overrideContextualJs, biddingLogicVersion, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context);
     }
 
     private void setupContextualAdsSwitches(String baseUri, EventLogManager eventLog) {
-        AdData noFilterAd = new AdData.Builder()
-            .setMetadata(new JSONObject().toString())
-            .setRenderUri(Uri.parse(baseUri + NO_FILTER_RENDER_SUFFIX))
-            .build();
-        AdWithBid noFilterAdWithBid = new AdWithBid(noFilterAd, NO_FILTER_BID);
-        AdData appInstallAd = new AdData.Builder()
-            .setMetadata(new JSONObject().toString())
-            .setRenderUri(Uri.parse(baseUri + APP_INSTALL_RENDER_SUFFIX))
-            .setAdFilters(getAppInstallFilterForThisApp())
-            .build();
-        AdWithBid appInstallAdWithBid = new AdWithBid(appInstallAd, APP_INSTALL_BID);
         binding.contextualAdSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            AdData noFilterAd = new AdData.Builder()
+                .setMetadata(new JSONObject().toString())
+                .setRenderUri(Uri.parse(baseUri + NO_FILTER_RENDER_SUFFIX))
+                .build();
+            AdWithBid noFilterAdWithBid = new AdWithBid(noFilterAd, NO_FILTER_BID);
             if (isChecked && !contextualAds.getAdsWithBid().contains(noFilterAdWithBid)) {
                 eventLog.writeEvent("Will insert a normal contextual ad into all auctions");
                 contextualAds.getAdsWithBid().add(noFilterAdWithBid);
@@ -274,12 +275,20 @@ public class MainActivity extends AppCompatActivity {
                 Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri, contextualAds, context, EXECUTOR);
         });
         binding.contextualAdAiSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            AdData appInstallAd = new AdData.Builder()
+                .setMetadata(new JSONObject().toString())
+                .setRenderUri(Uri.parse(baseUri + APP_INSTALL_RENDER_SUFFIX))
+                .setAdFilters(getAppInstallFilterForPackage(binding.contextualAiDataInput.getText().toString()))
+                .build();
+            AdWithBid appInstallAdWithBid = new AdWithBid(appInstallAd, APP_INSTALL_BID);
             if (isChecked && !contextualAds.getAdsWithBid().contains(appInstallAdWithBid)) {
                 eventLog.writeEvent("Will insert an app install contextual ad into all auctions");
                 contextualAds.getAdsWithBid().add(appInstallAdWithBid);
+                binding.contextualAiDataInput.setEnabled(false);
             } else {
                 eventLog.writeEvent("Will stop inserting an app install contextual ad into all auctions");
                 contextualAds.getAdsWithBid().remove(appInstallAdWithBid);
+                binding.contextualAiDataInput.setEnabled(true);
             }
             adWrapper = new AdSelectionWrapper(
                 Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri, contextualAds, context, EXECUTOR);
@@ -341,9 +350,11 @@ public class MainActivity extends AppCompatActivity {
             if (isChecked) {
                 caWrapper.joinCa(APP_INSTALL_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
                     Uri.parse(biddingUri + "/render_" + APP_INSTALL_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
-                    eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY), getAppInstallFilterForThisApp());
+                    eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY), getAppInstallFilterForPackage(binding.caAiDataInput.getText().toString()));
+                binding.caAiDataInput.setEnabled(false);
             } else {
                 caWrapper.leaveCa(APP_INSTALL_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+                binding.caAiDataInput.setEnabled(true);
             }
         });
         // Frequency Capped CA
@@ -432,7 +443,8 @@ public class MainActivity extends AppCompatActivity {
                               AdSelectionWrapper adSelectionWrapper,
                               CustomAudienceWrapper customAudienceWrapper,
                               String decisionLogicJs,
-                              String biddingLogicJs, String contextualLogicJs,
+                              String biddingLogicJs,
+                              String contextualLogicJs,
                               long biddingLogicJsVersion,
                               AdSelectionSignals trustedScoringSignals,
                               AdSelectionSignals trustedBiddingSignals,
@@ -501,10 +513,10 @@ public class MainActivity extends AppCompatActivity {
         return Instant.now().plus(duration);
     }
 
-    private AdFilters getAppInstallFilterForThisApp() {
+    private AdFilters getAppInstallFilterForPackage(String packageName) {
         return new AdFilters.Builder()
             .setAppInstallFilters(new AppInstallFilters.Builder()
-                .setPackageNames(Collections.singleton(context.getPackageName()))
+                .setPackageNames(Collections.singleton(packageName))
                 .build())
             .build();
     }
