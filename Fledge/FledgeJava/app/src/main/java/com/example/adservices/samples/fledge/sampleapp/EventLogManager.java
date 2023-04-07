@@ -16,6 +16,7 @@
 package com.example.adservices.samples.fledge.sampleapp;
 
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.widget.TextView;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -87,6 +88,7 @@ public class EventLogManager {
         output.append(eventNumber++).append(". ").append(it.next()).append("\n");
       }
       mDisplay.setText(output);
+      Log.v(MainActivity.TAG, "Event log set to: "+ output);
     }
   }
 }
