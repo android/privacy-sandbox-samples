@@ -42,28 +42,27 @@ This is what the signals will look like:
 For convenience, we have provided OpenAPI definitions for how the reporting
 endpoint could be run in `mock-server.json`.
 
-#### Set-Up Directions With OpenAPI Specs
+##### Set-Up Directions With OpenAPI Specs
 
 1. Find a server mocking tool which can run servers based on OpenAPI specs.
-2. Import the `mock-server.json` spec and begin running a server.
+2. Import the `mock-server-v2-bidding-logic.json` or `mock-server-v3-bidding-logic.json` spec and begin running a server.
 3. Monitor the call log of the reporting server to see data reported by FLEDGE.
 
-The impression reporting endpoint need only return a 200 status code -- the
-response content does not matter. To verify that impressions were reported,
-check the call logs for the reporting endpoint.
+The reporting endpoint need only return a 200 status code -- the response content does not matter.
+To verify that impressions and interactions were reported, check the call logs for the reporting endpoint.
 
 ### Option 2: Mock Server
 To instead use a mock server for ad selection and reporting, you will need to set
 up 7 HTTPS endpoints that your test device or emulator can access. They are:
 
-1. A buyer bidding logic endpoint that serves the sample `BiddingLogicV2.js` and `BiddingLogicV3.js` JavaScript in this directory, depending on the header received.
+1. A buyer bidding logic endpoint '/bidding' that serves the sample `BiddingLogicV2.js` and `BiddingLogicV3.js` JavaScript in this directory, depending on the header received.
  1. If the request has header `x_fledge_buyer_bidding_logic_version:3`, the server should return `BiddingLogicV3.js` with header `x_fledge_buyer_bidding_logic_version:3`;
  2. Otherwise, should return `BiddingLogicV2.js` with no additional header.
 
-2. A [bidding signals](https://developer.android.com/design-for-safety/privacy-sandbox/fledge#ad-selection-ad-tech-platform-managed-trusted-server)
+2. A [bidding signals](https://developer.android.com/design-for-safety/privacy-sandbox/fledge#ad-selection-ad-tech-platform-managed-trusted-server) '/bidding/trusted'
    endpoint that serves the sample `BiddingSignals.json` in this directory.
 
-3. A seller scoring logic endpoint that serves the sample `ScoringLogic.js`
+3. A seller scoring logic endpoint '/scoring' that serves the sample `ScoringLogic.js`
    JavaScript in this directory.
 
 4. A [scoring signals](https://developer.android.com/design-for-safety/privacy-sandbox/fledge#ad-selection-ad-tech-platform-managed-trusted-server)
@@ -80,19 +79,19 @@ up 7 HTTPS endpoints that your test device or emulator can access. They are:
    `render_uri` fields to match this endpoint's domain.
 
 
-The impression reporting endpoints need only return a 200 status code -- the
-response content does not matter. To verify that impressions were reported,
-check the call logs for endpoints 3 and 4.
+The reporting endpoints should be able to accept both GET requests for impression reporting and POST requests for interaction reporting.
+The reporting endpoints need only return a 200 status code -- the response content does not matter. To verify that impressions and interactions were reported,
+check the call logs for endpoints 5 and 6.
 
 #### OpenAPI Definitions
 
 For convenience, we have provided OpenAPI definitions for how these endpoints
-could be run in `mock-server.json`, which manages endpoints all 1-7. In order for `mock-server.json` to be usable, the
+could be run in `mock-server-v2-bidding-logic.json` and `mock-server-v3-bidding-logic.json`, which manages endpoints all 1-7. In order for the json file to be usable, the
 `report_address` variable in the contained javascript string must be updated to
 the address of the server, and the `trusted_bidding_uri` and `render_uri` fields in the daily fetch response should be changed to match the
 domain of the server.
 
-#### Set-Up Directions With OpenAPI Specs
+##### Set-Up Directions With OpenAPI Specs
 
 1. Find a server mocking tool which can run servers based on OpenAPI specs.
 2. Import the `mock-server.json` spec and begin running the server.
@@ -103,14 +102,10 @@ domain of the server.
 5. Monitor the call log of the server to see data reported by FLEDGE.
 
 ##### Buyer Bidding Logic Version Config
-Due to the limitation of OpenAPI spec, returning a response with varied headers is not supported. The default version on the spec is V3 response with V3 header. However, we included a V2 logic in the spec which is commented out. Follow the instructions in the above section to add support for multiple versions.
+Due to the limitation of OpenAPI spec, returning a response with varied headers is not supported. We provided 2 json files `mock-server-v2-bidding-logic.json` and `mock-server-v3-bidding-logic.json` for v2 and v3 buyer bidding logic respectively.
 
-###### Option 1: (Default) Return the latest JavaScript Version
-Following the mock server set up. The server spec is configured to support the latest JavaScript
-
-###### Option 2: Return previous JavaScript version
-You can do this via switching the comment out section while adding the header if using V3 logic
-and removing the header for V2 logic.
+* Option 1: Config 2 servers to vendor out different version of bidding logic
+* Option 2: Import 1 server spec and config the `\bidding` endpoint following mock server instructions.
 
 ##  Waterfall Mediation
 To demonstrate Waterfall mediation you need to create at least 2 SSPs; one 
@@ -127,6 +122,3 @@ Follow Single SSP Auction, Option 2 to set up mock servers. Repeat that process
 for each SSP. For the SSP that will orchestrate the waterfall mediation, Add a 
 waterfall mediation logic endpoint that serves the sample 
 `WaterfallMediationOutcomeSelectionLogic.js` JavaScript in this directory.
-
-
-
