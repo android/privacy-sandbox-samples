@@ -25,12 +25,11 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.measurement.sampleapp.di.module.DEFAULT_CONVERSION_REGISTRATION_ID
-import com.example.measurement.sampleapp.di.module.DEFAULT_SERVER_URL
+import com.example.measurement.sampleapp.di.module.DEFAULT_SERVER_SOURCE_URL
+import com.example.measurement.sampleapp.di.module.DEFAULT_SERVER_TRIGGER_URL
 import com.example.measurement.sampleapp.di.module.DEFAULT_SOURCE_REGISTRATION_ID
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -40,7 +39,8 @@ import kotlinx.coroutines.runBlocking
 /*
 * Datastore Keys
 * */
-private const val DATASTORE_KEY_SERVER_URL = "DATASTORE_KEY_SERVER_URL"
+private const val DATASTORE_KEY_SERVER_SOURCE_URL = "DATASTORE_KEY_SERVER_SOURCE_URL"
+private const val DATASTORE_KEY_SERVER_TRIGGER_URL = "DATASTORE_KEY_SERVER_TRIGGER_URL"
 private const val DATASTORE_KEY_SOURCE_REGISTRATION_ID = "DATASTORE_KEY_SOURCE_REGISTRATION_ID"
 private const val DATASTORE_KEY_CONVERSION_REGISTRATION_ID= "DATASTORE_KEY_CONVERSION_REGISTRATION_ID"
 
@@ -58,28 +58,44 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
 * */
 class MainViewModel @Inject constructor(application: Application) : AndroidViewModel(application) {
 
-  /*
-  * These are methods to read and write to local storage.
-  * */
-  
-     fun setServerUrl(serverUrl: String) {
-       viewModelScope.launch {
-        getApplication<Application>().applicationContext.dataStore.edit { preferences ->
-          preferences[stringPreferencesKey(DATASTORE_KEY_SERVER_URL)] = serverUrl
-        }
+   /*
+   * These are methods to read and write to local storage.
+   * */
+   fun setServerSourceUrl(serverSourceUrl: String) {
+     viewModelScope.launch {
+      getApplication<Application>().applicationContext.dataStore.edit { preferences ->
+        preferences[stringPreferencesKey(DATASTORE_KEY_SERVER_SOURCE_URL)] = serverSourceUrl
       }
-     }
+    }
+   }
 
-   fun getServerUrl(): String {
-     val serverUrl : String
+   fun getServerSourceUrl(): String {
+     val serverSourceUrl : String
      runBlocking(Dispatchers.IO){
-      serverUrl = getApplication<Application>().applicationContext.dataStore.data.map { preferences ->
-        preferences[stringPreferencesKey(DATASTORE_KEY_SERVER_URL)] ?: DEFAULT_SERVER_URL
+       serverSourceUrl = getApplication<Application>().applicationContext.dataStore.data.map { preferences ->
+        preferences[stringPreferencesKey(DATASTORE_KEY_SERVER_SOURCE_URL)] ?: DEFAULT_SERVER_SOURCE_URL
       }.first()
     }
-     return serverUrl
+     return serverSourceUrl
   }
-  
+
+  fun setServerTriggerUrl(serverTriggerUrl: String) {
+    viewModelScope.launch {
+      getApplication<Application>().applicationContext.dataStore.edit { preferences ->
+        preferences[stringPreferencesKey(DATASTORE_KEY_SERVER_TRIGGER_URL)] = serverTriggerUrl
+      }
+    }
+  }
+
+  fun getServerTriggerUrl(): String {
+    val serverTriggerUrl : String
+    runBlocking(Dispatchers.IO){
+      serverTriggerUrl = getApplication<Application>().applicationContext.dataStore.data.map { preferences ->
+        preferences[stringPreferencesKey(DATASTORE_KEY_SERVER_TRIGGER_URL)] ?: DEFAULT_SERVER_TRIGGER_URL
+      }.first()
+    }
+    return serverTriggerUrl
+  }
 
   fun setSourceRegistrationId(sourceRegistrationId: String) {
     viewModelScope.launch {

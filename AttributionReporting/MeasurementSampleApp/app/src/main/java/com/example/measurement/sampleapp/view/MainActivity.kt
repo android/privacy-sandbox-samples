@@ -71,8 +71,10 @@ class MainActivity : BaseActivity() {
   }
 
   override fun onOptionsItemSelected(item: MenuItem): Boolean {
-    if (item.itemId == R.id.menu_server_url) {
-      showServerUrlDialog()
+    if (item.itemId == R.id.menu_server_source_url) {
+      showServerSourceUrlDialog()
+    } else if (item.itemId == R.id.menu_server_trigger_url) {
+      showServerTriggerUrlDialog()
     }
     return super.onOptionsItemSelected(item)
   }
@@ -81,13 +83,25 @@ class MainActivity : BaseActivity() {
   * showServerUrlDialog
   * This method shows a dialog in which the server url is configurable
   * */
-  private fun showServerUrlDialog(){
-    val editText = EditText(this).apply { setText(mainViewModel.getServerUrl()) }
+  private fun showServerSourceUrlDialog(){
+    val editText = EditText(this).apply { setText(mainViewModel.getServerSourceUrl()) }
     val alert = AlertDialog.Builder(this).apply {
-     setTitle(R.string.server_url)
+     setTitle(R.string.server_source_url)
      setView(editText)
      setPositiveButton(R.string.save) { _, _ ->
-        mainViewModel.setServerUrl(editText.text.toString())
+        mainViewModel.setServerSourceUrl(editText.text.toString())
+      }
+    }
+    alert.show()
+  }
+
+  private fun showServerTriggerUrlDialog(){
+    val editText = EditText(this).apply { setText(mainViewModel.getServerTriggerUrl()) }
+    val alert = AlertDialog.Builder(this).apply {
+      setTitle(R.string.server_trigger_url)
+      setView(editText)
+      setPositiveButton(R.string.save) { _, _ ->
+        mainViewModel.setServerTriggerUrl(editText.text.toString())
       }
     }
     alert.show()

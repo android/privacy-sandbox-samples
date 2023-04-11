@@ -14,9 +14,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
   <item
-      android:id="@+id/menu_server_url"
+      android:id="@+id/menu_server_source_url"
       android:orderInCategory="100"
-      android:title="@string/server_url"
+      android:title="@string/server_source_url"
       app:showAsAction="never" />
-
+  <item
+      android:id="@+id/menu_server_trigger_url"
+      android:orderInCategory="100"
+      android:title="@string/server_trigger_url"
+      app:showAsAction="never" />
 </menu>

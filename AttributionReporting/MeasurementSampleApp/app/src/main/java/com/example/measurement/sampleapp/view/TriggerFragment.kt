@@ -57,7 +57,7 @@ class TriggerFragment : BaseFragment() {
     binding.triggerConvIdInput.doOnTextChanged { text, _,_,_ -> mainViewModel.setConvId(text.toString()) }
 
     binding.registerTriggerButton.setOnClickListener {
-      measurementViewModel.registerTrigger(mainViewModel.getServerUrl(), mainViewModel.getConversionRegistrationId())
+      measurementViewModel.registerTrigger(mainViewModel.getServerTriggerUrl(), mainViewModel.getConversionRegistrationId())
       Toast.makeText(requireContext(), R.string.registering, Toast.LENGTH_SHORT).show()
     }
 
