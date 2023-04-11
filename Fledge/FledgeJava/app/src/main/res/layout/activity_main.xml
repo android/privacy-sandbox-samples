@@ -44,50 +44,51 @@
   <RelativeLayout
       android:layout_width="match_parent"
       android:layout_weight=".10"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp"
       android:layout_height="0dp">
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/app_install_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/app_install_switch_text" />
+        android:text="@string/app_install_switch_text"
+        android:textSize="11sp" />
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp"
       android:layout_weight=".10"
       android:layout_height="0dp">
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/contextual_ad_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/contextual_ad_switch_text" />
+        android:text="@string/contextual_ad_switch_text"
+        android:textSize="11sp" />
   </RelativeLayout>
-  <RelativeLayout
+  <LinearLayout
       android:layout_width="match_parent"
       android:layout_weight=".10"
-      android:layout_height="0dp">
+      android:layout_height="0dp"
+      android:orientation="horizontal"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/contextual_ad_ai_switch"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="11sp"
-        android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/contextual_ad_ai_switch_text" />
-  </RelativeLayout>
-  <RelativeLayout
-      android:layout_width="match_parent"
-      android:layout_weight=".11"
-      android:layout_height="0dp">
+        android:text="@string/contextual_ad_ai_switch_text"
+        android:textSize="11sp" />
     <EditText
         android:id="@+id/contextual_ai_data_input"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="11sp"
         android:hint="@string/edit_text_package_name_hint"
@@ -95,79 +96,84 @@
         android:minHeight="48dp"
         android:textColorHint="#78909C"
         android:importantForAutofill="no"/>
-  </RelativeLayout>
+  </LinearLayout>
   <RelativeLayout
       android:layout_width="match_parent"
       android:layout_weight=".10"
-      android:layout_height="0dp">
+      android:layout_height="0dp"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/shoes_ca_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/ca_switch_shoes_text" />
+        android:text="@string/ca_switch_shoes_text"
+        android:textSize="11sp" />
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
       android:layout_weight=".10"
-      android:layout_height="0dp">
+      android:layout_height="0dp"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/shirts_ca_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/ca_switch_shirts_text" />
+        android:text="@string/ca_switch_shirts_text"
+        android:textSize="11sp" />
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
       android:layout_weight=".10"
-      android:layout_height="0dp">
+      android:layout_height="0dp"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/short_expiry_ca_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/ca_switch_short_expiry_text" />
+        android:text="@string/ca_switch_short_expiry_text"
+        android:textSize="11sp" />
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"
       android:layout_weight=".10"
-      android:layout_height="0dp">
+      android:layout_height="0dp"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/invalid_fields_ca_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/ca_switch_invalid_fields_text" />
+        android:text="@string/ca_switch_invalid_fields_text"
+        android:textSize="11sp" />
   </RelativeLayout>
-  <RelativeLayout
+  <LinearLayout
       android:layout_width="match_parent"
       android:layout_weight=".10"
-      android:layout_height="0dp">
+      android:layout_height="0dp"
+      android:orientation="horizontal"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/app_install_ca_switch"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="11sp"
-        android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/app_install_ca_switch_text" />
-  </RelativeLayout>
-  <RelativeLayout
-      android:layout_width="match_parent"
-      android:layout_weight=".11"
-      android:layout_height="0dp">
+        android:text="@string/app_install_ca_switch_text"
+        android:textSize="11sp" />
     <EditText
         android:id="@+id/ca_ai_data_input"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="11sp"
         android:hint="@string/edit_text_package_name_hint"
@@ -175,37 +181,37 @@
         android:minHeight="48dp"
         android:textColorHint="#78909C"
         android:importantForAutofill="no"/>
-  </RelativeLayout>
+  </LinearLayout>
   <RelativeLayout
       android:layout_width="match_parent"
       android:layout_weight=".10"
-      android:layout_height="0dp">
+      android:layout_height="0dp"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/freq_cap_ca_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/freq_cap_ca_switch_text" />
+        android:text="@string/freq_cap_ca_switch_text"
+        android:textSize="11sp" />
   </RelativeLayout>
-  <RelativeLayout
+  <LinearLayout
       android:layout_width="match_parent"
-      android:layout_weight=".12"
+      android:layout_weight=".10"
       android:layout_height="0dp"
-      android:orientation="vertical">
+      android:gravity="center"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
     <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/override_select_title"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="11sp"
         android:layout_marginStart="5dp"
-        android:layout_centerHorizontal="true"
+        android:text="@string/override_switch_text"
         android:textAlignment="viewStart"
-        android:text="@string/override_switch_text"/>
+        android:textSize="11sp" />
     <RadioGroup
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/override_select_title"
         android:id="@+id/override_select"
         android:orientation="horizontal"
         android:layout_width="wrap_content"
@@ -231,28 +237,52 @@
           android:textSize="11sp"
           android:text="@string/override_v3_bidding_logic"/>
     </RadioGroup>
-  </RelativeLayout>
-  <RelativeLayout
+  </LinearLayout>
+  <LinearLayout
       android:layout_width="match_parent"
-      android:layout_weight=".15"
-      android:layout_height="0dp">
-    <Button
-        android:id="@+id/run_ads_button"
+      android:layout_weight=".10"
+      android:layout_height="0dp"
+      android:gravity="center"
+      android:orientation="horizontal"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
+    <CheckBox
+        android:id="@+id/use_prebuilt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="5dp"
-        android:layout_marginStart="5dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
+        android:checked="false"
         android:textSize="11sp"
-        android:text="@string/run_ads_button_text" />
-  </RelativeLayout>
-
+        android:text="@string/use_prebuilt_for_scoring" />
+  </LinearLayout>
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_weight=".13"
       android:layout_height="0dp"
-      android:orientation="horizontal">
+      android:orientation="horizontal"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
+    <Button
+        android:id="@+id/run_ads_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".45"
+        android:textSize="11sp"
+        android:text="@string/run_ads_button_text" />
+    <CheckBox
+        android:id="@+id/no_buyers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:textSize="11sp"
+        android:text="@string/no_buyers_text" />
+  </LinearLayout>
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_weight=".13"
+      android:layout_height="0dp"
+      android:orientation="horizontal"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
     <EditText
         android:id="@+id/ad_selection_id_impression_input"
         android:layout_width="0dp"
@@ -269,9 +299,6 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight=".55"
-        android:layout_marginEnd="5dp"
-        android:layout_marginStart="5dp"
-        android:layout_marginBottom="5dp"
         android:text="@string/report_impression_button_text"
         android:textSize="11sp"/>
   </LinearLayout>
@@ -280,7 +307,9 @@
       android:layout_width="match_parent"
       android:layout_weight=".13"
       android:layout_height="0dp"
-      android:orientation="horizontal">
+      android:orientation="horizontal"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
     <EditText
         android:id="@+id/ad_selection_id_histogram_input"
         android:layout_width="0dp"
@@ -297,9 +326,6 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight=".55"
-        android:layout_marginEnd="5dp"
-        android:layout_marginStart="5dp"
-        android:layout_marginBottom="5dp"
         android:text="@string/update_ad_counter_histogram_button_text"
         android:textSize="11sp"/>
   </LinearLayout>
@@ -308,7 +334,9 @@
       android:layout_width="match_parent"
       android:layout_weight=".13"
       android:layout_height="0dp"
-      android:orientation="horizontal">
+      android:orientation="horizontal"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
     <EditText
         android:id="@+id/ad_selection_id_click_input"
         android:layout_width="0dp"
@@ -336,9 +364,6 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight=".55"
-        android:layout_marginEnd="5dp"
-        android:layout_marginStart="5dp"
-        android:layout_marginBottom="5dp"
         android:text="@string/report_click_button_text"
         android:textSize="11sp"/>
   </LinearLayout>

@@ -21,6 +21,7 @@ import static android.adservices.common.FrequencyCapFilters.AD_EVENT_TYPE_CLICK;
 import static android.adservices.common.FrequencyCapFilters.AD_EVENT_TYPE_IMPRESSION;
 import static android.adservices.common.FrequencyCapFilters.AD_EVENT_TYPE_VIEW;
 import static android.adservices.common.FrequencyCapFilters.AD_EVENT_TYPE_WIN;
+import static com.example.adservices.samples.fledge.WaterfallMediationHelpers.Constants.TAG;
 
 import android.adservices.adselection.AdSelectionConfig;
 import android.adservices.adselection.AdSelectionOutcome;
@@ -82,7 +83,7 @@ public class AdSelectionWrapper {
         .setSellerSignals(AdSelectionSignals.EMPTY)
         .setPerBuyerSignals(buyers.stream()
             .collect(Collectors.toMap(buyer -> buyer, buyer -> AdSelectionSignals.EMPTY)))
-        .setTrustedScoringSignalsUri(trustedDataUri)
+        .setTrustedScoringSignalsUri((buyers.isEmpty()) ? Uri.EMPTY : trustedDataUri)
         .setBuyerContextualAds(Collections.singletonMap(contextualAds.getBuyer(), contextualAds))
         .build();
     mAdClient = new AdSelectionClient.Builder().setContext(context).setExecutor(executor).build();
@@ -111,7 +112,6 @@ public class AdSelectionWrapper {
         .build();
   }
 
-
   /**
    * Runs ad selection and passes a string describing its status to the input receivers. If ad
    * selection succeeds, updates the ad histogram with an impression event and reports the impression.
@@ -121,6 +121,8 @@ public class AdSelectionWrapper {
    * or lack thereof.
    */
   public void runAdSelection(Consumer<String> statusReceiver, Consumer<String> renderUriReceiver) {
+    Log.i(TAG, "asdf: running ad selection with scoring uri: " + mAdSelectionConfig.getDecisionLogicUri());
+    Log.i(TAG, "asdf: running ad selection with buyers: " + mAdSelectionConfig.getCustomAudienceBuyers());
     try {
       Futures.addCallback(mAdClient.selectAds(mAdSelectionConfig),
           new FutureCallback<AdSelectionOutcome>() {

@@ -34,6 +34,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,6 +47,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -95,6 +97,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String NO_FILTER_RENDER_SUFFIX = "/contextual_ad";
     private static final String APP_INSTALL_RENDER_SUFFIX = "/app_install_contextual_ad";
 
+    public static final String AD_SELECTION_PREBUILT_SCHEMA = "ad-selection-prebuilt";
+    public static final String AD_SELECTION_USE_CASE = "ad-selection";
+    public static final String AD_SELECTION_HIGHEST_BID_WINS = "highest-bid-wins";
+
     // Expiry durations
     private static final Duration ONE_DAY_EXPIRY = Duration.ofDays(1);
     private static final Duration THIRTY_SECONDS_EXPIRY = Duration.ofSeconds(30);
@@ -107,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
         "restart the activity using the directions in the README. The app will not be usable " +
         "until this is done.";
 
+    private String mBaseUriString;
     private Uri mBiddingLogicUri;
     private Uri mScoringLogicUri;
     private Uri mTrustedDataUri;
@@ -139,6 +146,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(view);
         eventLog = new EventLogManager(binding.eventLog);
 
+        // Same for override and non-overrides flows
+        mBaseUriString = getIntentOrError("baseUrl", eventLog, MISSING_FIELD_STRING_FORMAT_RESTART_APP);
+        mBiddingLogicUri = Uri.parse(mBaseUriString + "/bidding");
+        mScoringLogicUri = Uri.parse(mBaseUriString + "/scoring");
+        mTrustedDataUri = Uri.parse(mBiddingLogicUri + "/trusted");
+        mContextualLogicUri = Uri.parse(mBaseUriString + "/contextual");
+        mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
+        mSeller = resolveAdTechIdentifier(mScoringLogicUri);
+
         try {
             // Get override reporting URI
             String reportingUriString = getIntentOrError("baseUrl", eventLog, MISSING_FIELD_STRING_FORMAT_RESTART_APP);
@@ -152,6 +168,15 @@ public class MainActivity extends AppCompatActivity {
                     reportingUriString);
             overrideContextualJs = replaceReportingURI(assetFileToString(CONTEXTUAL_LOGIC_FILE),
                 reportingUriString);
+
+            contextualAds = new ContextualAds.Builder()
+                .setBuyer(AdTechIdentifier.fromString(mBiddingLogicUri.getHost()))
+                .setDecisionLogicUri(mContextualLogicUri)
+                .setAdsWithBid(new ArrayList<>())
+                .build();
+
+            // Set up the contextual ads switches
+            setupContextualAdsSwitches(mBaseUriString, eventLog);
 
             // Setup overrides since they are on by default
             setupOverrideFlow(2L);
@@ -167,6 +192,15 @@ public class MainActivity extends AppCompatActivity {
             // Set up Override Switch
             binding.overrideSelect.setOnCheckedChangeListener(this::toggleOverrideSwitch);
 
+            // Set up Prebuilt Switch
+            binding.usePrebuilt.setOnCheckedChangeListener(this::togglePrebuiltUriForScoring);
+
+            // Set up No buyers ad selection
+            binding.noBuyers.setOnCheckedChangeListener((ignored1, ignored2) -> {
+                Log.i(TAG, "No Buyers check toggled to " + binding.noBuyers.isChecked());
+                setAdSelectionWrapper();
+            });
+
             // Set package names
             setupPackageNames();
         } catch (Exception e) {
@@ -174,37 +208,51 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void togglePrebuiltUriForScoring(CompoundButton compoundButton, boolean isPrebuiltForScoringEnabled) {
+        if (!isPrebuiltForScoringEnabled) {
+            mScoringLogicUri = Uri.parse(mBaseUriString + "/scoring");
+            setAdSelectionWrapper();
+            Log.i(TAG, "prebuilt is turned off for scoring. ScoringUri: " + mScoringLogicUri);
+            eventLog.writeEvent("Prebuilt is turned off for scoring!");
+            return;
+        }
+
+        if (!binding.overrideOff.isChecked()) {
+            compoundButton.setChecked(false);
+            Log.i(TAG, "Cant apply prebuilt URI when overrides are on.");
+            eventLog.writeEvent("Cant use prebuilt when override is on!");
+            return;
+        }
+
+        mScoringLogicUri = getPrebuiltUriForScoringPickHighest();
+        Log.i(TAG, "Switched to using prebuilt uri for scoring that picks the highest as "
+            + "winner. Scoring Uri: " + mScoringLogicUri);
+        setAdSelectionWrapper();
+        eventLog.writeEvent("Set prebuilt uri for scoring: pick highest bid");
+    }
+
     private void setupPackageNames() {
         binding.contextualAiDataInput.setText(context.getPackageName());
         binding.caAiDataInput.setText(context.getPackageName());
     }
 
+    private void setAdSelectionWrapper() {
+        List<AdTechIdentifier> buyers = (binding.noBuyers.isChecked()) ?
+            Collections.emptyList() : Collections.singletonList(mBuyer);
+        adWrapper = new AdSelectionWrapper(
+            buyers, mSeller, mScoringLogicUri, mTrustedDataUri, contextualAds, context, EXECUTOR);
+        binding.runAdsButton.setOnClickListener(v ->
+            adWrapper.runAdSelection(eventLog::writeEvent, binding.adSpace::setText));
+    }
+
     private void toggleOverrideSwitch(RadioGroup buttonView, int checkedId) {
         if (binding.overrideOff.isChecked()) {
             try {
-                String baseUri = getIntentOrError("baseUrl", eventLog, MISSING_FIELD_STRING_FORMAT_RESTART_APP);
-
-                mBiddingLogicUri = Uri.parse(baseUri + "/bidding");
-                mScoringLogicUri = Uri.parse(baseUri + "/scoring");
-                mTrustedDataUri = Uri.parse(mBiddingLogicUri + "/trusted");
-                mContextualLogicUri = Uri.parse(baseUri + "/contextual");
-                mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
-                mSeller = resolveAdTechIdentifier(mScoringLogicUri);
-
-                contextualAds = new ContextualAds.Builder()
-                    .setBuyer(AdTechIdentifier.fromString(mBiddingLogicUri.getHost()))
-                    .setDecisionLogicUri(mContextualLogicUri)
-                    .setAdsWithBid(new ArrayList<>())
-                    .build();
-
                 // Set with new scoring uri
                 adWrapper.resetAdSelectionConfig(Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri, contextualAds);
 
                 // Reset CA switches as they rely on different biddingLogicUri
                 setupCASwitches(caWrapper, eventLog, binding, mBiddingLogicUri, context);
-
-                // Set up the contextual ads switches
-                setupContextualAdsSwitches(baseUri, eventLog);
 
                 resetOverrides(eventLog, adWrapper, caWrapper);
             } catch (Exception e) {
@@ -219,35 +267,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupOverrideFlow(long biddingLogicVersion) {
-        // Set override URIS since overrides are on by default
-        String overrideUriBase = getIntentOrError("baseUrl", eventLog, MISSING_FIELD_STRING_FORMAT_RESTART_APP);
+        if (binding.usePrebuilt.isChecked()) {
+            binding.usePrebuilt.setChecked(false);
+        }
 
-        mBiddingLogicUri = Uri.parse(overrideUriBase + "/bidding");
-        mScoringLogicUri = Uri.parse(overrideUriBase + "/scoring");
-        mTrustedDataUri = Uri.parse(mBiddingLogicUri + "/trusted");
-        mContextualLogicUri = Uri.parse(overrideUriBase + "/contextual");
+        setAdSelectionWrapper();
 
-        mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
-        mSeller = resolveAdTechIdentifier(mScoringLogicUri);
-        // Set up ad selection
-        contextualAds = new ContextualAds.Builder()
-            .setBuyer(AdTechIdentifier.fromString(mBiddingLogicUri.getHost()))
-            .setDecisionLogicUri(mContextualLogicUri)
-            .setAdsWithBid(new ArrayList<>())
-            .build();
-        adWrapper = new AdSelectionWrapper(
-            Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri, contextualAds, context, EXECUTOR);
-        binding.runAdsButton.setOnClickListener(v ->
-            adWrapper.runAdSelection(eventLog::writeEvent, binding.adSpace::setText));
+        // Uncheck prebuilt checkbox because prebuilt is not available when overrides are on yet
+        binding.usePrebuilt.setChecked(false);
 
         // Set up Custom Audience Wrapper(CAs)
         caWrapper = new CustomAudienceWrapper(context, EXECUTOR);
 
         // Set up the app install switch
         setupAppInstallSwitch(mBiddingLogicUri, eventLog);
-
-        // Set up the contextual ads switches
-        setupContextualAdsSwitches(overrideUriBase, eventLog);
 
         // Set up CA switches
         setupCASwitches(caWrapper, eventLog, binding, mBiddingLogicUri, context);
@@ -271,8 +304,8 @@ public class MainActivity extends AppCompatActivity {
                 eventLog.writeEvent("Will stop inserting a normal contextual ad into all auctions");
                 contextualAds.getAdsWithBid().remove(noFilterAdWithBid);
             }
-            adWrapper = new AdSelectionWrapper(
-                Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri, contextualAds, context, EXECUTOR);
+
+            setAdSelectionWrapper();
         });
         binding.contextualAdAiSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             AdData appInstallAd = new AdData.Builder()
@@ -290,8 +323,8 @@ public class MainActivity extends AppCompatActivity {
                 contextualAds.getAdsWithBid().remove(appInstallAdWithBid);
                 binding.contextualAiDataInput.setEnabled(true);
             }
-            adWrapper = new AdSelectionWrapper(
-                Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri, contextualAds, context, EXECUTOR);
+
+            setAdSelectionWrapper();
         });
     }
     private void setupAppInstallSwitch(Uri biddingUri, EventLogManager eventLog) {
@@ -495,6 +528,19 @@ public class MainActivity extends AppCompatActivity {
      */
     private AdTechIdentifier resolveAdTechIdentifier(Uri uri) {
         return AdTechIdentifier.fromString(uri.getHost());
+    }
+
+    private Uri getPrebuiltUriForScoringPickHighest() {
+        String paramKey = "reportingUrl";
+        String paramValue = mBaseUriString + "/reporting";
+        return Uri.parse(
+                String.format(
+                    "%s://%s/%s/?%s=%s",
+                    AD_SELECTION_PREBUILT_SCHEMA,
+                    AD_SELECTION_USE_CASE,
+                    AD_SELECTION_HIGHEST_BID_WINS,
+                    paramKey,
+                    paramValue));
     }
 
     /**
