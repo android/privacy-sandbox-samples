@@ -24,7 +24,8 @@ import dagger.Provides
 /*
 * Default values
 * */
-var DEFAULT_SERVER_URL  = "https://measurement.sample.server.url.com"
+var DEFAULT_SERVER_SOURCE_URL  = "https://measurement.sample.server.url.com/source"
+var DEFAULT_SERVER_TRIGGER_URL  = "https://measurement.sample.server.url.com/trigger"
 var DEFAULT_SOURCE_REGISTRATION_ID = "1"
 var DEFAULT_CONVERSION_REGISTRATION_ID = "1"
 

@@ -67,14 +67,14 @@ class SourceFragment : BaseFragment() {
 
     binding.registerCtcButton.setOnTouchListener { _, event ->
       if (event.action == MotionEvent.ACTION_DOWN) {
-        measurementViewModel.registerSource(event, mainViewModel.getServerUrl(), mainViewModel.getSourceRegistrationId())
+        measurementViewModel.registerSource(event, mainViewModel.getServerSourceUrl(), mainViewModel.getSourceRegistrationId())
         Toast.makeText(requireContext(), R.string.registering, Toast.LENGTH_SHORT).show()
       }
       false
     }
 
     binding.registerVtcButton.setOnClickListener {
-      measurementViewModel.registerSource(null,  mainViewModel.getServerUrl(), mainViewModel.getSourceRegistrationId())
+      measurementViewModel.registerSource(null, mainViewModel.getServerSourceUrl(), mainViewModel.getSourceRegistrationId())
     }
     return binding.root
   }

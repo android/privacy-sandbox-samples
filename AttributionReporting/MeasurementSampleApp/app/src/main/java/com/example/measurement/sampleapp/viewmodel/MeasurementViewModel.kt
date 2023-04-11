@@ -37,7 +37,7 @@ class MeasurementViewModel @Inject constructor(private val measurementManager: M
   * */
    fun registerSource(inputEvent: InputEvent?, serverUrl: String, adId: String){
      Log.d("adservices", "registerSource")
-     measurementManager.registerSource(Uri.parse("$serverUrl/source?ad_id=$adId"),
+     measurementManager.registerSource(Uri.parse("$serverUrl?ad_id=$adId"),
                                        inputEvent, /* executor = */ null, /* callback = */ null)
    }
 
@@ -47,7 +47,7 @@ class MeasurementViewModel @Inject constructor(private val measurementManager: M
   * */
   fun registerTrigger(serverUrl: String, convId: String){
     Log.d("adservices","registerTrigger")
-    measurementManager.registerTrigger(Uri.parse("$serverUrl/trigger?conv_id=$convId"),
+    measurementManager.registerTrigger(Uri.parse("$serverUrl?conv_id=$convId"),
                                    /* executor = */ null, /* callback = */ null)
   }
 
