@@ -41,7 +41,7 @@ class MeasurementViewModel @Inject constructor(private val measurementManager: M
       Log.d("adservices", "registerSource")
       viewModelScope.launch(Dispatchers.Main) {
           async {
-              measurementManager.registerSource(Uri.parse("$serverUrl/source?ad_id=$adId"),
+              measurementManager.registerSource(Uri.parse("$serverUrl?ad_id=$adId"),
                   inputEvent)
           }
       }
@@ -56,7 +56,7 @@ class MeasurementViewModel @Inject constructor(private val measurementManager: M
       viewModelScope.launch(Dispatchers.Main) {
           async {
               measurementManager.registerTrigger(
-                  Uri.parse("$serverUrl/trigger?conv_id=$convId"))
+                  Uri.parse("$serverUrl?conv_id=$convId"))
           }
       }
   }

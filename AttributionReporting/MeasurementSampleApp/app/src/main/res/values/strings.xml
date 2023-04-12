@@ -21,7 +21,8 @@
   <string name="register_trigger_conv_id">Conversion Registration ID</string>
   <string name="register_trigger">Register Trigger</string>
   <string name="error_message">Please use the latest Privacy Sandbox on Android Developer Preview.</string>
-  <string name="server_url">Server URL</string>
+  <string name="server_source_url">Server Source URL</string>
+  <string name="server_trigger_url">Server Trigger URL</string>
   <string name="save">Save</string>
   <string name="ad_view_text_ctc">This is a Sample Ad. CLICK TO REGISTER</string>
   <string name="ad_view_text_vtc">This is a Sample Ad. VIEW TO REGISTER</string>
