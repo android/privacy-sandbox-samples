@@ -247,7 +247,7 @@
       android:layout_marginStart="5dp"
       android:layout_marginEnd="5dp">
     <CheckBox
-        android:id="@+id/use_prebuilt"
+        android:id="@+id/use_prebuilt_for_scoring"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:checked="false"
