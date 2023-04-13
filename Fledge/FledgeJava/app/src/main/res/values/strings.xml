@@ -18,7 +18,7 @@
   <string name="seller_scoring_hint">https://seller-js-url.example.com</string>
   <string name="event_log_text">Event Log</string>
   <string name="run_ads_button_text">Run Ad Selection</string>
-  <string name="override_switch_text">Use Remote Overrides</string>
+  <string name="override_switch_text">Remote Overrides: </string>
   <string name="app_install_switch_text">Set App Install Advertisers</string>
   <string name="contextual_ad_switch_text">Contextual Ad</string>
   <string name="contextual_ad_ai_switch_text">Contextual ad with app install filter for package:</string>
@@ -27,6 +27,7 @@
   <string name="override_off">OFF</string>
   <string name="override_v2_bidding_logic">V2 Bidding Logic</string>
   <string name="override_v3_bidding_logic">V3 Bidding Logic</string>
+  <string name="override_off_prebuilt">OFF-Prebuilt</string>
   <string name="ca_switch_on">JOINED</string>
   <string name="ca_switch_off">LEFT</string>
   <string name="ca_switch_shoes_text">Shoes CA</string>
@@ -52,4 +53,6 @@
   <string name="ad_selection_ids_to_include_hint">Comma separated ids</string>
   <string name="no_ad_found">"No ad is found!"</string>
   <string name="edit_text_package_name_hint">package name</string>
+  <string name="use_prebuilt_for_scoring">Use Prebuilt Uri for scoring that picks highest bid\n(not available when overrides are enabled)</string>
+  <string name="no_buyers_text">No buyers</string>
 </resources>
