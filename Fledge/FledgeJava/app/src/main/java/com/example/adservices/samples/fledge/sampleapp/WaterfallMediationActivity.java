@@ -107,7 +107,6 @@ public class WaterfallMediationActivity extends AppCompatActivity {
     List<NetworkConfigurationRequest> requestList = new ArrayList<>();
     requestList.add(new NetworkConfigurationRequest(binding.networkA, binding.networkABid, binding.networkABidFloor));
     requestList.add(new NetworkConfigurationRequest(binding.networkB, binding.networkBBid, binding.networkBBidFloor));
-    requestList.add(new NetworkConfigurationRequest(binding.networkC, binding.networkCBid, binding.networkCBidFloor));
 
     return requestList.stream()
         .filter(NetworkConfigurationRequest::isEligibleToParticipate)
