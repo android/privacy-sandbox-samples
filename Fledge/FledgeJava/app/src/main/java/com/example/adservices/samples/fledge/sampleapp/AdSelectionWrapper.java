@@ -61,6 +61,8 @@ public class AdSelectionWrapper {
   private AdSelectionConfig mAdSelectionConfig;
   private final AdSelectionClient mAdClient;
   private final TestAdSelectionClient mOverrideClient;
+  private final boolean mUsePrebuiltForScoring;
+  private final Uri mOriginalScoringUri;
   private final Executor mExecutor;
 
   /**
@@ -73,7 +75,7 @@ public class AdSelectionWrapper {
    * @param executor An executor to use with the FLEDGE API calls.
    */
   public AdSelectionWrapper(List<AdTechIdentifier> buyers, AdTechIdentifier seller, Uri decisionUri, Uri trustedDataUri, ContextualAds contextualAds,
-      Context context, Executor executor) {
+      boolean usePrebuiltForScoring, Uri originalScoringUri, Context context, Executor executor) {
 
     mAdSelectionConfig = new AdSelectionConfig.Builder()
         .setSeller(seller)
@@ -88,6 +90,8 @@ public class AdSelectionWrapper {
         .build();
     mAdClient = new AdSelectionClient.Builder().setContext(context).setExecutor(executor).build();
     mOverrideClient = new TestAdSelectionClient.Builder().setContext(context).setExecutor(executor).build();
+    mUsePrebuiltForScoring = usePrebuiltForScoring;
+    mOriginalScoringUri = originalScoringUri;
     mExecutor = executor;
   }
 
@@ -121,8 +125,8 @@ public class AdSelectionWrapper {
    * or lack thereof.
    */
   public void runAdSelection(Consumer<String> statusReceiver, Consumer<String> renderUriReceiver) {
-    Log.i(TAG, "asdf: running ad selection with scoring uri: " + mAdSelectionConfig.getDecisionLogicUri());
-    Log.i(TAG, "asdf: running ad selection with buyers: " + mAdSelectionConfig.getCustomAudienceBuyers());
+    Log.i(TAG, "Running ad selection with scoring uri: " + mAdSelectionConfig.getDecisionLogicUri());
+    Log.i(TAG, "Running ad selection with buyers: " + mAdSelectionConfig.getCustomAudienceBuyers());
     try {
       Futures.addCallback(mAdClient.selectAds(mAdSelectionConfig),
           new FutureCallback<AdSelectionOutcome>() {
@@ -155,6 +159,20 @@ public class AdSelectionWrapper {
    * with a string describing how the auction and reporting went.
    */
   public void reportImpression(long adSelectionId, Consumer<String> statusReceiver) {
+    // If a prebuilt uri is used for scoring during the ad selection, we will replace that with the
+    // original uri for reporting purposes to get the original reportResult function
+    if (mUsePrebuiltForScoring) {
+      mAdSelectionConfig = new AdSelectionConfig.Builder()
+          .setAdSelectionSignals(mAdSelectionConfig.getAdSelectionSignals())
+          .setBuyerContextualAds(mAdSelectionConfig.getBuyerContextualAds())
+          .setCustomAudienceBuyers(mAdSelectionConfig.getCustomAudienceBuyers())
+          .setDecisionLogicUri(mOriginalScoringUri)
+          .setPerBuyerSignals(mAdSelectionConfig.getPerBuyerSignals())
+          .setSeller(mAdSelectionConfig.getSeller())
+          .setSellerSignals(mAdSelectionConfig.getSellerSignals())
+          .setTrustedScoringSignalsUri(mAdSelectionConfig.getTrustedScoringSignalsUri())
+          .build();
+    }
     ReportImpressionRequest request = new ReportImpressionRequest(adSelectionId, mAdSelectionConfig);
 
     Futures.addCallback(mAdClient.reportImpression(request),

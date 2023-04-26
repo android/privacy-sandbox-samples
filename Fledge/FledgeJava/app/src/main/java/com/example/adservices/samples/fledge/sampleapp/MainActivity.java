@@ -193,13 +193,10 @@ public class MainActivity extends AppCompatActivity {
             binding.overrideSelect.setOnCheckedChangeListener(this::toggleOverrideSwitch);
 
             // Set up Prebuilt Switch
-            binding.usePrebuilt.setOnCheckedChangeListener(this::togglePrebuiltUriForScoring);
+            binding.usePrebuiltForScoring.setOnCheckedChangeListener(this::togglePrebuiltUriForScoring);
 
             // Set up No buyers ad selection
-            binding.noBuyers.setOnCheckedChangeListener((ignored1, ignored2) -> {
-                Log.i(TAG, "No Buyers check toggled to " + binding.noBuyers.isChecked());
-                setAdSelectionWrapper();
-            });
+            binding.noBuyers.setOnCheckedChangeListener((ignored1, ignored2) -> toggleNoBuyersCheckbox());
 
             // Set package names
             setupPackageNames();
@@ -231,6 +228,12 @@ public class MainActivity extends AppCompatActivity {
         eventLog.writeEvent("Set prebuilt uri for scoring: pick highest bid");
     }
 
+    private void toggleNoBuyersCheckbox() {
+        Log.i(TAG, "No Buyers check toggled to " + binding.noBuyers.isChecked());
+        setAdSelectionWrapper();
+        eventLog.writeEvent("No Buyers check toggled to " + binding.noBuyers.isChecked());
+    }
+
     private void setupPackageNames() {
         binding.contextualAiDataInput.setText(context.getPackageName());
         binding.caAiDataInput.setText(context.getPackageName());
@@ -240,7 +243,7 @@ public class MainActivity extends AppCompatActivity {
         List<AdTechIdentifier> buyers = (binding.noBuyers.isChecked()) ?
             Collections.emptyList() : Collections.singletonList(mBuyer);
         adWrapper = new AdSelectionWrapper(
-            buyers, mSeller, mScoringLogicUri, mTrustedDataUri, contextualAds, context, EXECUTOR);
+            buyers, mSeller, mScoringLogicUri, mTrustedDataUri, contextualAds, binding.usePrebuiltForScoring.isChecked(), Uri.parse(mBaseUriString + "/scoring"), context, EXECUTOR);
         binding.runAdsButton.setOnClickListener(v ->
             adWrapper.runAdSelection(eventLog::writeEvent, binding.adSpace::setText));
     }
@@ -267,14 +270,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupOverrideFlow(long biddingLogicVersion) {
-        if (binding.usePrebuilt.isChecked()) {
-            binding.usePrebuilt.setChecked(false);
+        if (binding.usePrebuiltForScoring.isChecked()) {
+            binding.usePrebuiltForScoring.setChecked(false);
         }
 
         setAdSelectionWrapper();
 
         // Uncheck prebuilt checkbox because prebuilt is not available when overrides are on yet
-        binding.usePrebuilt.setChecked(false);
+        binding.usePrebuiltForScoring.setChecked(false);
 
         // Set up Custom Audience Wrapper(CAs)
         caWrapper = new CustomAudienceWrapper(context, EXECUTOR);
