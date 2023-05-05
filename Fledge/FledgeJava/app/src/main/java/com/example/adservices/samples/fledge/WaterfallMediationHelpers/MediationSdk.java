@@ -82,6 +82,7 @@ public class MediationSdk extends NetworkAdapter {
       }
       writeEvent("%s's auction not returned an ad. Moving to the next network", network3p.getNetworkName());
     }
+    writeEvent("Mediation Chain is exhausted but no ads found! Returning the 1P auction result");
     return new Pair<>(outcome1p, this);
   }
 

@@ -17,13 +17,13 @@ public class Constants {
 
   // Seller-side URIs
   public static final String DECISION_URI_SUFFIX = "scoring"; // calls real servers if specified
-  public static final String TRUSTED_SCORING_SIGNALS_URI_SUFFIX = "trustedScoringSignals";
+  public static final String TRUSTED_SCORING_SIGNALS_URI_SUFFIX = "scoring/trusted";
   public static final String OUTCOME_SELECTION_URI_SUFFIX = "waterfall_mediation"; // calls real servers if specified
 
   // Buyer-side URIs
   public static final String BIDDING_URI_SUFFIX = "bidding"; // calls real servers if specified
-  public static final String DAILY_URI_SUFFIX = "dailyUpdate";
-  public static final String TRUSTED_BIDDING_URI_SUFFIX = "trustedBidding"; // calls real servers if specified
+  public static final String DAILY_URI_SUFFIX = "bidding/daily";
+  public static final String TRUSTED_BIDDING_URI_SUFFIX = "bidding/trusted"; // calls real servers if specified
   public static final String RENDER_URI_SUFFIX = "render";
 
   // Signals data contracts
