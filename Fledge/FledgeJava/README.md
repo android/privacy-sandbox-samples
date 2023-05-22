@@ -40,9 +40,18 @@ First install the app on your device by running
 Then, you will need to [enable developer
 options](https://developer.android.com/studio/debug/dev-options) on your device.
 
-Next, run the following command 
+Next, run the following commands 
 ```
-adb shell "device_config put adservices fledge_js_isolate_enforce_max_heap_size false"
+adb shell device_config put adservices ppapi_app_allow_list \"*\"
+adb shell device_config put adservices ppapi_app_signature_allow_list \"*\"
+adb shell device_config put adservices adservice_system_service_enabled true
+adb shell device_config put adservices adservice_enabled true
+adb shell device_config put adservices adservice_enable_status true
+adb shell device_config put adservices fledge_js_isolate_enforce_max_heap_size false
+adb shell device_config put adservices global_kill_switch false
+adb shell setprop debug.adservices.disable_fledge_enrollment_check true
+adb shell device_config put adservices fledge_custom_audience_service_kill_switch false
+adb shell device_config put adservices fledge_select_ads_kill_switch false
 ```
 
 Once the above steps are completed, you must launch with the below command:
