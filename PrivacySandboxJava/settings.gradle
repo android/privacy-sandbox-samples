@@ -34,4 +34,5 @@ rootProject.name = "PrivacySandboxSample"
 include ':client-app'
 include ':sdk-implementation'
 include ':example-sdk'
+include ':mediatee-sdk'
 include ':example-aidl-library'

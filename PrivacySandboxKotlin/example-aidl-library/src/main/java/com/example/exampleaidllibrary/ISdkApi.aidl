@@ -17,4 +17,5 @@ package com.example.exampleaidllibrary;
 
 interface ISdkApi {
     String createFile(int sizeInMb);
+    String getMessage();
 }

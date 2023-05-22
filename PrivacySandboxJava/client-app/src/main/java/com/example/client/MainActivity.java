@@ -56,13 +56,17 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "SandboxClient";
     /**
-     * Name of the SDK to be loaded.
+     * Name of the privacy sandbox SDK to be loaded.
      */
     private static final String SDK_NAME = "com.example.privacysandbox.provider";
     /**
-     * Button to load the SDK to the sandbox.
+     * Name of the mediated sandbox SDK to be loaded.
      */
-    private Button mLoadSdkButton;
+    private static final String MEDIATEE_SDK_NAME = "com.example.mediatee.provider";
+    /**
+     * Button to load the SDKs to the sandbox.
+     */
+    private Button mLoadSdksButton;
     /**
      * Button to request a SurfacePackage from sandbox which remotely render a webview.
      */
@@ -87,7 +91,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private SandboxedSdk mSandboxedSdk;
 
-    private boolean mSdkLoaded = false;
+    private boolean mSdksLoaded = false;
+    private boolean mSdkToSdkCommEnabled = false;
 
     @RequiresApi(api = 33)
     @Override
@@ -96,35 +101,96 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         mSdkSandboxManager = getApplicationContext().getSystemService(
-            SdkSandboxManager.class);
+                SdkSandboxManager.class);
 
         mClientView = findViewById(R.id.rendered_view);
         mClientView.setZOrderOnTop(true);
 
-        mLoadSdkButton = findViewById(R.id.load_sdk_button);
+        mLoadSdksButton = findViewById(R.id.load_sdk_button);
         mRequestWebViewButton = findViewById(R.id.request_webview_button);
         mCreateFileButton = findViewById(R.id.create_file_button);
 
         registerLoadCodeProviderButton();
         registerRequestWebViewButton();
         registerCreateFileButton();
+        registerSdkToSdkButton();
     }
 
     /**
-     * Register the callback action after once mLoadSdkButton got clicked.
+     * Register the callback action using {@link OutcomeReceiver} after once mLoadSdksButton got clicked.
      */
     @RequiresApi(api = 33)
     private void registerLoadCodeProviderButton() {
-        mLoadSdkButton.setOnClickListener(v -> {
-          // Register for sandbox death event.
-          mSdkSandboxManager.addSdkSandboxProcessDeathCallback(
-              Runnable::run, new SdkSandboxProcessDeathCallbackImpl());
+        mLoadSdksButton.setOnClickListener(v -> {
+            if (mSdksLoaded) {
+                resetStateForLoadSdkButton();
+                return;
+            }
 
-          log("Attempting to load sandbox SDK");
-          final LoadSdkCallbackImpl callback = new LoadSdkCallbackImpl();
-          mSdkSandboxManager.loadSdk(
-              SDK_NAME, new Bundle(), Runnable::run, callback);
+            // Register for sandbox death event.
+            mSdkSandboxManager.addSdkSandboxProcessDeathCallback(
+                    Runnable::run, new SdkSandboxProcessDeathCallbackImpl());
+
+            Bundle params = new Bundle();
+            OutcomeReceiver<SandboxedSdk, LoadSdkException> mediateeReceiver =
+                    new OutcomeReceiver<SandboxedSdk, LoadSdkException>() {
+                        @Override
+                        public void onResult(SandboxedSdk sandboxedSdk) {
+                            makeToast("All SDKs Loaded successfully!");
+                            Log.i(TAG, "All SDKs Loaded successfully!");
+                            mSdksLoaded = true;
+                            refreshLoadSdksButtonText();
+                        }
+
+                        @Override
+                        public void onError(LoadSdkException error) {
+                            makeToast("Failed to load all SDKs: " + error.getMessage());
+                            Log.e(TAG, "Failed to load all SDKs: " + error.getMessage());
+                        }
+                    };
+            OutcomeReceiver<SandboxedSdk, LoadSdkException> receiver =
+                    new OutcomeReceiver<SandboxedSdk, LoadSdkException>() {
+                        @Override
+                        public void onResult(SandboxedSdk sandboxedSdk) {
+                            mSandboxedSdk = sandboxedSdk;
+                            mSdkSandboxManager.loadSdk(
+                                    MEDIATEE_SDK_NAME,
+                                    params,
+                                    Runnable::run,
+                                    mediateeReceiver);
+                        }
+
+                        @Override
+                        public void onError(LoadSdkException error) {
+                            makeToast("Failed to load first SDK: " + error.getMessage());
+                            Log.e(TAG, "Failed to load first SDK: " + error.getMessage());
+                        }
+                    };
+            Log.i(TAG, "Loading SDKs " + SDK_NAME + " and " + MEDIATEE_SDK_NAME);
+            mSdkSandboxManager.loadSdk(SDK_NAME, params, Runnable::run, receiver);
         });
+    }
+
+    /**
+     * Unload the SDKs and reset the state of button to Load SDKs
+     */
+    private void resetStateForLoadSdkButton() {
+        mSdkSandboxManager.unloadSdk(SDK_NAME);
+        mSdkSandboxManager.unloadSdk(MEDIATEE_SDK_NAME);
+        mLoadSdksButton.setText("Load SDKs");
+        mSdksLoaded = false;
+    }
+
+    /**
+     * Refresh the state of Load SDKs button to either Load SDKs or
+     * Unload SDKs according to {@value mSdksLoaded}
+     */
+    private void refreshLoadSdksButtonText() {
+        if (mSdksLoaded) {
+            mLoadSdksButton.post(() -> mLoadSdksButton.setText("Unload SDKs"));
+        } else {
+            mLoadSdksButton.post(() -> mLoadSdksButton.setText("Load SDKs"));
+        }
     }
 
     /**
@@ -133,21 +199,21 @@ public class MainActivity extends AppCompatActivity {
     @RequiresApi(api = 33)
     private void registerRequestWebViewButton() {
         mRequestWebViewButton.setOnClickListener(v -> {
-          if (!mSdkLoaded) {
-            makeToast("Please load the SDK first!");
-            return;
-          }
+            if (!mSdksLoaded) {
+                makeToast("Please load the SDK first!");
+                return;
+            }
 
-          log("Getting SurfacePackage.");
-          new Handler(Looper.getMainLooper()).post(() -> {
-            Bundle params = new Bundle();
-              params.putInt(EXTRA_WIDTH_IN_PIXELS, mClientView.getWidth());
-              params.putInt(EXTRA_HEIGHT_IN_PIXELS, mClientView.getHeight());
-              params.putInt(EXTRA_DISPLAY_ID, getDisplay().getDisplayId());
-              params.putBinder(EXTRA_HOST_TOKEN, mClientView.getHostToken());
-            mSdkSandboxManager.requestSurfacePackage(
-                SDK_NAME, params, Runnable::run, new RequestSurfacePackageCallbackImpl());
-              });
+            log("Getting SurfacePackage.");
+            new Handler(Looper.getMainLooper()).post(() -> {
+                Bundle params = new Bundle();
+                params.putInt(EXTRA_WIDTH_IN_PIXELS, mClientView.getWidth());
+                params.putInt(EXTRA_HEIGHT_IN_PIXELS, mClientView.getHeight());
+                params.putInt(EXTRA_DISPLAY_ID, getDisplay().getDisplayId());
+                params.putBinder(EXTRA_HOST_TOKEN, mClientView.getHostToken());
+                mSdkSandboxManager.requestSurfacePackage(
+                        SDK_NAME, params, Runnable::run, new RequestSurfacePackageCallbackImpl());
+            });
         });
     }
 
@@ -157,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
     @RequiresApi(api = 33)
     private void registerCreateFileButton() {
         mCreateFileButton.setOnClickListener(v -> {
-            if (!mSdkLoaded) {
+            if (!mSdksLoaded) {
                 makeToast("Please load the SDK first!");
                 return;
             }
@@ -203,37 +269,42 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * A callback for tracking events regarding loading of an SDK.
+     * Creates a bundle with required parameters for SDK-SDK communication
      */
-    @RequiresApi(api = 33)
-    private class LoadSdkCallbackImpl implements OutcomeReceiver<SandboxedSdk, LoadSdkException> {
-        /**
-         * This notifies client application that the requested SDK is successfully loaded.
-         *
-         * @param sandboxedSdk a {@link SandboxedSdk} is returned from the sandbox to the app.
-         */
-        @SuppressLint("Override")
-        @Override
-        public void onResult(SandboxedSdk sandboxedSdk) {
-            log("SDK is loaded");
-            makeToast("Loaded successfully!");
-            mSdkLoaded = true;
+    private Bundle getRequestSurfacePackageParams(SurfaceView surfaceView) {
+        Bundle params = new Bundle();
+        final String EXTRA_SDK_SDK_ENABLED_KEY = "sdkSdkCommEnabled";
+        params.putInt(EXTRA_WIDTH_IN_PIXELS, surfaceView.getWidth());
+        params.putInt(EXTRA_HEIGHT_IN_PIXELS, surfaceView.getHeight());
+        params.putInt(EXTRA_DISPLAY_ID, getDisplay().getDisplayId());
+        params.putBinder(EXTRA_HOST_TOKEN, surfaceView.getHostToken());
+        params.putString(EXTRA_SDK_SDK_ENABLED_KEY, "SDK_IN_SANDBOX");
+        return params;
+    }
 
-            mSandboxedSdk = sandboxedSdk;
-        }
-
-        /**
-         * This notifies client application that the requested Sdk failed to be loaded.
-         *
-         * @param error a {@link LoadSdkException} containing the details of failing to load the
-         *              SDK.
-         */
-        @SuppressLint("Override")
-        @Override
-        public void onError(LoadSdkException error) {
-            log("onLoadSdkFailure(" + error.getLoadSdkErrorCode() + "): " + error.getMessage());
-            makeToast("Load SDK Failed! " + error.getMessage());
-        }
+    /**
+     * Register the communication between SDKs {@value SDK_NAME} and {@value MEDIATEE_SDK_NAME}
+     */
+    private void registerSdkToSdkButton() {
+        // Button for SDK-SDK communication.
+        final Button mSdkToSdkCommButton = findViewById(R.id.enable_sdk_sdk_button);
+        mSdkToSdkCommButton.setOnClickListener(
+                v -> {
+                    mSdkToSdkCommEnabled = !mSdkToSdkCommEnabled;
+                    if (mSdkToSdkCommEnabled) {
+                        mSdkToSdkCommButton.setText("Disable SDK to SDK comm");
+                        makeToast("Sdk to Sdk Comm Enabled");
+                        final SurfaceView view = mClientView;
+                        mSdkSandboxManager.requestSurfacePackage(
+                                SDK_NAME,
+                                getRequestSurfacePackageParams(view),
+                                Runnable::run,
+                                new RequestSurfacePackageCallbackImpl());
+                    } else {
+                        mSdkToSdkCommButton.setText("Enable SDK to SDK comm");
+                        makeToast("Sdk to Sdk Comm Disabled");
+                    }
+                });
     }
 
     /**
@@ -263,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
      */
     @RequiresApi(api = 33)
     private class RequestSurfacePackageCallbackImpl
-                implements OutcomeReceiver<Bundle, RequestSurfacePackageException> {
+            implements OutcomeReceiver<Bundle, RequestSurfacePackageException> {
         /**
          * This notifies client application that {@link SurfacePackage}
          * is ready to remote render view from the SDK.
@@ -279,7 +350,7 @@ public class MainActivity extends AppCompatActivity {
             new Handler(Looper.getMainLooper()).post(() -> {
                 log("Setting surface package in the client view");
                 SurfacePackage surfacePackage = response.getParcelable(
-                    EXTRA_SURFACE_PACKAGE, SurfacePackage.class);
+                        EXTRA_SURFACE_PACKAGE, SurfacePackage.class);
                 mClientView.setChildSurfacePackage(surfacePackage);
                 mClientView.setVisibility(View.VISIBLE);
             });
@@ -295,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onError(RequestSurfacePackageException error) {
             log("onSurfacePackageError" + error.getRequestSurfacePackageErrorCode() + "): "
-                + error.getMessage());
+                    + error.getMessage());
             makeToast("Surface Package Failed! " + error.getMessage());
         }
     }

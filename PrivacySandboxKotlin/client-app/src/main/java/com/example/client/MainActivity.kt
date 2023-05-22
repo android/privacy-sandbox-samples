@@ -42,12 +42,13 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.exampleaidllibrary.ISdkApi
 import com.example.privacysandbox.client.R
 
+
 @SuppressLint("NewApi")
 class MainActivity : AppCompatActivity() {
     /**
      * Button to load the SDK to the sandbox.
      */
-    private lateinit var mLoadSdkButton: Button
+    private lateinit var mLoadSdksButton: Button
 
     /**
      * Button to request a SurfacePackage from sandbox which remotely render a webview.
@@ -77,7 +78,8 @@ class MainActivity : AppCompatActivity() {
      */
     private lateinit var mSandboxedSdk : SandboxedSdk
 
-    private var mSdkLoaded = false
+    private var mSdksLoaded = false
+    private var mSdkToSdkCommEnabled = false
 
 
     @RequiresApi(api = 33)
@@ -89,12 +91,13 @@ class MainActivity : AppCompatActivity() {
         )
         mClientView = findViewById(R.id.rendered_view)
         mClientView.setZOrderOnTop(true)
-        mLoadSdkButton = findViewById(R.id.load_sdk_button)
+        mLoadSdksButton = findViewById(R.id.load_sdk_button)
         mRequestWebViewButton = findViewById(R.id.request_webview_button)
         mCreateFileButton = findViewById(R.id.create_file_button)
         registerLoadCodeProviderButton()
         registerRequestWebViewButton()
         registerCreateFileButton()
+        registerSdkToSdkButton()
     }
 
     /**
@@ -102,15 +105,66 @@ class MainActivity : AppCompatActivity() {
      */
     @RequiresApi(api = 33)
     private fun registerLoadCodeProviderButton() {
-        mLoadSdkButton.setOnClickListener { _: View? ->
+        mLoadSdksButton.setOnClickListener { _: View? ->
             // Register for sandbox death event.
             mSdkSandboxManager.addSdkSandboxProcessDeathCallback(
                 { obj: Runnable -> obj.run() }, SdkSandboxProcessDeathCallbackImpl())
+
+            val params = Bundle()
             log("Attempting to load sandbox SDK")
-            val callback = LoadSdkCallbackImpl()
+            val mediateeReceiver: OutcomeReceiver<SandboxedSdk, LoadSdkException> = object : OutcomeReceiver<SandboxedSdk, LoadSdkException> {
+                override fun onResult(sandboxedSdk: SandboxedSdk) {
+                    makeToast("All SDKs Loaded successfully!")
+                    Log.i(TAG, "All SDKs Loaded successfully!")
+                    mSdksLoaded = true
+                    refreshLoadSdksButtonText()
+                }
+
+                override fun onError(error: LoadSdkException) {
+                    makeToast("Failed to load all SDKs: " + error.message)
+                    Log.e(TAG, "Failed to load all SDKs: " + error.message)
+                }
+            }
+            val receiver: OutcomeReceiver<SandboxedSdk, LoadSdkException> = object : OutcomeReceiver<SandboxedSdk, LoadSdkException> {
+                override fun onResult(sandboxedSdk: SandboxedSdk) {
+                    mSandboxedSdk = sandboxedSdk
+                    mSdkSandboxManager.loadSdk(
+                        MEDIATEE_SDK_NAME,
+                        params, { obj: Runnable -> obj.run() },
+                        mediateeReceiver)
+                }
+
+                override fun onError(error: LoadSdkException) {
+                    makeToast("Failed to load first SDK: " + error.message)
+                    Log.e(TAG, "Failed to load first SDK: " + error.message)
+                }
+            }
+            Log.i(TAG, "Loading SDKs $SDK_NAME and $MEDIATEE_SDK_NAME");
             mSdkSandboxManager.loadSdk(
-                SDK_NAME, Bundle(), { obj: Runnable -> obj.run() }, callback
+                SDK_NAME, Bundle(), { obj: Runnable -> obj.run() }, receiver
             )
+        }
+    }
+
+    /**
+     * Unload the SDKs and reset the state of button to Load SDKs
+     */
+    private fun resetStateForLoadSdkButton() {
+        mSdkSandboxManager.unloadSdk(SDK_NAME)
+        mSdkSandboxManager.unloadSdk(MEDIATEE_SDK_NAME)
+        mLoadSdksButton.setText("Load SDKs")
+        mSdksLoaded = false
+    }
+
+    /**
+     * Refresh the state of Load SDKs button to either Load SDKs or
+     * Unload SDKs according to {@value mSdksLoaded}
+     */
+    private fun refreshLoadSdksButtonText() {
+        if (mSdksLoaded) {
+            mLoadSdksButton.post { mLoadSdksButton.setText("Unload SDKs") }
+        } else {
+            mLoadSdksButton.post { mLoadSdksButton.setText("Load SDKs") }
         }
     }
 
@@ -120,7 +174,7 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(api = 33)
     private fun registerRequestWebViewButton() {
         mRequestWebViewButton.setOnClickListener {
-            if (!mSdkLoaded) {
+            if (!mSdksLoaded) {
                 makeToast("Please load the SDK first!")
                 return@setOnClickListener
             }
@@ -143,7 +197,7 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(api = 33)
     private fun registerCreateFileButton() {
         mCreateFileButton.setOnClickListener { _ ->
-            if (!mSdkLoaded) {
+            if (!mSdksLoaded) {
                 makeToast("Please load the SDK first!")
                 return@setOnClickListener
             }
@@ -190,33 +244,40 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * A callback for tracking events regarding loading an SDK.
+     * Creates a bundle with required parameters for SDK-SDK communication
      */
-    @RequiresApi(api = 33)
-    private inner class LoadSdkCallbackImpl() : OutcomeReceiver<SandboxedSdk, LoadSdkException> {
-        /**
-         * This notifies client application that the requested SDK is successfully loaded.
-         *
-         * @param sandboxedSdk a [SandboxedSdk] is returned from the sandbox to the app.
-         */
-        @SuppressLint("Override")
-        override fun onResult(sandboxedSdk: SandboxedSdk) {
-            log("SDK is loaded")
-            makeToast("Loaded successfully!")
-            mSdkLoaded = true
-            mSandboxedSdk = sandboxedSdk;
-        }
+    private fun getRequestSurfacePackageParams(surfaceView: SurfaceView): Bundle {
+        val params = Bundle()
+        val EXTRA_SDK_SDK_ENABLED_KEY = "sdkSdkCommEnabled"
+        params.putInt(EXTRA_WIDTH_IN_PIXELS, surfaceView.width)
+        params.putInt(EXTRA_HEIGHT_IN_PIXELS, surfaceView.height)
+        params.putInt(EXTRA_DISPLAY_ID, display!!.displayId)
+        params.putBinder(EXTRA_HOST_TOKEN, surfaceView.hostToken)
+        params.putString(EXTRA_SDK_SDK_ENABLED_KEY, "SDK_IN_SANDBOX")
+        return params
+    }
 
-        /**
-         * This notifies client application that the requested Sdk failed to be loaded.
-         *
-         * @param error a [LoadSdkException] containing the details of failing to load the
-         * SDK.
-         */
-        @SuppressLint("Override")
-        override fun onError(error: LoadSdkException) {
-            log("onLoadSdkFailure(" + error.getLoadSdkErrorCode().toString() + "): " + error.message)
-            makeToast("Load SDK Failed! " + error.message)
+    /**
+     * Register the communication between SDKs.
+     */
+    private fun registerSdkToSdkButton() {
+        // Button for SDK-SDK communication.
+        val mSdkToSdkCommButton: Button = findViewById(R.id.enable_sdk_sdk_button)
+        mSdkToSdkCommButton.setOnClickListener {_: View? ->
+            mSdkToSdkCommEnabled = !mSdkToSdkCommEnabled
+            if (mSdkToSdkCommEnabled) {
+                mSdkToSdkCommButton.setText("Disable SDK to SDK comm")
+                makeToast("Sdk to Sdk Comm Enabled")
+                val view: SurfaceView = mClientView
+                mSdkSandboxManager.requestSurfacePackage(
+                    SDK_NAME,
+                    getRequestSurfacePackageParams(view),
+                    Runnable::run,
+                    RequestSurfacePackageCallbackImpl())
+            } else {
+                mSdkToSdkCommButton.setText("Enable SDK to SDK comm")
+                makeToast("Sdk to Sdk Comm Disabled")
+            }
         }
     }
 
@@ -245,7 +306,7 @@ class MainActivity : AppCompatActivity() {
      */
     @RequiresApi(api = 33)
     private inner class RequestSurfacePackageCallbackImpl() :
-        OutcomeReceiver<Bundle?, RequestSurfacePackageException?> {
+        OutcomeReceiver<Bundle, RequestSurfacePackageException?> {
         /**
          * This notifies client application that [SurfacePackage]
          * is ready to remote render view from the SDK.
@@ -276,7 +337,7 @@ class MainActivity : AppCompatActivity() {
         override fun onError(error: RequestSurfacePackageException) {
             log("onSurfacePackageError" + error.getRequestSurfacePackageErrorCode()
                 .toString() + "): "
-                  + error.message)
+                    + error.message)
             makeToast("Surface Package Failed! " + error.message)
         }
     }
@@ -296,5 +357,9 @@ class MainActivity : AppCompatActivity() {
          * Name of the SDK to be loaded.
          */
         private const val SDK_NAME = "com.example.privacysandbox.provider"
+        /**
+         * Name of the mediated sandbox SDK to be loaded.
+         */
+        private const val MEDIATEE_SDK_NAME = "com.example.mediatee.provider"
     }
 }

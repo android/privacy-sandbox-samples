@@ -49,4 +49,9 @@ public class SdkApi extends ISdkApi.Stub {
             throw new RemoteException(e.getMessage());
         }
     }
+
+    @Override
+    public String getMessage() {
+        return "Message from sdk in the sandbox process";
+    }
 }
