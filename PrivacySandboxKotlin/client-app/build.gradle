@@ -19,7 +19,7 @@ plugins {
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkPreview "TiramisuPrivacySandbox"
+    compileSdkPreview "UpsideDownCakePrivacySandbox"
 
     defaultConfig {
         applicationId "com.example.privacysandbox.client"

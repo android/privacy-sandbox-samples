@@ -18,12 +18,12 @@ plugins {
 }
 
 android {
-    compileSdkPreview "TiramisuPrivacySandbox"
+    compileSdkPreview "UpsideDownCakePrivacySandbox"
 
     defaultConfig {
         applicationId "com.example.adservices.samples.topics.sampleapp"
-        minSdkPreview "TiramisuPrivacySandbox"
-        targetSdkPreview "TiramisuPrivacySandbox"
+        minSdkPreview "UpsideDownCakePrivacySandbox"
+        targetSdkPreview "UpsideDownCakePrivacySandbox"
         versionCode 2
         versionName "1.01"
 

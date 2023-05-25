@@ -23,7 +23,7 @@ android {
             aidl.srcDirs = ['src']
         }
     }
-    compileSdkPreview "TiramisuPrivacySandbox"
+    compileSdkPreview "UpsideDownCakePrivacySandbox"
 
     defaultConfig {
         minSdkVersion 33

@@ -18,7 +18,7 @@ plugins {
 }
 
 android {
-    compileSdkPreview "TiramisuPrivacySandbox"
+    compileSdkPreview "UpsideDownCakePrivacySandbox"
 
     defaultConfig {
         applicationId "com.example.privacysandbox.client"

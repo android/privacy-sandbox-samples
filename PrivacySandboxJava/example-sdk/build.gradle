@@ -42,7 +42,7 @@ class FlavorPicker implements AttributeDisambiguationRule<ProductFlavorAttr> {
 }
 
 android {
-    compileSdkPreview 'TiramisuPrivacySandbox'
+    compileSdkPreview 'UpsideDownCakePrivacySandbox'
     minSdkPreview '33'
     namespace = "com.example.example-sdk"
 

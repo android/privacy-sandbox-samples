@@ -19,12 +19,12 @@ plugins {
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkPreview "TiramisuPrivacySandbox"
+    compileSdkPreview "UpsideDownCakePrivacySandbox"
 
     defaultConfig {
         applicationId "com.example.adservices.samples.fledge.sampleapp"
-        minSdkPreview "TiramisuPrivacySandbox"
-        targetSdkPreview "TiramisuPrivacySandbox"
+        minSdkPreview "UpsideDownCakePrivacySandbox"
+        targetSdkPreview "UpsideDownCakePrivacySandbox"
         versionCode 1
         versionName "1.0"
 

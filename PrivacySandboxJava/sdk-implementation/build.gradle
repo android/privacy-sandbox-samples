@@ -19,7 +19,7 @@ plugins {
 
 android {
     namespace 'com.example.sdkimplementation'
-    compileSdkPreview "TiramisuPrivacySandbox"
+    compileSdkPreview "UpsideDownCakePrivacySandbox"
 
     defaultConfig {
         minSdkVersion 33
