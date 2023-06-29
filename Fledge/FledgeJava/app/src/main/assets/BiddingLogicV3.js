@@ -37,8 +37,8 @@ function reportWin(ad_selection_signals, per_buyer_signals, signals_for_buyer,
   // Register beacons
   let clickUri = reporting_address + '/buyerInteraction?click';
   let viewUri = reporting_address + '/buyerInteraction?view';
-  registerAdBeacon('click', clickUri);
-  registerAdBeacon('view', viewUri);
+  const beacons = {'click': clickUri, 'view': viewUri}
+  registerAdBeacon(beacons)
   return {'status': 0, 'results': {'reporting_uri':
          reporting_address + '/reportWin?ca=' + custom_audience_reporting_signals.name} };
 }

@@ -19,7 +19,7 @@ import android.adservices.adselection.AdWithBid
 import android.adservices.adselection.BuyersDecisionLogic
 import android.adservices.adselection.ContextualAds
 import android.adservices.adselection.DecisionLogic
-import android.adservices.adselection.ReportInteractionRequest
+import android.adservices.adselection.ReportEventRequest
 import android.adservices.common.AdData
 import android.adservices.common.AdFilters
 import android.adservices.common.AdSelectionSignals
@@ -35,6 +35,7 @@ import android.widget.RadioGroup
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding
+import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import java.io.BufferedReader
 import java.io.IOException
@@ -421,26 +422,22 @@ class MainActivity : AppCompatActivity() {
 
     // Frequency Capped CA
     binding.freqCapCaSwitch.setOnCheckedChangeListener { compoundButton, isChecked ->
-      val adCounterKey = "key"
+      val adCounterKey = 1
 
       // Caps is exceeded after 2 impression events
       val keyedFrequencyCapImpression =
-        KeyedFrequencyCap.Builder().setAdCounterKey(adCounterKey)
-          .setMaxCount(1)
-          .setInterval(Duration.ofSeconds(10))
+        KeyedFrequencyCap.Builder(adCounterKey, 2, Duration.ofSeconds(10))
           .build()
 
       // Caps is exceeded after 1 click event
       val keyedFrequencyCapClick =
-        KeyedFrequencyCap.Builder().setAdCounterKey(adCounterKey)
-          .setMaxCount(0)
-          .setInterval(Duration.ofSeconds(10))
+        KeyedFrequencyCap.Builder(adCounterKey, 1, Duration.ofSeconds(10))
           .build()
       val filters = AdFilters.Builder()
         .setFrequencyCapFilters(FrequencyCapFilters.Builder()
-                                  .setKeyedFrequencyCapsForImpressionEvents(ImmutableSet.of(
+                                  .setKeyedFrequencyCapsForImpressionEvents(ImmutableList.of(
                                     keyedFrequencyCapImpression))
-                                  .setKeyedFrequencyCapsForClickEvents(ImmutableSet.of(
+                                  .setKeyedFrequencyCapsForClickEvents(ImmutableList.of(
                                     keyedFrequencyCapClick))
                                   .build()
         )
@@ -505,7 +502,7 @@ class MainActivity : AppCompatActivity() {
         adSelectionWrapper.reportInteraction(adSelectionId,
                                              clickInteraction,
                                              interactionData,
-                                             ReportInteractionRequest.FLAG_REPORTING_DESTINATION_SELLER or ReportInteractionRequest.FLAG_REPORTING_DESTINATION_BUYER
+                                             ReportEventRequest.FLAG_REPORTING_DESTINATION_SELLER or ReportEventRequest.FLAG_REPORTING_DESTINATION_BUYER
         ) { event: String? ->
           eventLog.writeEvent(
             event!!)

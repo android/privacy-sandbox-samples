@@ -51,7 +51,7 @@ class TestAdSelectionClient private constructor(
         request,
         mExecutor,
         object : OutcomeReceiver<Any?, java.lang.Exception> {
-          override fun onResult(ignoredResult: Any) {
+          override fun onResult(p0: Any?) {
             completer.set(null)
           }
 
@@ -77,7 +77,7 @@ class TestAdSelectionClient private constructor(
         request,
         mExecutor,
         object : OutcomeReceiver<Any?, java.lang.Exception> {
-          override fun onResult(ignoredResult: Any) {
+          override fun onResult(p0: Any?) {
             completer.set(null)
           }
 
@@ -100,7 +100,7 @@ class TestAdSelectionClient private constructor(
       mTestAdSelectionManager.resetAllAdSelectionConfigRemoteOverrides(
         mExecutor,
         object : OutcomeReceiver<Any?, Exception> {
-          override fun onResult(ignoredResult: Any) {
+          override fun onResult(p0: Any?) {
             completer.set(null)
           }
 
@@ -128,7 +128,7 @@ class TestAdSelectionClient private constructor(
         request,
         mExecutor,
         object : OutcomeReceiver<Any?, java.lang.Exception> {
-          override fun onResult(ignoredResult: Any) {
+          override fun onResult(p0: Any?) {
             completer.set(null)
           }
 
@@ -153,7 +153,7 @@ class TestAdSelectionClient private constructor(
       mTestAdSelectionManager.resetAllAdSelectionFromOutcomesConfigRemoteOverrides(
         mExecutor,
         object : OutcomeReceiver<Any?, Exception> {
-          override fun onResult(ignoredResult: Any) {
+          override fun onResult(p0: Any?) {
             completer.set(null)
           }
 

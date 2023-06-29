@@ -50,7 +50,7 @@ class TestCustomAudienceClient private constructor(
         request,
         mExecutor,
         object : OutcomeReceiver<Any?, java.lang.Exception?> {
-          override fun onResult(ignoredResult: Any) {
+          override fun onResult(p0: Any?) {
             completer.set(null)
           }
 
@@ -74,7 +74,7 @@ class TestCustomAudienceClient private constructor(
         request,
         mExecutor,
         object : OutcomeReceiver<Any?, java.lang.Exception?> {
-          override fun onResult(ignoredResult: Any) {
+          override fun onResult(p0: Any?) {
             completer.set(null)
           }
 
@@ -95,7 +95,7 @@ class TestCustomAudienceClient private constructor(
       mTestCustomAudienceManager.resetAllCustomAudienceOverrides(
         mExecutor,
         object : OutcomeReceiver<Any?, Exception?> {
-          override fun onResult(ignoredResult: Any) {
+          override fun onResult(p0: Any?) {
             completer.set(null)
           }
 

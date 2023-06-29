@@ -23,7 +23,7 @@ import android.adservices.adselection.AdSelectionManager;
 import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.adselection.ReportImpressionRequest;
 import android.adservices.adselection.SetAppInstallAdvertisersRequest;
-import android.adservices.adselection.ReportInteractionRequest;
+import android.adservices.adselection.ReportEventRequest;
 import android.adservices.adselection.UpdateAdCounterHistogramRequest;
 import android.content.Context;
 import android.os.OutcomeReceiver;
@@ -167,10 +167,10 @@ public class AdSelectionClient {
    */
   @NonNull
   public ListenableFuture<Void> reportInteraction(
-      @NonNull ReportInteractionRequest request) {
+      @NonNull ReportEventRequest request) {
     return CallbackToFutureAdapter.getFuture(
         completer -> {
-          mAdSelectionManager.reportInteraction(
+          mAdSelectionManager.reportEvent(
               request,
               mExecutor,
               new OutcomeReceiver<Object, Exception>() {

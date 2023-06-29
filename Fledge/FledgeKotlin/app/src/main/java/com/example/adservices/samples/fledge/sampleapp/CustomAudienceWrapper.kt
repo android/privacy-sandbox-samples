@@ -157,7 +157,7 @@ class CustomAudienceWrapper(
     statusReceiver: Consumer<String>,
     expiry: Instant?,
     filters: AdFilters?,
-    adCounterKeys: Set<String?>?,
+    adCounterKeys: Set<Int?>?,
   ) {
     try {
       joinCustomAudience(

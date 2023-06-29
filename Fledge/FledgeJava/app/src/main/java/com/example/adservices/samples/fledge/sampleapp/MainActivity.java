@@ -15,8 +15,8 @@
  */
 package com.example.adservices.samples.fledge.sampleapp;
 
-import static android.adservices.adselection.ReportInteractionRequest.FLAG_REPORTING_DESTINATION_BUYER;
-import static android.adservices.adselection.ReportInteractionRequest.FLAG_REPORTING_DESTINATION_SELLER;
+import static android.adservices.adselection.ReportEventRequest.FLAG_REPORTING_DESTINATION_BUYER;
+import static android.adservices.adselection.ReportEventRequest.FLAG_REPORTING_DESTINATION_SELLER;
 
 import android.adservices.adselection.AdWithBid;
 import android.adservices.adselection.BuyersDecisionLogic;
@@ -39,6 +39,7 @@ import android.widget.RadioGroup;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -395,26 +396,22 @@ public class MainActivity extends AppCompatActivity {
         });
         // Frequency Capped CA
         binding.freqCapCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
-            String adCounterKey = "key";
+            int adCounterKey = 1;
 
             // Caps is exceeded after 2 impression events
             KeyedFrequencyCap keyedFrequencyCapImpression =
-                new KeyedFrequencyCap.Builder().setAdCounterKey(adCounterKey)
-                    .setMaxCount(1)
-                    .setInterval(Duration.ofSeconds(10))
+                new KeyedFrequencyCap.Builder(adCounterKey, 2, Duration.ofSeconds(10))
                     .build();
 
             // Caps is exceeded after 1 click event
             KeyedFrequencyCap keyedFrequencyCapClick =
-                new KeyedFrequencyCap.Builder().setAdCounterKey(adCounterKey)
-                    .setMaxCount(0)
-                    .setInterval(Duration.ofSeconds(10))
+                new KeyedFrequencyCap.Builder(adCounterKey, 1, Duration.ofSeconds(10))
                     .build();
 
             AdFilters filters = new AdFilters.Builder()
                 .setFrequencyCapFilters(new FrequencyCapFilters.Builder()
-                    .setKeyedFrequencyCapsForImpressionEvents(ImmutableSet.of(keyedFrequencyCapImpression))
-                    .setKeyedFrequencyCapsForClickEvents(ImmutableSet.of(keyedFrequencyCapClick))
+                    .setKeyedFrequencyCapsForImpressionEvents(ImmutableList.of(keyedFrequencyCapImpression))
+                    .setKeyedFrequencyCapsForClickEvents(ImmutableList.of(keyedFrequencyCapClick))
                     .build()
                 )
                 .build();

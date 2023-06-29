@@ -15,8 +15,8 @@
  */
 package com.example.adservices.samples.fledge.sampleapp;
 
-import static android.adservices.adselection.ReportInteractionRequest.FLAG_REPORTING_DESTINATION_BUYER;
-import static android.adservices.adselection.ReportInteractionRequest.FLAG_REPORTING_DESTINATION_SELLER;
+import static android.adservices.adselection.ReportEventRequest.FLAG_REPORTING_DESTINATION_BUYER;
+import static android.adservices.adselection.ReportEventRequest.FLAG_REPORTING_DESTINATION_SELLER;
 import static android.adservices.common.FrequencyCapFilters.AD_EVENT_TYPE_CLICK;
 import static android.adservices.common.FrequencyCapFilters.AD_EVENT_TYPE_IMPRESSION;
 import static android.adservices.common.FrequencyCapFilters.AD_EVENT_TYPE_VIEW;
@@ -29,7 +29,7 @@ import android.adservices.adselection.AddAdSelectionOverrideRequest;
 import android.adservices.adselection.BuyersDecisionLogic;
 import android.adservices.adselection.ContextualAds;
 import android.adservices.adselection.ReportImpressionRequest;
-import android.adservices.adselection.ReportInteractionRequest;
+import android.adservices.adselection.ReportEventRequest;
 import android.adservices.adselection.SetAppInstallAdvertisersRequest;
 import android.adservices.adselection.UpdateAdCounterHistogramRequest;
 import android.adservices.common.AdSelectionSignals;
@@ -228,7 +228,7 @@ public class AdSelectionWrapper {
    * with a string describing how the reporting went.
    */
   public void reportInteraction(long adSelectionId, String interactionKey, String interactionData, int reportingDestinations, Consumer<String> statusReceiver) {
-    ReportInteractionRequest request = new ReportInteractionRequest(adSelectionId, interactionKey, interactionData, reportingDestinations);
+    ReportEventRequest request = new ReportEventRequest.Builder(adSelectionId, interactionKey, interactionData, reportingDestinations).build();
 
     Futures.addCallback(mAdClient.reportInteraction(request),
         new FutureCallback<Void>() {
@@ -255,10 +255,7 @@ public class AdSelectionWrapper {
   public void updateAdCounterHistogram(long adSelectionId, int adEventType, Consumer<String> statusReceiver) {
     AdTechIdentifier callerAdTech = mAdSelectionConfig.getSeller();
 
-    UpdateAdCounterHistogramRequest request = new UpdateAdCounterHistogramRequest.Builder()
-        .setAdSelectionId(adSelectionId)
-        .setAdEventType(adEventType)
-        .setCallerAdTech(callerAdTech)
+    UpdateAdCounterHistogramRequest request = new UpdateAdCounterHistogramRequest.Builder(adSelectionId, adEventType, callerAdTech)
         .build();
 
     Futures.addCallback(mAdClient.updateAdCounterHistogram(request),

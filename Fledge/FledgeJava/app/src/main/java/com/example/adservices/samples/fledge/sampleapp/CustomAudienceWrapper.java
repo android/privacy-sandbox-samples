@@ -139,7 +139,7 @@ public class CustomAudienceWrapper {
    * string indicating the outcome of the call.
    */
   public void joinFilteringCa(String name, AdTechIdentifier buyer, Uri biddingUri, Uri renderUri, Uri dailyUpdateUri,
-      Uri trustedBiddingUri, Consumer<String> statusReceiver, Instant expiry, AdFilters filters, Set<String> adCounterKeys) {
+      Uri trustedBiddingUri, Consumer<String> statusReceiver, Instant expiry, AdFilters filters, Set<Integer> adCounterKeys) {
     try {
       joinCustomAudience(
           new CustomAudience.Builder()

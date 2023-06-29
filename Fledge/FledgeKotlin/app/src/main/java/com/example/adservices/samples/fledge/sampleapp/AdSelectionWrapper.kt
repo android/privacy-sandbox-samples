@@ -21,7 +21,7 @@ import android.adservices.adselection.AddAdSelectionOverrideRequest
 import android.adservices.adselection.BuyersDecisionLogic
 import android.adservices.adselection.ContextualAds
 import android.adservices.adselection.ReportImpressionRequest
-import android.adservices.adselection.ReportInteractionRequest
+import android.adservices.adselection.ReportEventRequest
 import android.adservices.adselection.SetAppInstallAdvertisersRequest
 import android.adservices.adselection.UpdateAdCounterHistogramRequest
 import android.adservices.common.AdSelectionSignals
@@ -123,7 +123,7 @@ class AdSelectionWrapper(
                             reportInteraction(adSelectionId,
                                               viewInteraction,
                                               interactionData,
-                                              ReportInteractionRequest.FLAG_REPORTING_DESTINATION_SELLER or ReportInteractionRequest.FLAG_REPORTING_DESTINATION_BUYER,
+                                              ReportEventRequest.FLAG_REPORTING_DESTINATION_SELLER or ReportEventRequest.FLAG_REPORTING_DESTINATION_BUYER,
                                               statusReceiver)
                           }
 
@@ -176,9 +176,7 @@ class AdSelectionWrapper(
     reportingDestinations: Int,
     statusReceiver: Consumer<String>,
   ) {
-    val request = ReportInteractionRequest(adSelectionId,
-                                           interactionKey,
-                                           interactionData, reportingDestinations)
+    val request = ReportEventRequest.Builder(adSelectionId, interactionKey, interactionData, reportingDestinations).build();
     Futures.addCallback(adClient.reportInteraction(request),
                         object : FutureCallback<Void?> {
                           override fun onSuccess(unused: Void?) {
@@ -209,11 +207,7 @@ class AdSelectionWrapper(
   ) {
     val callerAdTech: AdTechIdentifier = adSelectionConfig.seller
 
-    val request = UpdateAdCounterHistogramRequest.Builder()
-      .setAdSelectionId(adSelectionId)
-      .setAdEventType(adEventType)
-      .setCallerAdTech(callerAdTech)
-      .build()
+    val request = UpdateAdCounterHistogramRequest.Builder(adSelectionId, adEventType, callerAdTech).build()
     Futures.addCallback(adClient.updateAdCounterHistogram(request),
                         object : FutureCallback<Void?> {
                           override fun onSuccess(unused: Void?) {

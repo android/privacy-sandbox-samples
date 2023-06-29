@@ -28,8 +28,8 @@ function reportResult(ad_selection_config, render_uri, bid, contextual_signals) 
   // Register beacons
   let clickUri = reporting_address + '/sellerInteraction?click';
   let viewUri = reporting_address + '/sellerInteraction?view';
-  registerAdBeacon('click', clickUri);
-  registerAdBeacon('view', viewUri);
+  const beacons = {'click': clickUri, 'view': viewUri}
+  registerAdBeacon(beacons)
   return {'status': 0, 'results': {'signals_for_buyer': '{"signals_for_buyer" : 1}'
           , 'reporting_uri': reporting_address + '/reportResult?render_uri='
             + render_uri + '?bid=' + bid } };
