@@ -136,6 +136,36 @@
       android:layout_marginStart="5dp"
       android:layout_marginEnd="5dp">
     <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/shoes_server_auction_ca_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:checked="false"
+        android:text="@string/ca_switch_shoes_server_auction_text"
+        android:textSize="11sp" />
+  </RelativeLayout>
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_weight=".10"
+      android:layout_height="0dp"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/shirts_server_auction_ca_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:checked="false"
+        android:text="@string/ca_switch_shirts_server_auction_text"
+        android:textSize="11sp" />
+  </RelativeLayout>
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_weight=".10"
+      android:layout_height="0dp"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
+    <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/short_expiry_ca_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -278,13 +308,6 @@
       android:orientation="horizontal"
       android:layout_marginStart="5dp"
       android:layout_marginEnd="5dp">
-    <Button
-        android:id="@+id/run_ads_button"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight=".45"
-        android:textSize="11sp"
-        android:text="@string/run_ads_button_text" />
     <CheckBox
         android:id="@+id/no_buyers"
         android:layout_width="wrap_content"
@@ -292,6 +315,21 @@
         android:checked="false"
         android:textSize="11sp"
         android:text="@string/no_buyers_text" />
+    <CheckBox
+        android:id="@+id/auction_server"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:textSize="11sp"
+        android:paddingRight="6dp"
+        android:text="@string/auction_server_text" />
+    <Button
+        android:id="@+id/run_ads_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight=".45"
+        android:textSize="11sp"
+        android:text="@string/run_ads_button_text" />
   </LinearLayout>
   <LinearLayout
       android:layout_width="match_parent"

@@ -3,9 +3,7 @@ package com.example.adservices.samples.fledge.WaterfallMediationHelpers;
 import static com.example.adservices.samples.fledge.WaterfallMediationHelpers.Constants.BIDDING_LOGIC_JS;
 import static com.example.adservices.samples.fledge.WaterfallMediationHelpers.Constants.BIDDING_URI_SUFFIX;
 import static com.example.adservices.samples.fledge.WaterfallMediationHelpers.Constants.BID_SIGNALS_FORMAT;
-import static com.example.adservices.samples.fledge.WaterfallMediationHelpers.Constants.DAILY_URI_SUFFIX;
 import static com.example.adservices.samples.fledge.WaterfallMediationHelpers.Constants.DEFAULT_BASE_URI_FORMAT;
-import static com.example.adservices.samples.fledge.WaterfallMediationHelpers.Constants.RENDER_URI_SUFFIX;
 import static com.example.adservices.samples.fledge.WaterfallMediationHelpers.Constants.TAG;
 import static com.example.adservices.samples.fledge.WaterfallMediationHelpers.Constants.TRUSTED_BIDDING_URI_SUFFIX;
 
@@ -25,7 +23,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import org.json.JSONObject;
 

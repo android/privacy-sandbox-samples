@@ -15,6 +15,8 @@
  */
 package com.example.adservices.samples.fledge.sampleapp;
 
+import static com.example.adservices.samples.fledge.sampleapp.MainActivity.TAG;
+
 import android.adservices.common.AdData;
 import android.adservices.common.AdFilters;
 import android.adservices.common.AdSelectionSignals;
@@ -32,7 +34,10 @@ import com.example.adservices.samples.fledge.clients.TestCustomAudienceClient;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -97,29 +102,35 @@ public class CustomAudienceWrapper {
   public void joinCa(String name, AdTechIdentifier buyer, Uri biddingUri, Uri renderUri, Uri dailyUpdateUri,
       Uri trustedBiddingUri, Consumer<String> statusReceiver, Instant expiry, AdFilters filters) {
     try {
+      AdData adData = getAdDataBuilder(renderUri)
+          .setAdFilters(filters)
+          .build();
       joinCustomAudience(
-          new CustomAudience.Builder()
-              .setBuyer(buyer)
-              .setName(name)
-              .setDailyUpdateUri(dailyUpdateUri)
-              .setBiddingLogicUri(biddingUri)
-              .setAds(Collections.singletonList(new AdData.Builder()
-                  .setRenderUri(renderUri)
-                  .setMetadata(new JSONObject().toString())
-                  .setAdFilters(filters)
-                  .build()))
-              .setActivationTime(Instant.now())
-              .setExpirationTime(expiry)
-              .setTrustedBiddingData(new TrustedBiddingData.Builder()
-                  .setTrustedBiddingKeys(Collections.singletonList("key"))
-                  .setTrustedBiddingUri(trustedBiddingUri).build())
-              .setUserBiddingSignals(AdSelectionSignals.EMPTY)
+          getCustomAudienceBuilder(name, buyer, biddingUri, adData, dailyUpdateUri, trustedBiddingUri, expiry)
               .build(),
           statusReceiver);
     } catch (Exception e) {
       statusReceiver.accept("Got the following exception when trying to join " + name
           + " custom audience: " + e);
-      Log.e(MainActivity.TAG, "Exception calling joinCustomAudience", e);
+      Log.e(TAG, "Exception calling joinCustomAudience", e);
+    }
+  }
+
+  public void joinServerAuctionCa(String name, AdTechIdentifier buyer, Uri biddingUri,
+      Uri renderUri, Uri dailyUpdateUri, Uri trustedBiddingUri, Consumer<String> statusReceiver,
+      Instant expiry, String adRenderId) {
+    try {
+      AdData adData = getAdDataBuilder(renderUri).setAdRenderId(adRenderId).build();
+      Log.v(TAG, String.format("AdRenderId %s is set for ad render uri %s", adRenderId, renderUri));
+      joinCustomAudience(
+          getCustomAudienceBuilder(
+              name, buyer, biddingUri, adData, dailyUpdateUri, trustedBiddingUri, expiry)
+              .build(),
+          statusReceiver);
+    } catch (Exception e) {
+      statusReceiver.accept("Got the following exception when trying to join " + name
+          + " custom audience: " + e);
+      Log.e(TAG, "Exception calling joinCustomAudience", e);
     }
   }
 
@@ -164,7 +175,7 @@ public class CustomAudienceWrapper {
     } catch (Exception e) {
       statusReceiver.accept("Got the following exception when trying to join " + name
           + " custom audience: " + e);
-      Log.e(MainActivity.TAG, "Exception calling joinCustomAudience", e);
+      Log.e(TAG, "Exception calling joinCustomAudience", e);
     }
   }
 
@@ -192,7 +203,7 @@ public class CustomAudienceWrapper {
     } catch (Exception e) {
       statusReceiver.accept("Got the following exception when trying to join " + name
           + " custom audience: " + e);
-      Log.e(MainActivity.TAG, "Exception calling joinCustomAudience", e);
+      Log.e(TAG, "Exception calling joinCustomAudience", e);
     }
   }
 
@@ -223,7 +234,7 @@ public class CustomAudienceWrapper {
             } catch (Exception e) {
                 statusReceiver.accept("Got the following exception when trying to fetch and join"
                         + name + " custom audience: " + e);
-                Log.e(MainActivity.TAG, "Exception calling fetchAndJoinCustomAudience", e);
+                Log.e(TAG, "Exception calling fetchAndJoinCustomAudience", e);
             }
     }
 
@@ -251,7 +262,7 @@ public class CustomAudienceWrapper {
     } catch (Exception e) {
       statusReceiver.accept("Got the following exception when trying to leave " + name
           + " custom audience: " + e);
-      Log.e(MainActivity.TAG, "Exception calling leaveCustomAudience", e);
+      Log.e(TAG, "Exception calling leaveCustomAudience", e);
     }
   }
 
@@ -290,7 +301,7 @@ public class CustomAudienceWrapper {
     } catch (Exception e) {
       statusReceiver.accept("Got the following exception when trying to add override for " + name
           + " custom audience: " + e);
-      Log.e(MainActivity.TAG, "Exception calling overrideCustomAudienceRemoteInfo", e);
+      Log.e(TAG, "Exception calling overrideCustomAudienceRemoteInfo", e);
     }
   }
 
@@ -314,7 +325,7 @@ public class CustomAudienceWrapper {
           }, mExecutor);
     } catch (Exception e) {
       statusReceiver.accept("Got the following exception when trying to reset all CA overrides: " + e);
-      Log.e(MainActivity.TAG, "Exception calling resetAllCustomAudienceOverrides", e);
+      Log.e(TAG, "Exception calling resetAllCustomAudienceOverrides", e);
     }
   }
 
@@ -322,14 +333,38 @@ public class CustomAudienceWrapper {
     Futures.addCallback(mCaClient.joinCustomAudience(ca),
         new FutureCallback<Void>() {
           public void onSuccess(Void unused) {
-            statusReceiver.accept("Joined " + ca.getName() + " custom audience");
+            statusReceiver.accept("Joined " + ca.getName() + " custom audience with buyer '" + ca.getBuyer() + "'");
           }
 
           public void onFailure(@NonNull Throwable e) {
-            statusReceiver.accept("Error when joining " + ca.getName() + " custom audience: "
+            statusReceiver.accept("Error when joining " + ca.getName() + " custom audience with buyer '" + ca.getBuyer() + "': "
                 + e.getMessage());
-            Log.e(MainActivity.TAG, "Exception during CA join process ", e);
+            Log.e(TAG, "Exception during CA join process ", e);
           }
         }, mExecutor);
+  }
+
+  private AdData.Builder getAdDataBuilder(Uri renderUri) {
+    return new AdData.Builder()
+        .setRenderUri(renderUri)
+        .setMetadata(new JSONObject().toString());
+  }
+
+  private CustomAudience.Builder getCustomAudienceBuilder(
+      String name, AdTechIdentifier buyer, Uri biddingUri,
+      AdData adData, Uri dailyUpdateUri, Uri trustedBiddingUri,
+      Instant expiry) {
+    return new CustomAudience.Builder()
+        .setBuyer(buyer)
+        .setName(name)
+        .setDailyUpdateUri(dailyUpdateUri)
+        .setBiddingLogicUri(biddingUri)
+        .setAds(Collections.singletonList(adData))
+        .setActivationTime(Instant.now())
+        .setExpirationTime(expiry)
+        .setTrustedBiddingData(new TrustedBiddingData.Builder()
+            .setTrustedBiddingKeys(Arrays.asList(name, buyer.toString(), "key1", "key2"))
+            .setTrustedBiddingUri(trustedBiddingUri).build())
+        .setUserBiddingSignals(AdSelectionSignals.EMPTY);
   }
 }

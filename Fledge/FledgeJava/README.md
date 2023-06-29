@@ -52,23 +52,37 @@ adb shell device_config put adservices global_kill_switch false
 adb shell setprop debug.adservices.disable_fledge_enrollment_check true
 adb shell device_config put adservices fledge_custom_audience_service_kill_switch false
 adb shell device_config put adservices fledge_select_ads_kill_switch false
+adb shell device_config put adservices fledge_auction_server_kill_switch false
 ```
 
 Once the above steps are completed, you must launch with the below command:
 
 1. For single-SSP ad selection and reporting
-```shell
-adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity -e baseUrl [base server url] 
-```
-
+    ```shell
+    adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity \
+    -e baseUrl [base server url] 
+    ```
 2. For Waterfall mediation flow
-```shell
-adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.WaterfallMediationActivity \
--e mediationNetwork [waterfall_mediation_network_url] \
--e networkA [waterfall_network_A_url] \
--e networkB [waterfall_network_B_url] \
--e networkC [waterfall_network_C_url]
-```
+    ```shell
+    adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.WaterfallMediationActivity \
+    -e mediationNetwork [waterfall_mediation_network_url] \
+    -e networkA [waterfall_network_A_url] \
+    -e networkB [waterfall_network_B_url] \
+    -e networkC [waterfall_network_C_url]
+    ```
+3. For ad selection on Auction Server
+   1. Set your key value server endpoint
+    ```shell
+    adb shell "device_config put adservices ad_selection_data_auction_key_fetch_uri [your key fetch endpoint uri]"
+    ```
+   2. Start the app with auction server configurations
+    ```shell
+    adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity \
+    -e baseUrl [base server url] \
+    -e auctionServerSellerSfeUrl [auction server seller front end uri] \
+    -e auctionServerSeller [auction server seller name] \
+    -e auctionServerBuyer [auction server buyer name]
+    ```
 
 This command will inform the app where your server endpoints are running.
 

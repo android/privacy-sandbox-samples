@@ -27,7 +27,6 @@
   <string name="override_off">OFF</string>
   <string name="override_v2_bidding_logic">V2 Bidding Logic</string>
   <string name="override_v3_bidding_logic">V3 Bidding Logic</string>
-  <string name="override_off_prebuilt">OFF-Prebuilt</string>
   <string name="ca_switch_on">JOINED</string>
   <string name="ca_switch_off">LEFT</string>
   <string name="ca_switch_shoes_text">Join Shoes CA</string>
@@ -56,4 +55,7 @@
   <string name="use_prebuilt_for_scoring">Use Prebuilt Uri for scoring that picks highest bid\n(not available when overrides are enabled)</string>
   <string name="no_buyers_text">No buyers</string>
   <string name="fetch_and_join_ca_text">Fetch and Join Hats CA</string>
+  <string name="auction_server_text">Auction server</string>
+  <string name="ca_switch_shoes_server_auction_text">Auction server Shoes CA</string>
+  <string name="ca_switch_shirts_server_auction_text">Auction server Shirts CA</string>
 </resources>

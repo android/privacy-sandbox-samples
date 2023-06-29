@@ -39,6 +39,7 @@ import android.widget.RadioGroup;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.BufferedReader;
@@ -47,11 +48,14 @@ import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.json.JSONObject;
 
 /**
@@ -59,6 +63,11 @@ import org.json.JSONObject;
  */
 @RequiresApi(api = 34)
 public class MainActivity extends AppCompatActivity {
+    private static final String SHOES_SERVER_AUCTION_CA_NAME = "shoes_server";
+    private static final String SHIRTS_SERVER_AUCTION_CA_NAME = "shirts_server";
+    // Server Auction Custom Audience Render Id
+    private static final String SHOES_SERVER_AUCTION_AD_RENDER_ID = "1";
+    private static final String SHIRTS_SERVER_AUCTION_AD_RENDER_ID = "2";
 
     // Log tag
     public static final String TAG = "FledgeSample";
@@ -99,6 +108,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String NO_FILTER_RENDER_SUFFIX = "/contextual_ad";
     private static final String APP_INSTALL_RENDER_SUFFIX = "/app_install_contextual_ad";
 
+    // Intents
+    private static final String BASE_URL_INTENT = "baseUrl";
+    private static final String AUCTION_SERVER_SELLER_SFE_URL_INTENT = "auctionServerSellerSfeUrl";
+    private static final String AUCTION_SERVER_SELLER_INTENT = "auctionServerSeller";
+    private static final String AUCTION_SERVER_BUYER_INTENT = "auctionServerBuyer";
+
     public static final String AD_SELECTION_PREBUILT_SCHEMA = "ad-selection-prebuilt";
     public static final String AD_SELECTION_USE_CASE = "ad-selection";
     public static final String AD_SELECTION_HIGHEST_BID_WINS = "highest-bid-wins";
@@ -122,6 +137,10 @@ public class MainActivity extends AppCompatActivity {
     private Uri mContextualLogicUri;
     private AdTechIdentifier mBuyer;
     private AdTechIdentifier mSeller;
+    private Uri mAuctionServerSellerSfeUri;
+    private AdTechIdentifier mAuctionServerSeller;
+    private AdTechIdentifier mAuctionServerBuyer;
+
     private AdSelectionWrapper adWrapper;
     private CustomAudienceWrapper caWrapper;
     private String overrideDecisionJS;
@@ -149,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
         eventLog = new EventLogManager(binding.eventLog);
 
         // Same for override and non-overrides flows
-        mBaseUriString = getIntentOrError("baseUrl", eventLog, MISSING_FIELD_STRING_FORMAT_RESTART_APP);
+        mBaseUriString = getIntentOrError(BASE_URL_INTENT, eventLog, MISSING_FIELD_STRING_FORMAT_RESTART_APP);
         mBiddingLogicUri = Uri.parse(mBaseUriString + "/bidding");
         mScoringLogicUri = Uri.parse(mBaseUriString + "/scoring");
         mTrustedDataUri = Uri.parse(mBiddingLogicUri + "/trusted");
@@ -157,9 +176,13 @@ public class MainActivity extends AppCompatActivity {
         mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
         mSeller = resolveAdTechIdentifier(mScoringLogicUri);
 
+        mAuctionServerSellerSfeUri = auctionServerSellerSfeUriOrEmpty();
+        mAuctionServerSeller = auctionServerSellerOrEmpty();
+        mAuctionServerBuyer = auctionServerBuyerOrEmpty();
+
         try {
             // Get override reporting URI
-            String reportingUriString = getIntentOrError("baseUrl", eventLog, MISSING_FIELD_STRING_FORMAT_RESTART_APP);
+            String reportingUriString = mBaseUriString;
 
             // Replace override URIs in JS
             overrideDecisionJS = replaceReportingURI(assetFileToString(DECISION_LOGIC_FILE),
@@ -200,6 +223,9 @@ public class MainActivity extends AppCompatActivity {
             // Set up No buyers ad selection
             binding.noBuyers.setOnCheckedChangeListener((ignored1, ignored2) -> toggleNoBuyersCheckbox());
 
+            // Set up Auction Server ad selection
+            binding.auctionServer.setOnCheckedChangeListener((ignored1, ignored2) -> toggleAuctionServerCheckbox());
+
             // Set package names
             setupPackageNames();
         } catch (Exception e) {
@@ -236,6 +262,30 @@ public class MainActivity extends AppCompatActivity {
         eventLog.writeEvent("No Buyers check toggled to " + binding.noBuyers.isChecked());
     }
 
+    private void toggleAuctionServerCheckbox() {
+        if (mAuctionServerSellerSfeUri == Uri.EMPTY) {
+            eventLog.writeEvent(String.format("To enable server auctions you have to pass %s intent when starting the app.",
+                AUCTION_SERVER_SELLER_SFE_URL_INTENT));
+            binding.auctionServer.setChecked(false);
+            return;
+        }
+        if (mAuctionServerSeller.toString().isEmpty()) {
+            eventLog.writeEvent(String.format("To enable server auctions you have to pass %s intent when starting the app.",
+                AUCTION_SERVER_SELLER_INTENT));
+            binding.auctionServer.setChecked(false);
+            return;
+        }
+        if (mAuctionServerBuyer.toString().isEmpty()) {
+            eventLog.writeEvent(String.format("To enable server auctions you have to pass %s intent when starting the app.",
+                AUCTION_SERVER_BUYER_INTENT));
+            binding.auctionServer.setChecked(false);
+            return;
+        }
+        Log.i(TAG, "Auction Server check toggled to " + binding.auctionServer.isChecked());
+        setAdSelectionWrapper();
+        eventLog.writeEvent("Auction Server check toggled to " + binding.auctionServer.isChecked());
+    }
+
     private void setupPackageNames() {
         binding.contextualAiDataInput.setText(context.getPackageName());
         binding.caAiDataInput.setText(context.getPackageName());
@@ -246,8 +296,14 @@ public class MainActivity extends AppCompatActivity {
             Collections.emptyList() : Collections.singletonList(mBuyer);
         adWrapper = new AdSelectionWrapper(
             buyers, mSeller, mScoringLogicUri, mTrustedDataUri, contextualAds, binding.usePrebuiltForScoring.isChecked(), Uri.parse(mBaseUriString + "/scoring"), context, EXECUTOR);
-        binding.runAdsButton.setOnClickListener(v ->
-            adWrapper.runAdSelection(eventLog::writeEvent, binding.adSpace::setText));
+
+        if (binding.auctionServer.isChecked()) {
+            binding.runAdsButton.setOnClickListener(
+                v -> adWrapper.runAdSelectionOnAuctionServer(mAuctionServerSellerSfeUri, mAuctionServerSeller, mAuctionServerBuyer, eventLog::writeEvent, binding.adSpace::setText));
+        } else {
+            binding.runAdsButton.setOnClickListener(
+                v -> adWrapper.runAdSelection(eventLog::writeEvent, binding.adSpace::setText));
+        }
     }
 
     private void toggleOverrideSwitch(RadioGroup buttonView, int checkedId) {
@@ -344,54 +400,80 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupCASwitches(CustomAudienceWrapper caWrapper, EventLogManager eventLog, ActivityMainBinding binding, Uri biddingUri, Context context) {
+        AdTechIdentifier buyer = AdTechIdentifier.fromString(biddingUri.getHost());
         // Shoes
         binding.shoesCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             if (isChecked) {
-                caWrapper.joinCa(SHOES_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                Log.i(TAG, "joining SHOES CA with buyer: " + buyer);
+                caWrapper.joinCa(SHOES_CA_NAME, buyer, biddingUri,
                     Uri.parse(biddingUri + "/render_" + SHOES_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
                     eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY));
             } else {
-                caWrapper.leaveCa(SHOES_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+                Log.i(TAG, "leaving SHOES CA with buyer: " + buyer);
+                caWrapper.leaveCa(SHOES_CA_NAME, context.getPackageName(), buyer, eventLog::writeEvent);
             }
         });
         // Shirts
         binding.shirtsCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             if (isChecked) {
-                caWrapper.joinCa(SHIRTS_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                Log.i(TAG, "joining SHIRTS CA with buyer: " + buyer);
+                caWrapper.joinCa(SHIRTS_CA_NAME, buyer, biddingUri,
                     Uri.parse(biddingUri + "/render_" + SHIRTS_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
                     eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY));
             } else {
-                caWrapper.leaveCa(SHIRTS_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+                Log.i(TAG, "leaving SHIRTS CA with buyer: " + buyer);
+                caWrapper.leaveCa(SHIRTS_CA_NAME, context.getPackageName(), buyer, eventLog::writeEvent);
+            }
+        });
+        // Server Auction CA
+        binding.shoesServerAuctionCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            if (isChecked) {
+                Uri serverAuctionBiddingUri = biddingUri.buildUpon().authority(mAuctionServerBuyer.toString()).build();
+                caWrapper.joinServerAuctionCa(SHOES_SERVER_AUCTION_CA_NAME, AdTechIdentifier.fromString(serverAuctionBiddingUri.getHost()), serverAuctionBiddingUri,
+                    Uri.parse(serverAuctionBiddingUri + "/render_" + SHOES_SERVER_AUCTION_CA_NAME), Uri.parse(serverAuctionBiddingUri + "/daily"), Uri.parse(serverAuctionBiddingUri + "/trusted"),
+                    eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY), SHOES_SERVER_AUCTION_AD_RENDER_ID );
+            } else {
+                caWrapper.leaveCa(SHOES_SERVER_AUCTION_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+            }
+        });
+        binding.shirtsServerAuctionCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            if (isChecked) {
+                Uri serverAuctionBiddingUri = biddingUri.buildUpon().authority(mAuctionServerBuyer.toString()).build();
+                caWrapper.joinServerAuctionCa(SHIRTS_SERVER_AUCTION_CA_NAME, AdTechIdentifier.fromString(serverAuctionBiddingUri.getHost()), serverAuctionBiddingUri,
+                    Uri.parse(serverAuctionBiddingUri + "/render_" + SHIRTS_SERVER_AUCTION_CA_NAME), Uri.parse(serverAuctionBiddingUri + "/daily"), Uri.parse(serverAuctionBiddingUri + "/trusted"),
+                    eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY), SHIRTS_SERVER_AUCTION_AD_RENDER_ID );
+            } else {
+                caWrapper.leaveCa(SHIRTS_SERVER_AUCTION_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
             }
         });
         // Short expiring CA
         binding.shortExpiryCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             if (isChecked) {
-                caWrapper.joinCa(SHORT_EXPIRING_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                caWrapper.joinCa(SHORT_EXPIRING_CA_NAME, buyer, biddingUri,
                     Uri.parse(biddingUri + "/render_" + SHORT_EXPIRING_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
                     eventLog::writeEvent, calcExpiry(THIRTY_SECONDS_EXPIRY));
             } else {
-                caWrapper.leaveCa(SHORT_EXPIRING_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+                caWrapper.leaveCa(SHORT_EXPIRING_CA_NAME, context.getPackageName(), buyer, eventLog::writeEvent);
             }
         });
         // Invalid fields CA
         binding.invalidFieldsCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             if (isChecked) {
-                caWrapper.joinEmptyFieldsCa(INVALID_FIELD_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                caWrapper.joinEmptyFieldsCa(INVALID_FIELD_CA_NAME, buyer, biddingUri,
                     Uri.parse(biddingUri + "/daily"), eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY));
             } else {
-                caWrapper.leaveCa(INVALID_FIELD_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+                caWrapper.leaveCa(INVALID_FIELD_CA_NAME, context.getPackageName(), buyer, eventLog::writeEvent);
             }
         });
         // App Install CA
         binding.appInstallCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             if (isChecked) {
-                caWrapper.joinCa(APP_INSTALL_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                caWrapper.joinCa(APP_INSTALL_CA_NAME, buyer, biddingUri,
                     Uri.parse(biddingUri + "/render_" + APP_INSTALL_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
                     eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY), getAppInstallFilterForPackage(binding.caAiDataInput.getText().toString()));
                 binding.caAiDataInput.setEnabled(false);
             } else {
-                caWrapper.leaveCa(APP_INSTALL_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+                caWrapper.leaveCa(APP_INSTALL_CA_NAME, context.getPackageName(), buyer, eventLog::writeEvent);
                 binding.caAiDataInput.setEnabled(true);
             }
         });
@@ -417,22 +499,22 @@ public class MainActivity extends AppCompatActivity {
                 )
                 .build();
             if (isChecked) {
-                caWrapper.joinFilteringCa(FREQ_CAP_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingUri,
+                caWrapper.joinFilteringCa(FREQ_CAP_CA_NAME, buyer, biddingUri,
                     Uri.parse(biddingUri + "/render_" + FREQ_CAP_CA_NAME), Uri.parse(biddingUri + "/daily"), Uri.parse(biddingUri + "/trusted"),
                     eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY), filters, ImmutableSet.of(adCounterKey));
             } else {
-                caWrapper.leaveCa(FREQ_CAP_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+                caWrapper.leaveCa(FREQ_CAP_CA_NAME, context.getPackageName(), buyer, eventLog::writeEvent);
             }
         });
         // Fetch CA
         binding.fetchAndJoinCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
             if (isChecked) {
                 caWrapper.fetchAndJoinCa(
-                        Uri.parse(mBaseUriString + "/fetch/ca"),
-                        HATS_CA_NAME,
-                        Instant.now(),
-                        calcExpiry(ONE_DAY_EXPIRY),
-                        AdSelectionSignals.EMPTY, eventLog::writeEvent);
+                    Uri.parse(mBaseUriString + "/fetch/ca"),
+                    HATS_CA_NAME,
+                    Instant.now(),
+                    calcExpiry(ONE_DAY_EXPIRY),
+                    AdSelectionSignals.EMPTY, eventLog::writeEvent);
             } else {
                 caWrapper.leaveCa(HATS_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
             }
@@ -541,7 +623,37 @@ public class MainActivity extends AppCompatActivity {
      * @param uri Uri to resolve
      */
     private AdTechIdentifier resolveAdTechIdentifier(Uri uri) {
+        if (uri == Uri.EMPTY) {
+            return AdTechIdentifier.fromString("");
+        }
         return AdTechIdentifier.fromString(uri.getHost());
+    }
+
+    private Uri auctionServerSellerSfeUriOrEmpty() {
+        String sfeUriString;
+        if ((sfeUriString = getIntentOrNull(AUCTION_SERVER_SELLER_SFE_URL_INTENT)) != null) {
+            return Uri.parse(sfeUriString);
+        } else {
+            return Uri.EMPTY;
+        }
+    }
+
+    private AdTechIdentifier auctionServerSellerOrEmpty() {
+        String auctionServerSeller;
+        if ((auctionServerSeller = getIntentOrNull(AUCTION_SERVER_SELLER_INTENT)) != null) {
+            return AdTechIdentifier.fromString(auctionServerSeller);
+        } else {
+            return AdTechIdentifier.fromString("");
+        }
+    }
+
+    private AdTechIdentifier auctionServerBuyerOrEmpty() {
+        String auctionServerBuyer;
+        if ((auctionServerBuyer = getIntentOrNull(AUCTION_SERVER_BUYER_INTENT)) != null) {
+            return AdTechIdentifier.fromString(auctionServerBuyer);
+        } else {
+            return AdTechIdentifier.fromString("");
+        }
     }
 
     private Uri getPrebuiltUriForScoringPickHighest() {
@@ -579,5 +691,15 @@ public class MainActivity extends AppCompatActivity {
                 .setPackageNames(Collections.singleton(packageName))
                 .build())
             .build();
+    }
+
+    private String getIntentOrNull(String intent) {
+        String value = getIntent().getStringExtra(intent);
+        if (Objects.isNull(value)) {
+            Log.e(TAG, String.format(
+                "Intent %s is not available, returning null. This can cause problems later.",
+                intent));
+        }
+        return value;
     }
 }

@@ -28,6 +28,8 @@ import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.adselection.AddAdSelectionOverrideRequest;
 import android.adservices.adselection.BuyersDecisionLogic;
 import android.adservices.adselection.ContextualAds;
+import android.adservices.adselection.GetAdSelectionDataRequest;
+import android.adservices.adselection.PersistAdSelectionResultRequest;
 import android.adservices.adselection.ReportImpressionRequest;
 import android.adservices.adselection.ReportEventRequest;
 import android.adservices.adselection.SetAppInstallAdvertisersRequest;
@@ -37,14 +39,24 @@ import android.adservices.common.AdTechIdentifier;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
+import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import com.example.adservices.samples.fledge.ServerAuctionHelpers.BiddingAuctionServerClient;
+import com.example.adservices.samples.fledge.ServerAuctionHelpers.SelectAdsResponse;
 import com.example.adservices.samples.fledge.clients.AdSelectionClient;
 import com.example.adservices.samples.fledge.clients.TestAdSelectionClient;
+import com.google.common.io.BaseEncoding;
+import com.google.common.util.concurrent.FluentFuture;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
@@ -64,6 +76,7 @@ public class AdSelectionWrapper {
   private final boolean mUsePrebuiltForScoring;
   private final Uri mOriginalScoringUri;
   private final Executor mExecutor;
+  private final Context mContext;
 
   /**
    * Initializes the ad selection wrapper with a specific seller, list of buyers, and decision
@@ -93,6 +106,7 @@ public class AdSelectionWrapper {
     mUsePrebuiltForScoring = usePrebuiltForScoring;
     mOriginalScoringUri = originalScoringUri;
     mExecutor = executor;
+    mContext = context;
   }
 
   /**
@@ -127,6 +141,7 @@ public class AdSelectionWrapper {
   public void runAdSelection(Consumer<String> statusReceiver, Consumer<String> renderUriReceiver) {
     Log.i(TAG, "Running ad selection with scoring uri: " + mAdSelectionConfig.getDecisionLogicUri());
     Log.i(TAG, "Running ad selection with buyers: " + mAdSelectionConfig.getCustomAudienceBuyers());
+    Log.i(TAG, "Running ad selection with seller: " + mAdSelectionConfig.getSeller());
     try {
       Futures.addCallback(mAdClient.selectAds(mAdSelectionConfig),
           new FutureCallback<AdSelectionOutcome>() {
@@ -149,6 +164,84 @@ public class AdSelectionWrapper {
       Log.e(MainActivity.TAG, "Exception calling runAdSelection", e);
     }
 
+  }
+
+  /**
+   * Runs ad selection on Auction Servers and passes a string describing its status to the input receivers. If ad
+   * selection succeeds, updates the ad histogram with an impression event and reports the impression.
+   * @param statusReceiver A consumer function that is run after ad selection, histogram updating, and impression reporting
+   * with a string describing how the auction, histogram updating, and reporting went.
+   * @param renderUriReceiver A consumer function that is run after ad selection with a message describing the render URI
+   * or lack thereof.
+   */
+  @SuppressWarnings("UnstableApiUsage") /* FluentFuture */
+  public void runAdSelectionOnAuctionServer(Uri sellerSfeUri, AdTechIdentifier seller, AdTechIdentifier buyer, Consumer<String> statusReceiver, Consumer<String> renderUriReceiver) {
+    Log.i(TAG, "Running ad selection on Auction Servers GetAdSelectionData");
+    try {
+      Log.i(TAG, "Auction Server ad selection seller:" + seller);
+      Log.i(TAG, "Auction Server ad selection seller SFE URI:" + sellerSfeUri);
+      GetAdSelectionDataRequest getDataRequest = new GetAdSelectionDataRequest.Builder()
+          .setSeller(seller).build();
+      ListenableFuture<AdSelectionOutcome> adSelectionOutcome =
+          FluentFuture.from(mAdClient.getAdSelectionData(getDataRequest))
+              .transform(
+                  outcome -> {
+                    statusReceiver.accept("CA data collected from device! Id: " + outcome.getAdSelectionId());
+                    try {
+                      BiddingAuctionServerClient auctionServerClient = new BiddingAuctionServerClient(mContext);
+                      SelectAdsResponse actualResponse = auctionServerClient.runServerAuction(
+                        sellerSfeUri.toString(), seller.toString(), buyer.toString(), outcome.getAdSelectionData());
+
+                      Pair<Long, SelectAdsResponse> serverAuctionResult =
+                          new Pair<>(outcome.getAdSelectionId(), actualResponse);
+                      statusReceiver.accept("Server auction run successfully for " + serverAuctionResult.first);
+                      return serverAuctionResult;
+                    } catch (IOException e) {
+                      statusReceiver.accept("Something went wrong when calling bidding auction server");
+                      throw new UncheckedIOException(e);
+                    }
+              }, mExecutor)
+              .transformAsync(
+                  pair -> {
+
+                    Objects.requireNonNull(pair);
+                    long adSelectionId = pair.first;
+                    SelectAdsResponse response = pair.second;
+                    Objects.requireNonNull(response);
+                    Objects.requireNonNull(response.auctionResultCiphertext);
+                    PersistAdSelectionResultRequest persistResultRequest =
+                        new PersistAdSelectionResultRequest.Builder()
+                            .setSeller(seller)
+                            .setAdSelectionId(adSelectionId)
+                            .setAdSelectionResult(BaseEncoding.base64().decode(response.auctionResultCiphertext))
+                            .build();
+                    return mAdClient.persistAdSelectionResult(persistResultRequest);
+                  }, mExecutor);
+      Futures.addCallback(
+          adSelectionOutcome,
+          new FutureCallback<AdSelectionOutcome>() {
+            public void onSuccess(AdSelectionOutcome adSelectionOutcome) {
+              statusReceiver.accept("Auction Result is persisted for : " + adSelectionOutcome.getAdSelectionId());
+              if (adSelectionOutcome.hasOutcome()) {
+                renderUriReceiver.accept(
+                    "Would display ad from " + adSelectionOutcome.getRenderUri());
+                updateAdCounterHistogram(adSelectionOutcome.getAdSelectionId(), AD_EVENT_TYPE_IMPRESSION, statusReceiver);
+              } else {
+                renderUriReceiver.accept("Would display ad from contextual winner");
+              }
+            }
+
+            public void onFailure(@NonNull Throwable e) {
+              statusReceiver.accept("Error when running ad selection: " + e.getMessage());
+              renderUriReceiver.accept("Ad selection failed -- no ad to display");
+              Log.e(MainActivity.TAG, "Exception during ad selection", e);
+            }
+          }, mExecutor);
+    } catch (Exception e) {
+      statusReceiver.accept("Got the following exception when trying to run ad selection: " + e);
+      renderUriReceiver.accept("Ad selection failed -- no ad to display");
+      Log.e(MainActivity.TAG, "Exception calling runAdSelection", e);
+    }
   }
 
   /**
