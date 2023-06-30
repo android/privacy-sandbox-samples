@@ -29,14 +29,14 @@
   <string name="override_v3_bidding_logic">V3 Bidding Logic</string>
   <string name="ca_switch_on">JOINED</string>
   <string name="ca_switch_off">LEFT</string>
-  <string name="ca_switch_shoes_text">Shoes CA</string>
-  <string name="ca_switch_shirts_text">Shirts CA</string>
-  <string name="ca_switch_short_expiry_text">CA with short expiry</string>
-  <string name="ca_switch_invalid_fields_text">CA with invalid fields</string>
-  <string name="app_install_ca_switch_text">CA with app install filter for package:</string>
+  <string name="ca_switch_shoes_text">Join Shoes CA</string>
+  <string name="ca_switch_shirts_text">Join Shirts CA</string>
+  <string name="ca_switch_short_expiry_text">Join CA with short expiry</string>
+  <string name="ca_switch_invalid_fields_text">Join CA with invalid fields</string>
+  <string name="app_install_ca_switch_text">Join CA with app install filter for package:</string>
   <string name="edit_text_interaction_data_input_hint">interactionData</string>
   <string name="report_click_button_text">Report Click</string>
-  <string name="freq_cap_ca_switch_text">CA with frequency capping</string>
+  <string name="freq_cap_ca_switch_text">Join CA with frequency capping</string>
   <string name="edit_text_ad_selection_input_hint">adSelectionId</string>
   <string name="report_impression_button_text">Report Impression</string>
   <string name="update_ad_counter_histogram_button_text">Update Click Hist</string>
@@ -52,4 +52,5 @@
   <string name="ad_selection_ids_to_include_hint">Comma separated ids</string>
   <string name="no_ad_found">"No ad is found!"</string>
   <string name="edit_text_package_name_hint">package name</string>
+  <string name="fetch_and_join_ca_text">Fetch and Join Hats CA</string>
 </resources>

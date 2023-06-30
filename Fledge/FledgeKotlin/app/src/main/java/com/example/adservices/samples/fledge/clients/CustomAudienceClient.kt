@@ -15,16 +15,20 @@
 */
 package com.example.adservices.samples.fledge.clients
 
+import android.adservices.common.AdSelectionSignals
 import android.adservices.common.AdTechIdentifier
 import android.adservices.customaudience.CustomAudience
 import android.adservices.customaudience.CustomAudienceManager
+import android.adservices.customaudience.FetchAndJoinCustomAudienceRequest
 import android.adservices.customaudience.JoinCustomAudienceRequest
 import android.adservices.customaudience.LeaveCustomAudienceRequest
 import android.content.Context
+import android.net.Uri
 import android.os.OutcomeReceiver
 import androidx.annotation.RequiresApi
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import com.google.common.util.concurrent.ListenableFuture
+import java.time.Instant
 import java.util.Objects
 import java.util.concurrent.Executor
 
@@ -57,6 +61,32 @@ class CustomAudienceClient private constructor(
           }
         })
       "joinCustomAudience"
+    }
+  }
+
+  /** Fetch and Join custom audience.  */
+  fun fetchAndJoinCustomAudience(fetchUri: Uri, name: String?, activationTime: Instant?,
+    expirationTime: Instant?, userBiddingSignals: AdSelectionSignals?): ListenableFuture<Void?> {
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
+      val request = FetchAndJoinCustomAudienceRequest.Builder(fetchUri)
+              .setName(name)
+              .setActivationTime(activationTime)
+              .setExpirationTime(expirationTime)
+              .setUserBiddingSignals(userBiddingSignals)
+              .build()
+      customAudienceManager.fetchAndJoinCustomAudience(
+              request,
+              executor,
+              object : NullableOutcomeReceiver<Any?, Exception?> {
+                override fun onResult(ignoredResult: Any?) {
+                  completer.set(null)
+                }
+
+                override fun onError(error: Exception?) {
+                  completer.setException(error!!)
+                }
+              })
+      "fetchAndJoinCustomAudience"
     }
   }
 

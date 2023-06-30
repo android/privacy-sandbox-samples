@@ -54,6 +54,7 @@ const val TAG = "FledgeSample"
 // The custom audience names
 private const val SHOES_CA_NAME = "shoes"
 private const val SHIRTS_CA_NAME = "shirts"
+private const val HATS_CA_NAME = "hats"
 private const val SHORT_EXPIRING_CA_NAME = "short_expiring"
 private const val INVALID_FIELD_CA_NAME = "invalid_fields"
 private const val APP_INSTALL_CA_NAME = "app_install"
@@ -464,6 +465,31 @@ class MainActivity : AppCompatActivity() {
         ) { event: String? ->
           eventLog.writeEvent(
             event!!)
+        }
+      }
+    }
+
+    // Fetch CA
+    val baseUri = getIntentOrError("baseUrl",
+            eventLog!!,
+            MISSING_FIELD_STRING_FORMAT_RESTART_APP)
+    binding.fetchAndJoinCaSwitch.setOnCheckedChangeListener {
+      compoundButton, isChecked: Boolean ->
+      if (isChecked) {
+        caWrapper!!.fetchAndJoinCa(
+                Uri.parse("$baseUri/fetch/ca"),
+                HATS_CA_NAME,
+                Instant.now(),
+                calcExpiry(ONE_DAY_EXPIRY),
+                AdSelectionSignals.EMPTY) {
+          event: String? -> eventLog.writeEvent(event!!)
+        }
+      } else {
+        caWrapper!!.leaveCa(
+                HATS_CA_NAME,
+                context!!.packageName,
+                AdTechIdentifier.fromString(biddingUri!!.host!!)) {
+          event: String? -> eventLog.writeEvent(event!!)
         }
       }
     }

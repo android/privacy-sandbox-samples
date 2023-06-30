@@ -87,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
     // The custom audience names
     private static final String SHOES_CA_NAME = "shoes";
     private static final String SHIRTS_CA_NAME = "shirts";
+    private static final String HATS_CA_NAME = "hats";
     private static final String SHORT_EXPIRING_CA_NAME = "short_expiring";
     private static final String INVALID_FIELD_CA_NAME = "invalid_fields";
     private static final String APP_INSTALL_CA_NAME = "app_install";
@@ -421,6 +422,19 @@ public class MainActivity extends AppCompatActivity {
                     eventLog::writeEvent, calcExpiry(ONE_DAY_EXPIRY), filters, ImmutableSet.of(adCounterKey));
             } else {
                 caWrapper.leaveCa(FREQ_CAP_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
+            }
+        });
+        // Fetch CA
+        binding.fetchAndJoinCaSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            if (isChecked) {
+                caWrapper.fetchAndJoinCa(
+                        Uri.parse(mBaseUriString + "/fetch/ca"),
+                        HATS_CA_NAME,
+                        Instant.now(),
+                        calcExpiry(ONE_DAY_EXPIRY),
+                        AdSelectionSignals.EMPTY, eventLog::writeEvent);
+            } else {
+                caWrapper.leaveCa(HATS_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), eventLog::writeEvent);
             }
         });
     }

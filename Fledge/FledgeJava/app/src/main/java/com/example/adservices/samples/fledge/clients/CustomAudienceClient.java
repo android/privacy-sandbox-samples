@@ -15,12 +15,15 @@
 */
 package com.example.adservices.samples.fledge.clients;
 
+import android.adservices.common.AdSelectionSignals;
 import android.adservices.common.AdTechIdentifier;
 import android.adservices.customaudience.CustomAudience;
 import android.adservices.customaudience.CustomAudienceManager;
+import android.adservices.customaudience.FetchAndJoinCustomAudienceRequest;
 import android.adservices.customaudience.JoinCustomAudienceRequest;
 import android.adservices.customaudience.LeaveCustomAudienceRequest;
 import android.content.Context;
+import android.net.Uri;
 import android.os.OutcomeReceiver;
 
 import androidx.annotation.NonNull;
@@ -29,6 +32,7 @@ import androidx.concurrent.futures.CallbackToFutureAdapter;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
+import java.time.Instant;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -73,6 +77,40 @@ public class CustomAudienceClient {
           return "joinCustomAudience";
         });
   }
+
+    /** Fetch and Join custom audience. */
+    @NonNull
+    public ListenableFuture<Void> fetchAndJoinCustomAudience(Uri fetchUri, String name, Instant
+            activationTime, Instant expirationTime, AdSelectionSignals userBiddingSignals) {
+        return CallbackToFutureAdapter.getFuture(
+                completer -> {
+                    FetchAndJoinCustomAudienceRequest request =
+                            new FetchAndJoinCustomAudienceRequest.Builder(fetchUri)
+                                    .setName(name)
+                                    .setActivationTime(activationTime)
+                                    .setExpirationTime(expirationTime)
+                                    .setUserBiddingSignals(userBiddingSignals)
+                                    .build();
+
+                    mCustomAudienceManager.fetchAndJoinCustomAudience(
+                            request,
+                            mExecutor,
+                            new OutcomeReceiver<Object, Exception>() {
+                                @Override
+                                public void onResult(Object ignoredResult) {
+                                    completer.set(null);
+                                }
+
+                                @Override
+                                public void onError(Exception error) {
+                                    completer.setException(error);
+                                }
+                            });
+                    // This value is used only for debug purposes: it will be used in toString()
+                    // of returned future or error cases.
+                    return "fetchAndJoinCustomAudience";
+                });
+    }
 
   /** Leave custom audience. */
   @NonNull

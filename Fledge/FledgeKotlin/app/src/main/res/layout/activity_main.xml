@@ -183,14 +183,29 @@
       android:layout_width="match_parent"
       android:layout_weight=".10"
       android:layout_height="0dp">
+
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/freq_cap_ca_switch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="11sp"
         android:layout_centerInParent="true"
         android:checked="false"
-        android:text="@string/freq_cap_ca_switch_text" />
+        android:text="@string/freq_cap_ca_switch_text"
+        android:textSize="11sp" />
+  </RelativeLayout>
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_weight=".10"
+      android:layout_height="0dp">
+
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/fetch_and_join_ca_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:checked="false"
+        android:text="@string/fetch_and_join_ca_text"
+        android:textSize="11sp" />
   </RelativeLayout>
   <RelativeLayout
       android:layout_width="match_parent"

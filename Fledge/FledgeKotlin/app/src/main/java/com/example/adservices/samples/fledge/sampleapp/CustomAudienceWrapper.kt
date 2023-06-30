@@ -214,7 +214,39 @@ class CustomAudienceWrapper(
     }
   }
 
-  /**
+    /**
+     * Fetches and joins a CA with from an URI.
+     * @param fetchUri The URL to retrieve the CA from.
+     * @param name The name of the CA to join.
+     * @param activationTime The time when the CA will activate.
+     * @param expirationTime The time when the CA will expire.
+     * @param userBiddingSignals The user bidding signals used at auction.
+     * @param statusReceiver A consumer function that is run after the API call and returns a string.
+     */
+    fun fetchAndJoinCa(fetchUri: Uri, name: String, activationTime: Instant?, expirationTime:
+    Instant?, userBiddingSignals: AdSelectionSignals?, statusReceiver: Consumer<String?>) {
+        try {
+            Futures.addCallback(
+                    caClient.fetchAndJoinCustomAudience(fetchUri, name, activationTime, expirationTime, userBiddingSignals),
+                    object : FutureCallback<Void?> {
+                        override fun onSuccess(unused: Void?) {
+                            statusReceiver.accept("Fetched and joined $name custom audience.")
+                        }
+
+                        override fun onFailure(e: Throwable) {
+                            statusReceiver.accept("Error when fetching and joining " + name
+                                    + " custom audience: " + e.message)
+                        }
+                    }, executor)
+        } catch (e: Exception) {
+            statusReceiver.accept("Got the following exception when trying to fetch and join"
+                    + name + " custom audience: " + e)
+            Log.e(TAG, "Exception calling fetchAndJoinCustomAudience", e)
+        }
+    }
+
+
+    /**
    * Leaves a CA.
    *
    * @param name The name of the CA to leave.

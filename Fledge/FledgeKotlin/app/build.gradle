@@ -66,6 +66,7 @@ dependencies {
     implementation 'com.google.guava:guava:29.0-android'
     implementation "androidx.concurrent:concurrent-futures:1.1.0"
 }
+
 repositories {
     mavenCentral()
 }

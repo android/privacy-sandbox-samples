@@ -50,7 +50,6 @@
       android:layout_marginStart="5dp"
       android:layout_marginEnd="5dp"
       android:layout_height="0dp">
-
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/app_install_switch"
         android:layout_width="match_parent"
@@ -198,6 +197,21 @@
         android:layout_centerInParent="true"
         android:checked="false"
         android:text="@string/freq_cap_ca_switch_text"
+        android:textSize="11sp" />
+  </RelativeLayout>
+  <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_weight=".10"
+      android:layout_height="0dp"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp">
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/fetch_and_join_ca_switch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:checked="false"
+        android:text="@string/fetch_and_join_ca_text"
         android:textSize="11sp" />
   </RelativeLayout>
   <LinearLayout
@@ -355,11 +369,11 @@
         android:layout_height="wrap_content"
         android:layout_weight=".45"
         android:hint="@string/edit_text_interaction_data_input_hint"
+        android:importantForAutofill="no"
         android:inputType="text"
         android:minHeight="48dp"
         android:textColorHint="#78909C"
-        android:importantForAutofill="no"
-        android:textSize="11sp"/>
+        android:textSize="11sp" />
     <Button
         android:id="@+id/run_report_click_button"
         android:layout_width="0dp"
