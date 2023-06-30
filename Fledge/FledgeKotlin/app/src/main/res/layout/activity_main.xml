@@ -11,13 +11,16 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    tools:context=".MainActivity">
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:orientation="vertical"
+      tools:context=".MainActivity">
   <TextView
       android:id="@+id/ad_space"
       android:layout_width="match_parent"
@@ -247,7 +250,6 @@
         android:textSize="11sp"
         android:text="@string/run_ads_button_text" />
   </RelativeLayout>
-
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_weight=".13"
@@ -275,7 +277,6 @@
         android:text="@string/report_impression_button_text"
         android:textSize="11sp"/>
   </LinearLayout>
-
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_weight=".13"
@@ -303,7 +304,6 @@
         android:text="@string/update_ad_counter_histogram_button_text"
         android:textSize="11sp"/>
   </LinearLayout>
-
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_weight=".13"
@@ -342,5 +342,5 @@
         android:text="@string/report_click_button_text"
         android:textSize="11sp"/>
   </LinearLayout>
-
 </LinearLayout>
+</ScrollView>
