@@ -74,10 +74,13 @@ up 7 HTTPS endpoints that your test device or emulator can access. They are:
 6. A seller reporting endpoint. Modify the reporting_address variable
    in the `ScoringLogic.js` file to match this endpoint.
 
-7. A buyer daily fetch endpoint that serves the sample `DailyUpdateResponse.json`
+7. A buyer daily update endpoint that serves the sample `DailyUpdateResponse.json`
    JSON object in this directory.  Modify the `trusted_bidding_uri` and
    `render_uri` fields to match this endpoint's domain.
 
+8. A [fetchAndJoinCustomAudience API](https://developer.android.com/design-for-safety/privacy-sandbox/protected-audience#custom-audience-delegation) endpoint,
+'/fetch/ca', that serves the sample `FetchAndJoinResponse.json` JSON object in this directory. Modify the `daily_update_uri`, `bidding_logic_uri`, `trusted_bidding_uri` and
+   `render_uri` fields to match this endpoint's domain.
 
 The reporting endpoints should be able to accept both GET requests for impression reporting and POST requests for interaction reporting.
 The reporting endpoints need only return a 200 status code -- the response content does not matter. To verify that impressions and interactions were reported,
