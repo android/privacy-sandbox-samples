@@ -10,9 +10,9 @@ import android.net.Uri
 import android.util.Log
 import android.util.Pair
 import androidx.annotation.RequiresApi
-import com.example.adservices.samples.fledge.waterfallmediationhelpers.Constants.TAG
 import com.example.adservices.samples.fledge.sampleapp.EventLogManager
 import com.example.adservices.samples.fledge.sampleapp.databinding.WaterfallMediationActivityBinding
+import com.example.adservices.samples.fledge.waterfallmediationhelpers.Constants.TAG
 import com.google.common.base.Joiner
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
@@ -41,8 +41,18 @@ class MediationSdk(
   context: Context,
   private val binding: WaterfallMediationActivityBinding,
   eventLog: EventLogManager,
-  private val useOnlyAdditionalIds: Boolean
+  private val useOnlyAdditionalIds: Boolean,
 ) : NetworkAdapter(networkName, buyer, baseUri, useOverrides, executor, context, eventLog) {
+
+  companion object {
+    private const val AD_SELECTION_PREBUILT_SCHEMA = "ad-selection-prebuilt"
+    private const val AD_SELECTION_FROM_OUTCOMES_USE_CASE = "ad-selection-from-outcomes"
+    private const val AD_OUTCOME_SELECTION_WATERFALL_MEDIATION_TRUNCATION = "waterfall-mediation-truncation"
+    private const val BID_FLOOR_SIGNALS_FORMAT = "{%s:%s}"
+    private const val BID_FLOOR_PARAM_KEY = "bidFloor"
+    private const val BID_FLOOR_SIGNAL_KEY = "bid_floor"
+  }
+
   @Throws(Exception::class)
   fun orchestrateMediation(mediationChain: List<NetworkAdapter>): Pair<AdSelectionOutcome, NetworkAdapter> {
     writeEvent("Mediation chain:\n%s", Joiner.on("\n").skipNulls().join(mediationChain))
@@ -82,9 +92,9 @@ class MediationSdk(
   @Throws(Exception::class)
   fun runSelectOutcome(
     outcome1p: AdSelectionOutcome,
-    network3p: NetworkAdapter
+    network3p: NetworkAdapter,
   ): AdSelectionOutcome {
-    val config = prepareWaterfallConfig(outcome1p.adSelectionId, network3p.bidFloorSignals)
+    val config = prepareWaterfallConfig(outcome1p.adSelectionId, network3p.bidFloor)
     if (useOverrides) {
       addAdSelectionFromOutcomesOverride(config)
     }
@@ -115,7 +125,7 @@ class MediationSdk(
 
   private fun prepareWaterfallConfig(
     outcome1pId: Long,
-    bidFloorSignals: AdSelectionSignals?
+    bidFloor: Double,
   ): AdSelectionFromOutcomesConfig {
     // inject a flag to run only with "Additional ad selection ids from the UX"
     val outcomeIds: MutableList<Long> = ArrayList()
@@ -125,8 +135,8 @@ class MediationSdk(
     return AdSelectionFromOutcomesConfig.Builder()
       .setSeller(AdTechIdentifier.fromString(selectionLogicUri.host!!))
       .setAdSelectionIds(outcomeIds)
-      .setSelectionSignals(bidFloorSignals!!)
-      .setSelectionLogicUri(selectionLogicUri)
+      .setSelectionSignals(getSignalsForPrebuiltUri(bidFloor))
+      .setSelectionLogicUri(getPrebuiltUriForWaterfallTruncation())
       .build()
   }
 
@@ -148,6 +158,30 @@ class MediationSdk(
         emptyList()
       }
     }
+
   private val selectionLogicUri: Uri
     get() = baseUri.buildUpon().appendPath(Constants.OUTCOME_SELECTION_URI_SUFFIX).build()
+
+  private fun getSignalsForPrebuiltUri(bidFloor: Double): AdSelectionSignals {
+    return AdSelectionSignals.fromString(
+      String.format(
+        BID_FLOOR_SIGNALS_FORMAT,
+        BID_FLOOR_SIGNAL_KEY,
+        bidFloor
+      )
+    )
+  }
+
+  private fun getPrebuiltUriForWaterfallTruncation(): Uri {
+    return Uri.parse(
+      String.format(
+        "%s://%s/%s/?%s=%s",
+        AD_SELECTION_PREBUILT_SCHEMA,
+        AD_SELECTION_FROM_OUTCOMES_USE_CASE,
+        AD_OUTCOME_SELECTION_WATERFALL_MEDIATION_TRUNCATION,
+        BID_FLOOR_PARAM_KEY,
+        BID_FLOOR_SIGNAL_KEY
+      )
+    )
+  }
 }

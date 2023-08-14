@@ -31,7 +31,6 @@ import com.example.adservices.samples.fledge.clients.TestCustomAudienceClient
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 import java.time.Instant
-import java.util.Collections
 import java.util.concurrent.Executor
 import java.util.function.Consumer
 import org.json.JSONObject
@@ -49,7 +48,7 @@ import org.json.JSONObject
 @RequiresApi(api = 34)
 class CustomAudienceWrapper(
   private val executor: Executor,
-  context: Context
+  context: Context,
 ) {
   private val caClient: CustomAudienceClient
   private val caOverrideClient : TestCustomAudienceClient
@@ -75,7 +74,8 @@ class CustomAudienceWrapper(
     dailyUpdateUri: Uri,
     trustedBiddingUri: Uri,
     statusReceiver: Consumer<String>,
-    expiry: Instant) {
+    expiry: Instant,
+  ) {
       joinCa(name, buyer, biddingUri, renderUri, dailyUpdateUri, trustedBiddingUri, statusReceiver, expiry, null);
   }
 
@@ -103,31 +103,48 @@ class CustomAudienceWrapper(
     trustedBiddingUri: Uri,
     statusReceiver: Consumer<String>,
     expiry: Instant,
-    filters: AdFilters?
+    filters: AdFilters?,
   ) {
     try {
+      val adData = getAdDataBuilder(renderUri)
+        .setAdFilters(filters)
+        .build()
       joinCustomAudience(
-        CustomAudience.Builder()
-          .setBuyer(buyer)
-          .setName(name)
-          .setDailyUpdateUri(dailyUpdateUri)
-          .setBiddingLogicUri(biddingUri)
-          .setAds(listOf(AdData.Builder()
-                           .setRenderUri(renderUri)
-                           .setMetadata(JSONObject().toString())
-                           .setAdFilters(filters)
-                           .build()))
-          .setActivationTime(Instant.now())
-          .setExpirationTime(expiry)
-          .setTrustedBiddingData(TrustedBiddingData.Builder()
-                                   .setTrustedBiddingKeys(Collections.singletonList("key"))
-                                   .setTrustedBiddingUri(trustedBiddingUri).build())
-          .setUserBiddingSignals(AdSelectionSignals.EMPTY)
-          .build(),
+        getCustomAudienceBuilder(
+          name, buyer, biddingUri, adData, dailyUpdateUri, trustedBiddingUri, expiry).build(),
         statusReceiver)
     } catch (e: Exception) {
       statusReceiver.accept("Got the following exception when trying to join " + name
                               + " custom audience: " + e)
+      Log.e(TAG, "Exception calling joinCustomAudience", e)
+    }
+  }
+
+  fun joinServerAuctionCa(
+    name: String,
+    buyer: AdTechIdentifier,
+    biddingUri: Uri,
+    renderUri: Uri,
+    dailyUpdateUri: Uri,
+    trustedBiddingUri: Uri,
+    statusReceiver: Consumer<String>,
+    expiry: Instant,
+    adRenderId: String,
+  ) {
+    try {
+      val adData: AdData = getAdDataBuilder(renderUri).setAdRenderId(adRenderId).build()
+      Log.v(TAG, String.format("AdRenderId %s is set for ad render uri %s", adRenderId, renderUri))
+      joinCustomAudience(
+        getCustomAudienceBuilder(
+          name, buyer, biddingUri, adData, dailyUpdateUri, trustedBiddingUri, expiry
+        ).build(),
+        statusReceiver
+      )
+    } catch (e: java.lang.Exception) {
+      statusReceiver.accept(
+        "Got the following exception when trying to join " + name
+          + " custom audience: " + e
+      )
       Log.e(TAG, "Exception calling joinCustomAudience", e)
     }
   }
@@ -223,8 +240,12 @@ class CustomAudienceWrapper(
      * @param userBiddingSignals The user bidding signals used at auction.
      * @param statusReceiver A consumer function that is run after the API call and returns a string.
      */
-    fun fetchAndJoinCa(fetchUri: Uri, name: String, activationTime: Instant?, expirationTime:
-    Instant?, userBiddingSignals: AdSelectionSignals?, statusReceiver: Consumer<String?>) {
+    fun fetchAndJoinCa(
+      fetchUri: Uri, name: String, activationTime: Instant?,
+      expirationTime:
+      Instant?,
+      userBiddingSignals: AdSelectionSignals?, statusReceiver: Consumer<String?>,
+    ) {
         try {
             Futures.addCallback(
                     caClient.fetchAndJoinCustomAudience(fetchUri, name, activationTime, expirationTime, userBiddingSignals),
@@ -335,18 +356,45 @@ class CustomAudienceWrapper(
     ca: CustomAudience,
     statusReceiver: Consumer<String>,
   ) {
-    Futures.addCallback(caClient.joinCustomAudience(ca),
-                        object : FutureCallback<Void?> {
-                          override fun onSuccess(unused: Void?) {
-                            statusReceiver.accept("Joined ${ca.name} custom audience")
-                          }
+    Futures.addCallback(
+      caClient.joinCustomAudience(ca),
+      object : FutureCallback<Void?> {
+        override fun onSuccess(unused: Void?) {
+          statusReceiver.accept("Joined ${ca.name} custom audience with buyer '${ca.buyer} '")
+        }
 
-                          override fun onFailure(e: Throwable) {
-                            statusReceiver.accept("Error when joining " + ca.name + " custom audience: "
-                                                    + e.message)
-                            Log.e(TAG, "Exception during CA join process ", e)
-                          }
-                        }, executor)
+        override fun onFailure(e: Throwable) {
+          statusReceiver.accept("Error when joining ${ca.name} custom audience with buyer '${ca.buyer}': ${e.message}")
+          Log.e(TAG, "Exception during CA join process ", e)
+        }
+      }, executor)
+  }
+
+  private fun getAdDataBuilder(renderUri: Uri): AdData.Builder {
+    return AdData.Builder()
+      .setRenderUri(renderUri)
+      .setMetadata(JSONObject().toString())
+  }
+
+  private fun getCustomAudienceBuilder(
+    name: String, buyer: AdTechIdentifier, biddingUri: Uri,
+    adData: AdData, dailyUpdateUri: Uri, trustedBiddingUri: Uri,
+    expiry: Instant,
+  ): CustomAudience.Builder {
+    return CustomAudience.Builder()
+      .setBuyer(buyer)
+      .setName(name)
+      .setDailyUpdateUri(dailyUpdateUri)
+      .setBiddingLogicUri(biddingUri)
+      .setAds(listOf(adData))
+      .setActivationTime(Instant.now())
+      .setExpirationTime(expiry)
+      .setTrustedBiddingData(
+        TrustedBiddingData.Builder()
+          .setTrustedBiddingKeys(listOf(name, buyer.toString(), "key1", "key2"))
+          .setTrustedBiddingUri(trustedBiddingUri).build()
+      )
+      .setUserBiddingSignals(AdSelectionSignals.EMPTY)
   }
 
   /**

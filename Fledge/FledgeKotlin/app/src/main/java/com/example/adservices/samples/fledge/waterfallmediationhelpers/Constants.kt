@@ -1,8 +1,8 @@
 package com.example.adservices.samples.fledge.waterfallmediationhelpers
 
-import androidx.annotation.RequiresApi
 import android.widget.EditText
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import com.google.common.base.CaseFormat
 import java.util.Locale
 
@@ -17,13 +17,15 @@ object Constants {
 
   // Seller-side URIs
   const val DECISION_URI_SUFFIX = "scoring" // calls real servers if specified
-  const val TRUSTED_SCORING_SIGNALS_URI_SUFFIX = "trustedScoringSignals"
+  const val TRUSTED_SCORING_SIGNALS_URI_SUFFIX = "scoring/trusted"
   const val OUTCOME_SELECTION_URI_SUFFIX = "waterfall_mediation" // calls real servers if specified
+
 
   // Buyer-side URIs
   const val BIDDING_URI_SUFFIX = "bidding" // calls real servers if specified
-  const val DAILY_URI_SUFFIX = "dailyUpdate"
-  const val TRUSTED_BIDDING_URI_SUFFIX = "trustedBidding" // calls real servers if specified
+  const val DAILY_URI_SUFFIX = "bidding/daily"
+  const val TRUSTED_BIDDING_URI_SUFFIX = "bidding/trusted" // calls real servers if specified
+
   const val RENDER_URI_SUFFIX = "render"
 
   // Signals data contracts

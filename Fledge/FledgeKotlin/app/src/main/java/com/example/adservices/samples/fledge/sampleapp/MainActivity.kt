@@ -31,10 +31,12 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.CompoundButton
 import android.widget.RadioGroup
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding
+import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
 import java.io.BufferedReader
@@ -42,6 +44,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import java.time.Duration
 import java.time.Instant
+import java.util.Objects
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.stream.Collectors
@@ -51,6 +54,16 @@ import org.json.JSONObject
 // Log tag
 const val TAG = "FledgeSample"
 
+// Intents
+private const val BASE_URL_INTENT = "baseUrl"
+private const val AUCTION_SERVER_SELLER_SFE_URL_INTENT = "auctionServerSellerSfeUrl"
+private const val AUCTION_SERVER_SELLER_INTENT = "auctionServerSeller"
+private const val AUCTION_SERVER_BUYER_INTENT = "auctionServerBuyer"
+
+const val AD_SELECTION_PREBUILT_SCHEMA = "ad-selection-prebuilt"
+const val AD_SELECTION_USE_CASE = "ad-selection"
+const val AD_SELECTION_HIGHEST_BID_WINS = "highest-bid-wins"
+
 // The custom audience names
 private const val SHOES_CA_NAME = "shoes"
 private const val SHIRTS_CA_NAME = "shirts"
@@ -59,6 +72,12 @@ private const val SHORT_EXPIRING_CA_NAME = "short_expiring"
 private const val INVALID_FIELD_CA_NAME = "invalid_fields"
 private const val APP_INSTALL_CA_NAME = "app_install"
 private const val FREQ_CAP_CA_NAME = "freq_cap"
+private const val SHOES_SERVER_AUCTION_CA_NAME = "shoes_server"
+private const val SHIRTS_SERVER_AUCTION_CA_NAME = "shirts_server"
+
+// Server Auction Custom Audience Render Id
+private const val SHOES_SERVER_AUCTION_AD_RENDER_ID = "1"
+private const val SHIRTS_SERVER_AUCTION_AD_RENDER_ID = "2"
 
 // Contextual Ad data
 private const val NO_FILTER_BID: Long = 20
@@ -102,12 +121,16 @@ class MainActivity : AppCompatActivity() {
                                                                               + "\t\"keys\": \"trusted bidding signal Values\"\n"
                                                                               + "}")
 
-  private var mBiddingLogicUri: Uri = Uri.EMPTY
-  private var mScoringLogicUri: Uri = Uri.EMPTY
-  private var mTrustedDataUri: Uri = Uri.EMPTY
-  private var mContextualLogicUri: Uri = Uri.EMPTY
-  private var mBuyer: AdTechIdentifier? = null
-  private var mSeller: AdTechIdentifier? = null
+  private var baseUriString: String = ""
+  private var biddingLogicUri: Uri = Uri.EMPTY
+  private var scoringLogicUri: Uri = Uri.EMPTY
+  private var trustedDataUri: Uri = Uri.EMPTY
+  private var contextualLogicUri: Uri = Uri.EMPTY
+  private var auctionServerSellerSfeUri: Uri? = null
+  private var auctionServerSeller: AdTechIdentifier? = null
+  private var auctionServerBuyer: AdTechIdentifier? = null
+  private var buyer: AdTechIdentifier? = null
+  private var seller: AdTechIdentifier? = null
   private var adWrapper: AdSelectionWrapper? = null
   private var caWrapper: CustomAudienceWrapper? = null
   private var overrideDecisionJS: String? = null
@@ -131,9 +154,29 @@ class MainActivity : AppCompatActivity() {
     val view = binding!!.root;
     setContentView(view);
     eventLog = EventLogManager(binding!!.eventLog);
+
+    // Same for override and non-overrides flows
+
+    // Same for override and non-overrides flows
+    baseUriString = getIntentOrError(
+      BASE_URL_INTENT,
+      eventLog!!,
+      MISSING_FIELD_STRING_FORMAT_RESTART_APP
+    )
+    biddingLogicUri = Uri.parse("$baseUriString/bidding")
+    scoringLogicUri = Uri.parse("$baseUriString/scoring")
+    trustedDataUri = Uri.parse("$biddingLogicUri/trusted")
+    contextualLogicUri = Uri.parse("$baseUriString/contextual")
+    buyer = resolveAdTechIdentifier(biddingLogicUri)
+    seller = resolveAdTechIdentifier(scoringLogicUri)
+
+    auctionServerSellerSfeUri = auctionServerSellerSfeUriOrEmpty()
+    auctionServerSeller = auctionServerSellerOrEmpty()
+    auctionServerBuyer = auctionServerBuyerOrEmpty()
+
     try {
       // Get override reporting URI
-      val reportingUriString = getIntentOrError("baseUrl", eventLog!!, MISSING_FIELD_STRING_FORMAT_RESTART_APP)
+      val reportingUriString = baseUriString
       // Replace override URIs in JS
       overrideDecisionJS = replaceReportingURI(assetFileToString(DECISION_LOGIC_FILE),
               reportingUriString)
@@ -143,6 +186,15 @@ class MainActivity : AppCompatActivity() {
               reportingUriString)
       overrideBiddingJsV3 = replaceReportingURI(assetFileToString(BIDDING_LOGIC_FILE_V3),
               reportingUriString)
+
+      contextualAds = ContextualAds.Builder()
+        .setBuyer(AdTechIdentifier.fromString(biddingLogicUri.host!!))
+        .setDecisionLogicUri(contextualLogicUri)
+        .setAdsWithBid(ArrayList())
+        .build()
+
+      // Set up the contextual ads switches
+      setupContextualAdsSwitches(baseUriString, eventLog!!);
 
       // Setup overrides since they are on by default
       setupOverrideFlow(2L);
@@ -159,17 +211,136 @@ class MainActivity : AppCompatActivity() {
       // Set up Override Switch
       binding!!.overrideSelect.setOnCheckedChangeListener(this::toggleOverrideSwitch)
 
+      // Set up Prebuilt Switch
+      binding!!.usePrebuiltForScoring.setOnCheckedChangeListener { compoundButton: CompoundButton?, isPrebuiltForScoringEnabled: Boolean ->
+        this.togglePrebuiltUriForScoring(
+          compoundButton!!,
+          isPrebuiltForScoringEnabled
+        )
+      }
+
+      // Set up No buyers ad selection
+      binding!!.noBuyers.setOnCheckedChangeListener { ignored1, ignored2 -> toggleNoBuyersCheckbox() }
+
+      // Set up Auction Server ad selection
+      binding!!.auctionServer.setOnCheckedChangeListener { ignored1, ignored2 -> toggleAuctionServerCheckbox() }
+
       // Set package names
-      setupPackageNames();
+      setupPackageNames()
     } catch (e: Exception) {
       Log.e(TAG, "Error when setting up app", e)
     }
   }
+
+  private fun togglePrebuiltUriForScoring(
+    compoundButton: CompoundButton,
+    isPrebuiltForScoringEnabled: Boolean,
+  ) {
+    if (!isPrebuiltForScoringEnabled) {
+      scoringLogicUri = Uri.parse("$baseUriString/scoring")
+      setAdSelectionWrapper()
+      Log.i(TAG, "prebuilt is turned off for scoring. ScoringUri: $scoringLogicUri"
+      )
+      eventLog!!.writeEvent("Prebuilt is turned off for scoring!")
+      return
+    }
+    if (!binding!!.overrideOff.isChecked) {
+      compoundButton.isChecked = false
+      Log.i(TAG, "Cant apply prebuilt URI when overrides are on.")
+      eventLog!!.writeEvent("Cant use prebuilt when override is on!")
+      return
+    }
+    scoringLogicUri = getPrebuiltUriForScoringPickHighest()!!
+    Log.i(TAG, "Switched to using prebuilt uri for scoring that picks the highest as "
+        + "winner. Scoring Uri: " + scoringLogicUri
+    )
+    setAdSelectionWrapper()
+    eventLog!!.writeEvent("Set prebuilt uri for scoring: pick highest bid")
+  }
+
+  private fun toggleNoBuyersCheckbox() {
+    Log.i(TAG, "No Buyers check toggled to " + binding!!.noBuyers.isChecked)
+    setAdSelectionWrapper()
+    eventLog!!.writeEvent("No Buyers check toggled to " + binding!!.noBuyers.isChecked)
+  }
+
+  private fun toggleAuctionServerCheckbox() {
+    if (auctionServerSellerSfeUri === Uri.EMPTY) {
+      eventLog!!.writeEvent(
+        String.format(
+          "To enable server auctions you have to pass %s intent when starting the app.",
+          AUCTION_SERVER_SELLER_SFE_URL_INTENT
+        )
+      )
+      binding!!.auctionServer.isChecked = false
+      return
+    }
+    if (auctionServerSeller.toString().isEmpty()) {
+      eventLog!!.writeEvent(
+        String.format(
+          "To enable server auctions you have to pass %s intent when starting the app.",
+          AUCTION_SERVER_SELLER_INTENT
+        )
+      )
+      binding!!.auctionServer.isChecked = false
+      return
+    }
+    if (auctionServerBuyer.toString().isEmpty()) {
+      eventLog!!.writeEvent(
+        String.format(
+          "To enable server auctions you have to pass %s intent when starting the app.",
+          AUCTION_SERVER_BUYER_INTENT
+        )
+      )
+      binding!!.auctionServer.isChecked = false
+      return
+    }
+    Log.i(TAG, "Auction Server check toggled to " + binding!!.auctionServer.isChecked)
+    setAdSelectionWrapper()
+    eventLog!!.writeEvent("Auction Server check toggled to " + binding!!.auctionServer.isChecked)
+  }
+
   private fun setupPackageNames() {
     binding!!.contextualAiDataInput.setText(context!!.packageName)
     binding!!.caAiDataInput.setText(context!!.packageName)
   }
 
+  private fun setAdSelectionWrapper() {
+    val buyers: List<AdTechIdentifier> = if (binding!!.noBuyers.isChecked) emptyList() else listOf(buyer!!)
+    adWrapper = AdSelectionWrapper(
+      buyers,
+      seller!!,
+      scoringLogicUri,
+      trustedDataUri,
+      contextualAds!!,
+      binding!!.usePrebuiltForScoring.isChecked,
+      Uri.parse("$baseUriString/scoring"),
+      context!!,
+      EXECUTOR
+    )
+    if (binding!!.auctionServer.isChecked) {
+      binding!!.runAdsButton.setOnClickListener { v ->
+        adWrapper!!.runAdSelectionOnAuctionServer(
+          auctionServerSellerSfeUri!!,
+          auctionServerSeller!!,
+          auctionServerBuyer!!,
+          { event: String? ->
+            eventLog!!.writeEvent(
+              event!!
+            )
+          }, binding!!.adSpace::setText
+        )
+      }
+    } else {
+      binding!!.runAdsButton.setOnClickListener { v ->
+        adWrapper!!.runAdSelection({ event: String? ->
+                                     eventLog!!.writeEvent(
+                                       event!!
+                                     )
+                                   }, binding!!.adSpace::setText)
+      }
+    }
+  }
 
   private fun toggleOverrideSwitch(
     radioGroup: RadioGroup,
@@ -177,36 +348,23 @@ class MainActivity : AppCompatActivity() {
   ) {
     if (binding!!.overrideOff.isChecked) {
       try {
-        val baseUri = getIntentOrError("baseUrl",
-                                       eventLog!!,
-                                       MISSING_FIELD_STRING_FORMAT_RESTART_APP)
-
-        mBiddingLogicUri = Uri.parse("$baseUri/bidding")
-        mScoringLogicUri = Uri.parse("$baseUri/scoring")
-        mTrustedDataUri = Uri.parse("$mBiddingLogicUri/trusted")
-        mContextualLogicUri = Uri.parse("$baseUri/contextual")
-        mBuyer = resolveAdTechIdentifier(mBiddingLogicUri)
-        mSeller = resolveAdTechIdentifier(mScoringLogicUri)
-
-        contextualAds = ContextualAds.Builder()
-          .setBuyer(AdTechIdentifier.fromString(mBiddingLogicUri.host!!))
-          .setDecisionLogicUri(mContextualLogicUri)
-          .setAdsWithBid(ArrayList())
-          .build()
+        biddingLogicUri = Uri.parse("$baseUriString/bidding")
+        scoringLogicUri = Uri.parse("$baseUriString/scoring")
+        trustedDataUri = Uri.parse("$biddingLogicUri/trusted")
+        contextualLogicUri = Uri.parse("$baseUriString/contextual")
+        buyer = resolveAdTechIdentifier(biddingLogicUri)
+        seller = resolveAdTechIdentifier(scoringLogicUri)
 
         // Set with new scoring uri
-        adWrapper!!.resetAdSelectionConfig(listOf(mBuyer!!),
-                                           mSeller!!,
-                                           mScoringLogicUri,
-                                           mTrustedDataUri,
+        adWrapper!!.resetAdSelectionConfig(listOf(buyer!!),
+                                           seller!!,
+                                           scoringLogicUri,
+                                           trustedDataUri,
                                            contextualAds!!)
 
         // Reset CA switches as they rely on different biddingLogicUri
-        setupCASwitches(caWrapper!!, eventLog!!, binding!!, mBiddingLogicUri, context!!)
+        setupCASwitches(caWrapper!!, eventLog!!, binding!!, biddingLogicUri, context!!)
         resetOverrides(eventLog!!, adWrapper!!, caWrapper!!)
-
-        // Set up the contextual ads switches
-        setupContextualAdsSwitches(baseUri, eventLog!!);
 
       } catch (e: Exception) {
         binding!!.overrideV2BiddingLogic.isChecked = true
@@ -220,46 +378,29 @@ class MainActivity : AppCompatActivity() {
   }
 
   private fun setupOverrideFlow(biddingLogicVersion: Long) {
-    // Set override URIS since overrides are on by default
-    val overrideUriBase = getIntentOrError("baseUrl",
-                                           eventLog!!,
-                                           MISSING_FIELD_STRING_FORMAT_RESTART_APP)
+    if (binding!!.usePrebuiltForScoring.isChecked) {
+      binding!!.usePrebuiltForScoring.isChecked = false
+    }
 
-    mBiddingLogicUri = Uri.parse("$overrideUriBase/bidding")
-    mScoringLogicUri = Uri.parse("$overrideUriBase/scoring")
-    mTrustedDataUri = Uri.parse("$mBiddingLogicUri/trusted")
-    mContextualLogicUri = Uri.parse("$overrideUriBase/contextual");
+    setAdSelectionWrapper()
 
-    mBuyer = resolveAdTechIdentifier(mBiddingLogicUri)
-    mSeller = resolveAdTechIdentifier(mScoringLogicUri)
-
-    // Set up ad selection
-    contextualAds = ContextualAds.Builder()
-      .setBuyer(AdTechIdentifier.fromString(mBiddingLogicUri.host!!))
-      .setDecisionLogicUri(mContextualLogicUri)
-      .setAdsWithBid(ArrayList())
-      .build()
-    adWrapper = AdSelectionWrapper(listOf(mBuyer!!), mSeller!!, mScoringLogicUri, mTrustedDataUri,
-                                   contextualAds!!, context!!, EXECUTOR)
-    binding!!.runAdsButton.setOnClickListener{ _ -> adWrapper!!.runAdSelection(eventLog!!::writeEvent, binding!!.adSpace::setText)}
+    // Uncheck prebuilt checkbox because prebuilt is not available when overrides are on yet
+    binding!!.usePrebuiltForScoring.isChecked = false
 
     // Set up Custom Audience Wrapper
     caWrapper = CustomAudienceWrapper(EXECUTOR, context!!)
 
     // Set up the app install switch
-    setupAppInstallSwitch(mBiddingLogicUri, eventLog!!)
-
-    // Set up the contextual ads switches
-    setupContextualAdsSwitches(overrideUriBase, eventLog!!);
+    setupAppInstallSwitch(biddingLogicUri, eventLog!!)
 
     // Set up CA switches
-    setupCASwitches(caWrapper!!, eventLog!!, binding!!, mBiddingLogicUri, context!!)
+    setupCASwitches(caWrapper!!, eventLog!!, binding!!, biddingLogicUri, context!!)
 
     // Decide which js file to use.
     val biddingLogicJs = if (biddingLogicVersion == 2L) overrideBiddingJsV2 else overrideBiddingJsV3
 
     // Setup remote overrides by default
-    useOverrides(eventLog!! ,adWrapper!!, caWrapper!!, overrideDecisionJS!!, biddingLogicJs!!, overrideContextualJs!!, biddingLogicVersion, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, mBiddingLogicUri, context!!);
+    useOverrides(eventLog!!, adWrapper!!, caWrapper!!, overrideDecisionJS!!, biddingLogicJs!!, overrideContextualJs!!, biddingLogicVersion, TRUSTED_SCORING_SIGNALS, TRUSTED_BIDDING_SIGNALS, biddingLogicUri, context!!);
   }
 
   private fun setupContextualAdsSwitches(baseUri: String, eventLog: EventLogManager) {
@@ -276,9 +417,7 @@ class MainActivity : AppCompatActivity() {
         eventLog.writeEvent("Will stop inserting a normal contextual ad into all auctions")
         contextualAds!!.adsWithBid.remove(noFilterAdWithBid)
       }
-      adWrapper = AdSelectionWrapper(
-        listOf(mBuyer!!),
-        mSeller!!, mScoringLogicUri, mTrustedDataUri, contextualAds!!, context!!, EXECUTOR)
+      setAdSelectionWrapper()
     }
     binding!!.contextualAdAiSwitch.setOnCheckedChangeListener { compoundButton, isChecked ->
       val appInstallAd = AdData.Builder()
@@ -296,9 +435,8 @@ class MainActivity : AppCompatActivity() {
         contextualAds!!.adsWithBid.remove(appInstallAdWithBid)
         binding!!.contextualAiDataInput.isEnabled = true;
       }
-      adWrapper = AdSelectionWrapper(
-        listOf(mBuyer!!),
-        mSeller!!, mScoringLogicUri, mTrustedDataUri, contextualAds!!, context!!, EXECUTOR)
+
+      setAdSelectionWrapper()
     }
   }
   /**
@@ -335,11 +473,12 @@ class MainActivity : AppCompatActivity() {
     biddingUri: Uri,
     context: Context,
   ) {
+    val buyer = AdTechIdentifier.fromString(biddingUri.host!!)
     // Shoes
     binding.shoesCaSwitch.setOnCheckedChangeListener { _ , isChecked : Boolean ->
      if (isChecked) {
        caWrapper.joinCa(SHOES_CA_NAME,
-                        AdTechIdentifier.fromString(biddingUri.host!!),
+                        buyer,
                         biddingUri,
                         Uri.parse(
                           "$biddingUri/render_$SHOES_CA_NAME"),
@@ -348,7 +487,8 @@ class MainActivity : AppCompatActivity() {
                         eventLog::writeEvent,
                         calcExpiry(ONE_DAY_EXPIRY))
      } else {
-       caWrapper.leaveCa(SHOES_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), eventLog::writeEvent)
+       Log.i(TAG, "leaving SHOES CA with buyer: $buyer")
+       caWrapper.leaveCa(SHOES_CA_NAME, context.packageName, buyer, eventLog::writeEvent)
      }
     }
 
@@ -356,7 +496,7 @@ class MainActivity : AppCompatActivity() {
     binding.shirtsCaSwitch.setOnCheckedChangeListener { _ , isChecked: Boolean ->
       if (isChecked) {
         caWrapper.joinCa(SHIRTS_CA_NAME,
-                         AdTechIdentifier.fromString(biddingUri.host!!),
+                         buyer,
                          biddingUri,
                          Uri.parse(
                            "$biddingUri/render_$SHIRTS_CA_NAME"),
@@ -365,7 +505,53 @@ class MainActivity : AppCompatActivity() {
                          eventLog::writeEvent,
                          calcExpiry(ONE_DAY_EXPIRY))
       } else {
-        caWrapper.leaveCa(SHIRTS_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), eventLog::writeEvent)
+        caWrapper.leaveCa(SHIRTS_CA_NAME, context.packageName, buyer, eventLog::writeEvent)
+      }
+    }
+
+    // Server Auction CA
+    val serverAuctionBiddingUri =
+      biddingUri.buildUpon().authority(auctionServerBuyer.toString()).build()
+    binding.shoesServerAuctionCaSwitch.setOnCheckedChangeListener { _, isChecked ->
+      if (isChecked) {
+        caWrapper.joinServerAuctionCa(
+          SHOES_SERVER_AUCTION_CA_NAME,
+          AdTechIdentifier.fromString(serverAuctionBiddingUri.host!!),
+          serverAuctionBiddingUri,
+          Uri.parse("$serverAuctionBiddingUri./render_$SHOES_SERVER_AUCTION_CA_NAME"),
+          Uri.parse("$serverAuctionBiddingUri/daily"),
+          Uri.parse("$serverAuctionBiddingUri/trusted"),
+          { event: String? -> eventLog.writeEvent(event!!) },
+          calcExpiry(ONE_DAY_EXPIRY),
+          SHOES_SERVER_AUCTION_AD_RENDER_ID
+        )
+      } else {
+        caWrapper.leaveCa(
+          SHOES_SERVER_AUCTION_CA_NAME,
+          context.packageName,
+          AdTechIdentifier.fromString(serverAuctionBiddingUri.host!!)
+        ) { event: String? -> eventLog.writeEvent(event!!) }
+      }
+    }
+    binding.shirtsServerAuctionCaSwitch.setOnCheckedChangeListener { _, isChecked ->
+      if (isChecked) {
+        caWrapper.joinServerAuctionCa(
+          SHIRTS_SERVER_AUCTION_CA_NAME,
+          AdTechIdentifier.fromString(serverAuctionBiddingUri.host!!),
+          serverAuctionBiddingUri,
+          Uri.parse("$serverAuctionBiddingUri/render_$SHIRTS_SERVER_AUCTION_CA_NAME"),
+          Uri.parse("$serverAuctionBiddingUri/daily"),
+          Uri.parse("$serverAuctionBiddingUri/trusted"),
+          { event: String? -> eventLog.writeEvent(event!!) },
+          calcExpiry(ONE_DAY_EXPIRY),
+          SHIRTS_SERVER_AUCTION_AD_RENDER_ID
+        )
+      } else {
+        caWrapper.leaveCa(
+          SHIRTS_SERVER_AUCTION_CA_NAME,
+          context.packageName,
+          AdTechIdentifier.fromString(serverAuctionBiddingUri.host!!)
+        ) { event: String? -> eventLog.writeEvent(event!!) }
       }
     }
 
@@ -373,7 +559,7 @@ class MainActivity : AppCompatActivity() {
     binding.shortExpiryCaSwitch.setOnCheckedChangeListener{ _ , isChecked: Boolean ->
       if (isChecked) {
         caWrapper.joinCa(SHORT_EXPIRING_CA_NAME,
-                         AdTechIdentifier.fromString(biddingUri.host!!),
+                         buyer,
                          biddingUri,
                          Uri.parse(
                            "$biddingUri/render_$SHOES_CA_NAME"),
@@ -382,7 +568,7 @@ class MainActivity : AppCompatActivity() {
                          eventLog::writeEvent,
                          calcExpiry(THIRTY_SECONDS_EXPIRY))
       } else {
-        caWrapper.leaveCa(SHORT_EXPIRING_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), eventLog::writeEvent)
+        caWrapper.leaveCa(SHORT_EXPIRING_CA_NAME, context.packageName, buyer, eventLog::writeEvent)
       }
     }
 
@@ -390,14 +576,14 @@ class MainActivity : AppCompatActivity() {
     binding.invalidFieldsCaSwitch.setOnCheckedChangeListener{ _ , isChecked: Boolean ->
       if (isChecked) {
         caWrapper.joinEmptyFieldCa(INVALID_FIELD_CA_NAME,
-                                   AdTechIdentifier.fromString(biddingUri.host!!),
+                                   buyer,
                                    biddingUri,
                                    Uri.parse(
                            "$biddingUri/render_$SHOES_CA_NAME"),
                                    eventLog::writeEvent,
                                    calcExpiry(THIRTY_SECONDS_EXPIRY))
       } else {
-        caWrapper.leaveCa(SHORT_EXPIRING_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), eventLog::writeEvent)
+        caWrapper.leaveCa(SHORT_EXPIRING_CA_NAME, context.packageName, buyer, eventLog::writeEvent)
       }
     }
 
@@ -405,7 +591,7 @@ class MainActivity : AppCompatActivity() {
     binding.appInstallCaSwitch.setOnCheckedChangeListener{ _ , isChecked: Boolean ->
       if (isChecked) {
         caWrapper.joinCa(APP_INSTALL_CA_NAME,
-                                   AdTechIdentifier.fromString(biddingUri.host!!),
+                         buyer,
                                    biddingUri,
                                    Uri.parse(
                                      "$biddingUri/render_$APP_INSTALL_CA_NAME"),
@@ -416,13 +602,13 @@ class MainActivity : AppCompatActivity() {
                                    getAppInstallFilterForPackage(binding.caAiDataInput.getText().toString()))
         binding.caAiDataInput.isEnabled = false;
       } else {
-        caWrapper.leaveCa(APP_INSTALL_CA_NAME, context.packageName, AdTechIdentifier.fromString(biddingUri.host!!), eventLog::writeEvent)
+        caWrapper.leaveCa(APP_INSTALL_CA_NAME, context.packageName, buyer, eventLog::writeEvent)
         binding.caAiDataInput.isEnabled = true;
       }
     }
 
     // Frequency Capped CA
-    binding.freqCapCaSwitch.setOnCheckedChangeListener { compoundButton, isChecked ->
+    binding.freqCapCaSwitch.setOnCheckedChangeListener { _, isChecked ->
       val adCounterKey = 1
 
       // Caps is exceeded after 2 impression events
@@ -445,9 +631,9 @@ class MainActivity : AppCompatActivity() {
         .build()
       if (isChecked) {
         caWrapper.joinFilteringCa(FREQ_CAP_CA_NAME,
-                                  AdTechIdentifier.fromString(biddingUri.host!!),
+                                  buyer,
                                   biddingUri,
-                                  Uri.parse(biddingUri.toString() + "/render_" + FREQ_CAP_CA_NAME),
+                                  Uri.parse("$biddingUri/render_$FREQ_CAP_CA_NAME"),
                                   Uri.parse("$biddingUri/daily"),
                                   Uri.parse("$biddingUri/trusted"),
                                   { event: String? ->
@@ -460,8 +646,7 @@ class MainActivity : AppCompatActivity() {
       } else {
         caWrapper.leaveCa(FREQ_CAP_CA_NAME,
                           context.packageName,
-                          AdTechIdentifier.fromString(
-                            biddingUri.host!!)
+                          buyer
         ) { event: String? ->
           eventLog.writeEvent(
             event!!)
@@ -470,13 +655,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Fetch CA
-    val baseUri = getIntentOrError("baseUrl",
-            eventLog!!,
-            MISSING_FIELD_STRING_FORMAT_RESTART_APP)
+    val baseUri = getIntentOrError(BASE_URL_INTENT,
+                                   eventLog,
+                                   MISSING_FIELD_STRING_FORMAT_RESTART_APP)
     binding.fetchAndJoinCaSwitch.setOnCheckedChangeListener {
-      compoundButton, isChecked: Boolean ->
+        _, isChecked: Boolean ->
       if (isChecked) {
-        caWrapper!!.fetchAndJoinCa(
+        caWrapper.fetchAndJoinCa(
                 Uri.parse("$baseUri/fetch/ca"),
                 HATS_CA_NAME,
                 Instant.now(),
@@ -485,10 +670,10 @@ class MainActivity : AppCompatActivity() {
           event: String? -> eventLog.writeEvent(event!!)
         }
       } else {
-        caWrapper!!.leaveCa(
-                HATS_CA_NAME,
-                context!!.packageName,
-                AdTechIdentifier.fromString(biddingUri!!.host!!)) {
+        caWrapper.leaveCa(
+          HATS_CA_NAME,
+          context.packageName,
+          buyer) {
           event: String? -> eventLog.writeEvent(event!!)
         }
       }
@@ -578,7 +763,7 @@ class MainActivity : AppCompatActivity() {
     biddingUri: Uri,
     context: Context,
   ) {
-    val buyersDecisionLogic = BuyersDecisionLogic(mapOf(Pair(mBuyer,
+    val buyersDecisionLogic = BuyersDecisionLogic(mapOf(Pair(buyer,
                                                              DecisionLogic(
                                                                contextualLogicJs))))
     adSelectionWrapper.overrideAdSelection({ event: String? ->
@@ -650,6 +835,55 @@ class MainActivity : AppCompatActivity() {
     return AdTechIdentifier.fromString(uri.host!!)
   }
 
+  private fun auctionServerSellerSfeUriOrEmpty(): Uri {
+    var sfeUriString: String?
+    return if (getIntentOrNull(AUCTION_SERVER_SELLER_SFE_URL_INTENT).also {
+        sfeUriString = it
+      } != null) {
+      Uri.parse(sfeUriString)
+    } else {
+      Uri.EMPTY
+    }
+  }
+
+  private fun auctionServerSellerOrEmpty(): AdTechIdentifier {
+    var auctionServerSeller: String?
+    return if (getIntentOrNull(AUCTION_SERVER_SELLER_INTENT).also {
+        auctionServerSeller = it
+      } != null) {
+      AdTechIdentifier.fromString(auctionServerSeller!!)
+    } else {
+      AdTechIdentifier.fromString("")
+    }
+  }
+
+  private fun auctionServerBuyerOrEmpty(): AdTechIdentifier {
+    var auctionServerBuyer: String?
+    return if (getIntentOrNull(AUCTION_SERVER_BUYER_INTENT).also {
+        auctionServerBuyer = it
+      } != null) {
+      AdTechIdentifier.fromString(auctionServerBuyer!!)
+    } else {
+      AdTechIdentifier.fromString("")
+    }
+  }
+
+  private fun getPrebuiltUriForScoringPickHighest(): Uri? {
+    val paramKey = "reportingUrl"
+    val paramValue = "$baseUriString/reporting"
+    return Uri.parse(
+      String.format(
+        "%s://%s/%s/?%s=%s",
+        AD_SELECTION_PREBUILT_SCHEMA,
+        AD_SELECTION_USE_CASE,
+        AD_SELECTION_HIGHEST_BID_WINS,
+        paramKey,
+        paramValue
+      )
+    )
+  }
+
+
   /**
    * Reads a file into a string, to be used to read the .js files into a string.
    */
@@ -676,5 +910,18 @@ class MainActivity : AppCompatActivity() {
                               .setPackageNames(setOf(packageName))
                               .build())
       .build()
+  }
+
+  private fun getIntentOrNull(intent: String): String? {
+    val value = getIntent().getStringExtra(intent)
+    if (Objects.isNull(value)) {
+      Log.e(
+        TAG, String.format(
+          "Intent %s is not available, returning null. This can cause problems later.",
+          intent
+        )
+      )
+    }
+    return value
   }
 }

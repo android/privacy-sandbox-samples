@@ -109,9 +109,6 @@ class WaterfallMediationActivity : AppCompatActivity() {
     requestList.add(NetworkConfigurationRequest(binding!!.networkB,
                                                 binding!!.networkBBid,
                                                 binding!!.networkBBidFloor))
-    requestList.add(NetworkConfigurationRequest(binding!!.networkC,
-                                                binding!!.networkCBid,
-                                                binding!!.networkCBidFloor))
     return requestList.stream()
       .filter { obj: NetworkConfigurationRequest -> obj.isEligibleToParticipate }
       .map { e: NetworkConfigurationRequest -> configureNetworkAdapter(caHelper, e) }
@@ -129,7 +126,7 @@ class WaterfallMediationActivity : AppCompatActivity() {
                                                  request.useOverrides())
     return createNetworkAdapter(request.networkName,
                                 buyer,
-                                request.networkBid,
+                                request.networkBidFloor,
                                 request.baseUriOrNull,
                                 request.useOverrides())
   }
