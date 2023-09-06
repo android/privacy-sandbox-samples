@@ -11,48 +11,55 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.client.MainActivity">
 
-  <LinearLayout
-      style="?android:attr/buttonBarButtonStyle"
-      android:orientation="vertical"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content">
-      <Button
-          android:id="@+id/load_sdk_button"
-          android:layout_height="wrap_content"
-          android:layout_width="wrap_content"
-          style="?android:attr/buttonBarButtonStyle"
-          android:text="Load SDK" />
-      <Button
-          android:id="@+id/request_webview_button"
-          android:layout_height="wrap_content"
-          android:layout_width="wrap_content"
-          style="?android:attr/buttonBarButtonStyle"
-          android:text="Request WebView" />
-      <Button
-          android:id="@+id/create_file_button"
-          style="?android:attr/buttonBarButtonStyle"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:text="Create File" />
-      <Button
-          android:id="@+id/enable_sdk_sdk_button"
-          style="?android:attr/buttonBarButtonStyle"
-          android:layout_height="wrap_content"
-          android:layout_width="wrap_content"
-          android:text="Enable SDK to SDK comm"  />
-  </LinearLayout>
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        style="?android:attr/buttonBarButtonStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-  <SurfaceView
-      android:id="@+id/rendered_view"
-      android:layout_width="320dp"
-      android:layout_height="320dp" />
+        <Button
+            android:id="@+id/load_sdk_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/load_sdk_button_label" />
 
-</LinearLayout>
+        <Button
+            android:id="@+id/request_banner_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/request_banner_view_button_label" />
+
+        <Button
+            android:id="@+id/create_file_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/create_file_button_label" />
+    </LinearLayout>
+
+    <androidx.privacysandbox.ui.client.view.SandboxedSdkView
+        android:id="@+id/sandbox_view"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_gravity="end"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

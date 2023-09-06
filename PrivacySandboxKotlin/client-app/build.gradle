@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 plugins {
-    id 'com.android.application'
+    id "com.android.application"
 }
-apply plugin: 'kotlin-android'
+apply plugin: "kotlin-android"
 
 android {
     compileSdkPreview "UpsideDownCakePrivacySandbox"
@@ -24,22 +24,22 @@ android {
     defaultConfig {
         applicationId "com.example.privacysandbox.client"
         minSdkVersion 33
-        targetSdkVersion 33
+        targetSdkVersion 34
         versionCode 2
         versionName "1.01"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    flavorDimensions 'androidSdk'
+    flavorDimensions "androidSdk"
 
     productFlavors {
         preview {
-            dimension 'androidSdk'
+            dimension "androidSdk"
         }
 
         oem {
-            dimension 'androidSdk'
+            dimension "androidSdk"
             minSdkVersion 33
             targetSdkVersion 33
         }
@@ -48,27 +48,44 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
-    namespace 'com.example.privacysandbox.client'
+    namespace "com.example.privacysandbox.client"
+
+    experimentalProperties["android.privacySandboxSdk.apiGenerator"] =
+            project.dependencies.create(
+                    "androidx.privacysandbox.tools:tools-apigenerator:$privacy_sandbox_tools_version")
+
+    experimentalProperties["android.privacySandboxSdk.apiGenerator.generatedRuntimeDependencies"] = [
+            project.dependencies.create("org.jetbrains.kotlin:kotlin-stdlib:1.7.20-RC"),
+            project.dependencies.create("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1"),
+            project.dependencies.create("androidx.privacysandbox.ui:ui-core:1.0.0-alpha05"),
+            project.dependencies.create("androidx.privacysandbox.ui:ui-client:1.0.0-alpha05"),
+    ]
 }
 
 dependencies {
+    // Note that here we depend on the example-sdk-bundle, not the example-sdk.
+    //
+    // The example-sdk library contains all the logic, but apps are not compiled using its full
+    // classpath. Instead, the bundle contains information about the SDK API and the Android Gradle
+    // Plugin uses it to generate sources and compile the app.
+    implementation project(":example-sdk-bundle")
 
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.5.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
-    implementation project(':example-aidl-library')
-    implementation project(':example-sdk')
-    implementation project(':mediatee-sdk')
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    implementation "androidx.core:core-ktx:1.7.0"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    // This is required to communicate with the SDK Runtime on devices without the Sandbox.
+    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-alpha08"
+    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-alpha08"
+
+    // This is required to display banner ads using the SandboxedUiAdapter interface.
+    implementation "androidx.privacysandbox.ui:ui-core:1.0.0-alpha05"
+    implementation "androidx.privacysandbox.ui:ui-client:1.0.0-alpha05"
+
+    // Other app dependencies.
+    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation "com.google.android.material:material:1.9.0"
 }

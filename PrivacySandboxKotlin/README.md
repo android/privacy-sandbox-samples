@@ -13,14 +13,19 @@ and can follow the commands described in this README as is. For OEMs to use the 
 flavor, you will need to update the "Preview" part of the commands to "Oems", all other instructions
 are the same.
 
+## Defining the SDK API
+The SDK running in the Privacy Sandbox needs a public API defined with Kotlin interfaces and
+annotated with Privacy Sandbox tool annotations. This allows us to generate an SDK provider that
+compatible with your custom interfaces. To use it just extend `AbstractSandboxedSdkProviderCompat`,
+it will be generated in the same package that defined the `@PrivacySandboxService` interface.
+
 ## Running the Sample
+The sample contains a working SDK in the `example-sdk` module. The SDK is bundled for release and
+app consumption in the `example-sdk-bundle` module, this is where the SDK version, package name and
+signing information is defined.
 
-The Privacy Sandbox should have a class which extends `SandboxedSdkProvider`.
-This class works as an entry point for the sandbox to interact with the SDK.
-The Privacy Sandbox SDK provider library is implemented in the `sdk-implementation` module.
-
-The client app is implemented in the `client-app` module. This app interacts with the SDK running
-in the Privacy Sandbox.
+The client app is implemented in the `client-app` module and is capable of loading and interacting
+with the example SDK.
 
 There are two methods for building and installing the SDK. The preferred option is use Android
 Studio's UI to handle building and deploying the SDK and launching the client app. However, it is 
@@ -34,10 +39,10 @@ installing the app, run the following commands:
 adb shell device_config put adservices adservice_system_service_enabled false
 adb shell device_config put adservices global_kill_switch false
 adb shell device_config put adservices disable_sdk_sandbox false
-
+adb shell device_config put adservices sdksandbox_customized_sdk_context_enabled true
 ```
 
-### From the UI
+### Launch sample from the UI
 In Android Studio, edit your run configuration as follows:
 Edit run configurations > client-app > Deploy > Default APK. Then, under Launch Options,
 Launch > Specified Activity > Activity > `com.example.client.MainActivity`
@@ -65,8 +70,7 @@ Finally, run the client app via Android Studio's UI.
 ### Testing the client
 
 - Click on the "load SDK" button, a toast should show that SDK loaded successfully.
-- Click on the "Request Webview", this should remote render a webview from the
-  sandbox to be viewed inside the activity.
+- Click on the "Show banner view" after the SDK is loaded and a banner rendered by the SDK will be
+  displayed. If you click it, an Activity customized by the SDK will be launched.
 
 - For more information, please read the [documentation](https://developer.android.com/design-for-safety/privacy-sandbox/guides/sdk-runtime).
-

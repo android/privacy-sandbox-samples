@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-     Copyright (C) 2022 The Android Open Source Project
+     Copyright (C) 2023 The Android Open Source Project
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
      You may obtain a copy of the License at
@@ -12,8 +12,7 @@
      limitations under the License.
 -->
 <resources>
-  <string name="app_name">Privacy Sandbox App Sample</string>
-  <string name="create_file_button_label">Create file in sandbox</string>
-  <string name="load_sdk_button_label">Load SDK</string>
-  <string name="request_banner_view_button_label">Show banner view</string>
+    <string name="banner_ad_label">Rendered from the Privacy Sandbox for %1$s</string>
+    <string name="banner_ad_click_prompt">Click this banner to launch activity from sandbox.</string>
+    <string name="full_screen_ad_label">Rendered from an Activity launched and controlled by the Privacy Sandbox</string>
 </resources>
