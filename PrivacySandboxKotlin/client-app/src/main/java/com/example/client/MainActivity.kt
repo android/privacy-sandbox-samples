@@ -15,13 +15,12 @@
  */
 package com.example.client
 
-import android.app.AlertDialog
 import android.os.Bundle
-import android.text.InputType
 import android.util.Log
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
-import android.widget.EditText
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -45,6 +44,21 @@ class MainActivity : AppCompatActivity(), SdkSandboxProcessDeathCallbackCompat {
     /** Container for rendering content from the Privacy Sandbox. */
     private lateinit var sandboxedView: SandboxedSdkView
 
+    /** A spinner for selecting the size of the file created in the sandbox. */
+    private lateinit var fileSizeSpinner: Spinner
+
+    /** Represents a file size that can be selected in the UI. */
+    private data class FileSize(val sizeInMb: Int) {
+        /** Called when FileSize is shown in the spinner. */
+        override fun toString() = "$sizeInMb MB"
+    }
+
+    private val fileSizes = listOf(
+        FileSize(3),
+        FileSize(9),
+        FileSize(18),
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -62,6 +76,13 @@ class MainActivity : AppCompatActivity(), SdkSandboxProcessDeathCallbackCompat {
         }
         findViewById<Button>(R.id.request_banner_button).setOnClickListener {
             onRequestBannerButtonPressed()
+        }
+
+        fileSizeSpinner = findViewById<Spinner>(R.id.create_file_size_spinner).apply {
+            adapter = ArrayAdapter(this@MainActivity,
+                android.R.layout.simple_spinner_dropdown_item,
+                fileSizes,
+            )
         }
     }
 
@@ -100,31 +121,16 @@ class MainActivity : AppCompatActivity(), SdkSandboxProcessDeathCallbackCompat {
     }
 
     private fun onCreateFileButtonPressed() {
-        // Show dialog to collect the size of storage
-        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-        builder.setTitle("Set file size in MB")
-        val input = EditText(this)
-        input.inputType = InputType.TYPE_CLASS_NUMBER
-        builder.setView(input)
-        builder.setPositiveButton("Create") { _, _ ->
-            val sizeInMb = input.text.toString().toIntOrNull()
-            if (sizeInMb == null) {
-                makeToast("Please provide positive integer value")
-                return@setPositiveButton
-            }
-
-            lifecycleScope.launch {
-                val sdk = sdkServiceOrNull()
-                if (sdk == null) {
-                    makeToast("Please load the SDK first!")
-                    return@launch
-                }
-                Log.i(TAG, "Creating file inside sandbox.")
-                makeToast(sdk.createFile(sizeInMb))
-            }
+        val sdk = sdkServiceOrNull()
+        if (sdk == null) {
+            makeToast("Please load the SDK first!")
+            return
         }
-        builder.setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
-        builder.show()
+
+        val fileSize = fileSizes[fileSizeSpinner.selectedItemPosition]
+        lifecycleScope.launch {
+            makeToast(sdk.createFile(fileSize.sizeInMb))
+        }
     }
 
     /**
