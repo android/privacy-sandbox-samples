@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.text.InputType
 import android.util.Log
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -80,8 +81,19 @@ class MainActivity : AppCompatActivity(), SdkSandboxProcessDeathCallbackCompat {
             makeToast("Load SDK first.")
             return@launch
         }
-        // Create an SDK activity launcher that always approves a launch.
-        val launcher = createSdkActivityLauncher { true }
+
+        val launcher = createSdkActivityLauncher {
+            // Apps can allow or deny activity launches as they happen. In this example we are
+            // surfacing a checkbox that controls the launches. In production apps could disable
+            // launches whenever they feel SDKs shouldn't be launching activities (in the middle of
+            // certain game scenes, video playback, etc).
+            if (findViewById<CheckBox>(R.id.sdk_activity_launch_checkbox).isChecked) {
+                true
+            } else {
+                makeToast("SDK tried to launch an activity, but it was denied.")
+                false
+            }
+        }
 
         val request = SdkBannerRequest(PACKAGE_NAME, launcher)
         sandboxedView.setAdapter(sdk.getBanner(request))

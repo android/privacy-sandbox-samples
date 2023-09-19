@@ -52,6 +52,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/create_file_button_label" />
+
+        <CheckBox android:id="@+id/sdk_activity_launch_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="@string/sdk_activity_launch_checkbox_label" />
     </LinearLayout>
 
     <androidx.privacysandbox.ui.client.view.SandboxedSdkView

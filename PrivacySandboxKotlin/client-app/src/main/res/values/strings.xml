@@ -16,4 +16,5 @@
   <string name="create_file_button_label">Create file in sandbox</string>
   <string name="load_sdk_button_label">Load SDK</string>
   <string name="request_banner_view_button_label">Show banner view</string>
+  <string name="sdk_activity_launch_checkbox_label">Allow activities from SDK</string>
 </resources>
