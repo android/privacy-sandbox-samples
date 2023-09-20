@@ -33,11 +33,11 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <Button
-            android:id="@+id/load_sdk_button"
+            android:id="@+id/initialize_sdk_button"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/load_sdk_button_label" />
+            android:text="@string/initialize_sdk_button_label" />
 
         <Button
             android:id="@+id/request_banner_button"
@@ -75,8 +75,8 @@
         </LinearLayout>
     </LinearLayout>
 
-    <androidx.privacysandbox.ui.client.view.SandboxedSdkView
-        android:id="@+id/sandbox_view"
+    <com.existing.sdk.BannerAd
+        android:id="@+id/banner_ad"
         android:layout_width="match_parent"
         android:layout_height="100dp"
         android:layout_gravity="end"

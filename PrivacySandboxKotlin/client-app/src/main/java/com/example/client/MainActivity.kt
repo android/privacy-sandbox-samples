@@ -16,7 +16,6 @@
 package com.example.client
 
 import android.os.Bundle
-import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.CheckBox
@@ -24,25 +23,16 @@ import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.privacysandbox.sdkruntime.client.SdkSandboxManagerCompat
-import androidx.privacysandbox.sdkruntime.client.SdkSandboxProcessDeathCallbackCompat
-import androidx.privacysandbox.sdkruntime.core.LoadSdkCompatException
-import androidx.privacysandbox.ui.client.createSdkActivityLauncher
-import androidx.privacysandbox.ui.client.view.SandboxedSdkView
-import com.example.api.SdkBannerRequest
-import com.example.api.SdkService
-import com.example.api.SdkServiceFactory
 import com.example.privacysandbox.client.R
+import com.existing.sdk.BannerAd
+import com.existing.sdk.ExistingSdk
 import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity(), SdkSandboxProcessDeathCallbackCompat {
-    /**
-     * An [SdkSandboxManagerCompat], used to communicate with the sandbox and load SDKs.
-     */
-    private lateinit var sandboxManager: SdkSandboxManagerCompat
+class MainActivity : AppCompatActivity() {
+    /** Container for rendering content from the SDK. */
+    private lateinit var bannerAd: BannerAd
 
-    /** Container for rendering content from the Privacy Sandbox. */
-    private lateinit var sandboxedView: SandboxedSdkView
+    private val existingSdk = ExistingSdk(this)
 
     /** A spinner for selecting the size of the file created in the sandbox. */
     private lateinit var fileSizeSpinner: Spinner
@@ -63,13 +53,10 @@ class MainActivity : AppCompatActivity(), SdkSandboxProcessDeathCallbackCompat {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        sandboxManager = SdkSandboxManagerCompat.from(applicationContext)
-        sandboxManager.addSdkSandboxProcessDeathCallback(mainExecutor, this)
+        bannerAd = findViewById(R.id.banner_ad)
 
-        sandboxedView = findViewById(R.id.sandbox_view)
-
-        findViewById<Button>(R.id.load_sdk_button).setOnClickListener {
-            onLoadSkButtonPressed()
+        findViewById<Button>(R.id.initialize_sdk_button).setOnClickListener {
+            onInitializeSkButtonPressed()
         }
         findViewById<Button>(R.id.create_file_button).setOnClickListener {
             onCreateFileButtonPressed()
@@ -86,28 +73,20 @@ class MainActivity : AppCompatActivity(), SdkSandboxProcessDeathCallbackCompat {
         }
     }
 
-    private fun onLoadSkButtonPressed() = lifecycleScope.launch {
-        try {
-            val sdk = loadSdk()
-            makeToast("Message from SDK: ${sdk.getMessage()}")
-        } catch (error: LoadSdkCompatException) {
-            makeToast("Failed to load first SDK: " + error.message)
-            Log.e(TAG, "Failed to load first SDK: " + error.message)
+    private fun onInitializeSkButtonPressed() = lifecycleScope.launch {
+        if (!existingSdk.initialize()) {
+            makeToast("Failed to initialize SDK")
+        } else {
+            makeToast("Initialized SDK!")
         }
     }
 
     private fun onRequestBannerButtonPressed() = lifecycleScope.launch {
-        val sdk = sdkServiceOrNull()
-        if (sdk == null) {
-            makeToast("Load SDK first.")
-            return@launch
-        }
-
-        val launcher = createSdkActivityLauncher {
-            // Apps can allow or deny activity launches as they happen. In this example we are
-            // surfacing a checkbox that controls the launches. In production apps could disable
-            // launches whenever they feel SDKs shouldn't be launching activities (in the middle of
-            // certain game scenes, video playback, etc).
+        // Apps can allow or deny activity launches as they happen. In this example we are
+        // surfacing a checkbox that controls the launches. In production apps could disable
+        // launches whenever they feel SDKs shouldn't be launching activities (in the middle of
+        // certain game scenes, video playback, etc).
+        val launchSdkActivity = {
             if (findViewById<CheckBox>(R.id.sdk_activity_launch_checkbox).isChecked) {
                 true
             } else {
@@ -115,54 +94,20 @@ class MainActivity : AppCompatActivity(), SdkSandboxProcessDeathCallbackCompat {
                 false
             }
         }
-
-        val request = SdkBannerRequest(PACKAGE_NAME, launcher)
-        sandboxedView.setAdapter(sdk.getBanner(request))
+        bannerAd.loadAd(this@MainActivity, PACKAGE_NAME, launchSdkActivity)
     }
 
     private fun onCreateFileButtonPressed() {
-        val sdk = sdkServiceOrNull()
-        if (sdk == null) {
-            makeToast("Please load the SDK first!")
-            return
-        }
-
         val fileSize = fileSizes[fileSizeSpinner.selectedItemPosition]
+
         lifecycleScope.launch {
-            makeToast(sdk.createFile(fileSize.sizeInMb))
+            val success = existingSdk.createFile(fileSize.sizeInMb)
+            if (success == null) {
+                makeToast("Please load the SDK first!")
+                return@launch
+            }
+            makeToast(success)
         }
-    }
-
-    /**
-     * Notifies the client application that the SDK sandbox has died. The sandbox could die for
-     * various reasons, for example, due to memory pressure on the system, or a crash in the
-     * sandbox.
-     *
-     * The system will automatically restart the sandbox process if it died due to a crash.
-     * However, the state of the sandbox will be lost - so any SDKs that were loaded previously
-     * would have to be loaded again, using [SdkSandboxManagerCompat.loadSdk] to continue using
-     * them.
-     * If this method is called you should clear any references previously returned by the SDK.
-     */
-    override fun onSdkSandboxDied() {
-        makeToast("Sdk Sandbox process died")
-    }
-
-    /** Fetches the [SdkService] if the SDK was loaded. Returns null otherwise. */
-    private fun sdkServiceOrNull(): SdkService? {
-        val loadedSdk = sandboxManager.getSandboxedSdks().find { it.getSdkInfo()?.name == SDK_NAME }
-        return loadedSdk?.run { SdkServiceFactory.wrapToSdkService(getInterface()!!) }
-    }
-
-    private suspend fun loadSdk(): SdkService {
-        // First we need to check if the SDK is already loaded. If it is we just return it.
-        // The sandbox manager will throw an exception if we try to load an SDK that is already
-        // loaded.
-        val loadedSdk = sdkServiceOrNull()
-        if (loadedSdk != null) return loadedSdk
-
-        val sandboxedSdk = sandboxManager.loadSdk(SDK_NAME, Bundle.EMPTY)
-        return SdkServiceFactory.wrapToSdkService(sandboxedSdk.getInterface()!!)
     }
 
     private fun makeToast(message: String) {
@@ -179,12 +124,5 @@ class MainActivity : AppCompatActivity(), SdkSandboxProcessDeathCallbackCompat {
          * (Note that in this particular sample it's used to build the banner view label).
          */
         private const val PACKAGE_NAME = "com.example.privacysandbox.client"
-
-        /**
-         * Name of the SDK to be loaded.
-         *
-         * (needs to be the one defined in example-sdk-bundle/build.gradle)
-         */
-        private const val SDK_NAME = "com.example.sdk"
     }
 }

@@ -35,3 +35,4 @@ rootProject.name = "PrivacySandboxSample"
 include ':client-app'
 include ':example-sdk'
 include ':example-sdk-bundle'
+include ':existing-sdk'

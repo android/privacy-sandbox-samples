@@ -17,6 +17,7 @@ plugins {
     // These two plugins do annotation processing and code generation for the sdk-implementation.
     id 'androidx.privacysandbox.library' version '1.0.0-alpha02' apply false
     id 'com.google.devtools.ksp' version "$ksp_version" apply false
+    id 'org.jetbrains.kotlin.jvm' version '1.9.10' apply false
 }
 
 task clean(type: Delete) {
