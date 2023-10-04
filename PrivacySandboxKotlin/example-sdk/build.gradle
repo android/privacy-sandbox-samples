@@ -22,7 +22,7 @@ android {
     namespace "com.example"
 
     defaultConfig {
-        minSdk 33
+        minSdk 21
         compileSdk 34
         targetSdk 34
 

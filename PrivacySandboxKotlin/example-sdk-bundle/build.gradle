@@ -42,9 +42,8 @@ class FlavorPicker implements AttributeDisambiguationRule<ProductFlavorAttr> {
 }
 
 android {
-    compileSdkPreview "UpsideDownCakePrivacySandbox"
-    minSdkPreview "33"
-    namespace = "com.example.example-sdk"
+    compileSdk 34
+    minSdk 21
 
     bundle {
         // This package name is used to load this SDK in the Privacy Sandbox later on.
@@ -62,7 +61,6 @@ android {
 dependencies {
     include project(":example-sdk")
 }
-
 
 dependencies.attributesSchema
         .attribute(ProductFlavorAttr.of("androidSdk"))
