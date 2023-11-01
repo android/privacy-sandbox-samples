@@ -24,11 +24,12 @@ The sample contains a working SDK in the `example-sdk` module. The SDK is bundle
 app consumption in the `example-sdk-bundle` module, this is where the SDK version, package name and
 signing information is defined.
 
-The client app is implemented in the `client-app` module and is capable of loading and interacting
-with the example SDK.
+The client app is implemented in the `client-app` module. The `existing-sdk` module represents a
+modified version of a regular SDK that runs in the app as usual but is also capable of loading and
+interacting with the example SDK.
 
 There are two methods for building and installing the SDK. The preferred option is use Android
-Studio's UI to handle building and deploying the SDK and launching the client app. However, it is 
+Studio's UI to handle building and deploying the SDK and launching the client app. However, it is
 possible to build the app bundle and install the APK via the command line, then run the client app.
 
 ### Setting up your device
@@ -44,14 +45,14 @@ adb shell device_config put adservices sdksandbox_customized_sdk_context_enabled
 
 ### Launch sample from the UI
 In Android Studio, edit your run configuration as follows:
-Edit run configurations > client-app > Deploy > Default APK. Then, under Launch Options,
+Edit run configurations > client-app > Deploy > APK from app bundle. Then, under Launch Options,
 Launch > Specified Activity > Activity > `com.example.client.MainActivity`
 
 Press the run button. Your app should launch and you can proceed to the
 [Testing the client](#testing-the-client) section.
 
 ### Command Line
-Build the APK bundle by running 
+Build the APK bundle by running
 
 ```shell
 ./gradlew client-app:buildPrivacySandboxSdkApksForPreviewDebug

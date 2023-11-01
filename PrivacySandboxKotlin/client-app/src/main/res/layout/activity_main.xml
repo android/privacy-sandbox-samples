@@ -39,12 +39,21 @@
             android:layout_height="wrap_content"
             android:text="@string/initialize_sdk_button_label" />
 
-        <Button
-            android:id="@+id/request_banner_button"
-            style="?android:attr/buttonBarButtonStyle"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/request_banner_view_button_label" />
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/request_banner_button"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/request_banner_view_button_label" />
+            <Spinner
+                android:id="@+id/request_ad_spinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
 
         <CheckBox android:id="@+id/sdk_activity_launch_checkbox"
             android:layout_width="wrap_content"
@@ -78,7 +87,7 @@
     <com.existing.sdk.BannerAd
         android:id="@+id/banner_ad"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="400dp"
         android:layout_gravity="end"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

@@ -19,6 +19,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.IBinder
 import android.view.View
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.TextView
 import androidx.privacysandbox.sdkruntime.core.activity.ActivityHolder
@@ -71,13 +72,22 @@ private class SdkUiSession(
         "https://github.com", "https://developer.android.com/"
     )
 
-    override val view: View = View.inflate(sdkContext, R.layout.banner, null).apply {
-        val textView = findViewById<TextView>(R.id.banner_header_view)
-        textView.text =
-            context.getString(R.string.banner_ad_label, request.appPackageName)
+    override val view: View = getAdView()
 
-        setOnClickListener {
-            launchActivity()
+    private fun getAdView() : View {
+        if (request.isWebViewBannerAd) {
+            val webview = WebView(sdkContext)
+            webview.loadUrl(urls[Random.nextInt(urls.size)])
+            return webview
+        }
+        return View.inflate(sdkContext, R.layout.banner, null).apply {
+            val textView = findViewById<TextView>(R.id.banner_header_view)
+            textView.text =
+                context.getString(R.string.banner_ad_label, request.appPackageName)
+
+            setOnClickListener {
+                launchActivity()
+            }
         }
     }
 

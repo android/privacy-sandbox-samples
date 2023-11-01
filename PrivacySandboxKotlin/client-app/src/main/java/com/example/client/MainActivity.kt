@@ -49,6 +49,10 @@ class MainActivity : AppCompatActivity() {
         FileSize(18),
     )
 
+    /** A spinner for selecting the type of ad being requested. */
+    private lateinit var adTypeSpinner: Spinner
+    private val adTypes = listOf("Banner", "WebView Banner")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -70,6 +74,11 @@ class MainActivity : AppCompatActivity() {
                 android.R.layout.simple_spinner_dropdown_item,
                 fileSizes,
             )
+        }
+
+        adTypeSpinner = findViewById<Spinner>(R.id.request_ad_spinner).apply {
+            adapter = ArrayAdapter(
+                this@MainActivity, android.R.layout.simple_spinner_dropdown_item, adTypes)
         }
     }
 
@@ -94,7 +103,8 @@ class MainActivity : AppCompatActivity() {
                 false
             }
         }
-        bannerAd.loadAd(this@MainActivity, PACKAGE_NAME, launchSdkActivity)
+        val loadWebView = adTypes[adTypeSpinner.selectedItemPosition].contains("WebView")
+        bannerAd.loadAd(this@MainActivity, PACKAGE_NAME, launchSdkActivity, loadWebView)
     }
 
     private fun onCreateFileButtonPressed() {
