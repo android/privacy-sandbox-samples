@@ -21,6 +21,7 @@
   <string name="override_switch_text">Remote Overrides: </string>
   <string name="app_install_switch_text">Set App Install Advertisers</string>
   <string name="contextual_ad_switch_text">Contextual Ad</string>
+  <string name="contextual_ad_invalid_signatures_switch_text">Contextual Ad with Invalid Signatures</string>
   <string name="contextual_ad_ai_switch_text">Contextual ad with app install filter for package:</string>
   <string name="app_install_switch_on">ON</string>
   <string name="app_install_switch_off">OFF</string>

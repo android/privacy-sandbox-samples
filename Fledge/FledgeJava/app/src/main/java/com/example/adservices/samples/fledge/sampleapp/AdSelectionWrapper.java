@@ -27,7 +27,7 @@ import android.adservices.adselection.AdSelectionConfig;
 import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.adselection.AddAdSelectionOverrideRequest;
 import android.adservices.adselection.BuyersDecisionLogic;
-import android.adservices.adselection.ContextualAds;
+import android.adservices.adselection.SignedContextualAds;
 import android.adservices.adselection.GetAdSelectionDataRequest;
 import android.adservices.adselection.PersistAdSelectionResultRequest;
 import android.adservices.adselection.ReportImpressionRequest;
@@ -87,7 +87,7 @@ public class AdSelectionWrapper {
    * @param context The application context.
    * @param executor An executor to use with the FLEDGE API calls.
    */
-  public AdSelectionWrapper(List<AdTechIdentifier> buyers, AdTechIdentifier seller, Uri decisionUri, Uri trustedDataUri, ContextualAds contextualAds,
+  public AdSelectionWrapper(List<AdTechIdentifier> buyers, AdTechIdentifier seller, Uri decisionUri, Uri trustedDataUri, List<SignedContextualAds> contextualAds,
       boolean usePrebuiltForScoring, Uri originalScoringUri, Context context, Executor executor) {
 
     mAdSelectionConfig = new AdSelectionConfig.Builder()
@@ -99,7 +99,9 @@ public class AdSelectionWrapper {
         .setPerBuyerSignals(buyers.stream()
             .collect(Collectors.toMap(buyer -> buyer, buyer -> AdSelectionSignals.EMPTY)))
         .setTrustedScoringSignalsUri((buyers.isEmpty()) ? Uri.EMPTY : trustedDataUri)
-        .setBuyerContextualAds(Collections.singletonMap(contextualAds.getBuyer(), contextualAds))
+        .setBuyerSignedContextualAds(contextualAds.stream()
+            .collect(Collectors.toMap(SignedContextualAds::getBuyer, ad -> ad,
+                (existing, replacement) -> existing))) // there shouldn't be any contextual ads with the same buyer
         .build();
     mAdClient = new AdSelectionClient.Builder().setContext(context).setExecutor(executor).build();
     mOverrideClient = new TestAdSelectionClient.Builder().setContext(context).setExecutor(executor).build();
@@ -116,7 +118,7 @@ public class AdSelectionWrapper {
    * @param decisionUri the new {@code Uri} to be used
    */
   public void resetAdSelectionConfig(List<AdTechIdentifier> buyers, AdTechIdentifier seller,  Uri decisionUri, Uri trustedScoringUri,
-      ContextualAds contextualAds) {
+      SignedContextualAds contextualAds) {
     mAdSelectionConfig = new AdSelectionConfig.Builder()
         .setSeller(seller)
         .setDecisionLogicUri(decisionUri)
@@ -126,7 +128,7 @@ public class AdSelectionWrapper {
         .setPerBuyerSignals(buyers.stream()
             .collect(Collectors.toMap(buyer -> buyer, buyer -> AdSelectionSignals.EMPTY)))
         .setTrustedScoringSignalsUri(trustedScoringUri)
-        .setBuyerContextualAds(Collections.singletonMap(contextualAds.getBuyer(), contextualAds))
+        .setBuyerSignedContextualAds(Collections.singletonMap(contextualAds.getBuyer(), contextualAds))
         .build();
   }
 
@@ -257,7 +259,7 @@ public class AdSelectionWrapper {
     if (mUsePrebuiltForScoring) {
       mAdSelectionConfig = new AdSelectionConfig.Builder()
           .setAdSelectionSignals(mAdSelectionConfig.getAdSelectionSignals())
-          .setBuyerContextualAds(mAdSelectionConfig.getBuyerContextualAds())
+          .setBuyerSignedContextualAds(mAdSelectionConfig.getBuyerSignedContextualAds())
           .setCustomAudienceBuyers(mAdSelectionConfig.getCustomAudienceBuyers())
           .setDecisionLogicUri(mOriginalScoringUri)
           .setPerBuyerSignals(mAdSelectionConfig.getPerBuyerSignals())

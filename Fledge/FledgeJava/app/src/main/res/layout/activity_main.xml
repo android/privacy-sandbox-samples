@@ -101,6 +101,21 @@
   </LinearLayout>
   <RelativeLayout
       android:layout_width="match_parent"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp"
+      android:layout_weight=".10"
+      android:layout_height="0dp">
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/contextual_ad_invalid_signature"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:checked="false"
+        android:text="@string/contextual_ad_invalid_signatures_switch_text"
+        android:textSize="11sp" />
+  </RelativeLayout>
+  <RelativeLayout
+      android:layout_width="match_parent"
       android:layout_weight=".10"
       android:layout_height="0dp"
       android:layout_marginStart="5dp"
@@ -306,29 +321,32 @@
       android:layout_weight=".13"
       android:layout_height="0dp"
       android:orientation="horizontal"
+      android:gravity="center"
       android:layout_marginStart="5dp"
       android:layout_marginEnd="5dp">
     <CheckBox
         android:id="@+id/no_buyers"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight=".20"
         android:checked="false"
         android:textSize="11sp"
         android:text="@string/no_buyers_text" />
     <CheckBox
         android:id="@+id/auction_server"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:checked="false"
-        android:textSize="11sp"
+        android:layout_weight=".20"
         android:paddingRight="6dp"
-        android:text="@string/auction_server_text" />
+        android:checked="false"
+        android:text="@string/auction_server_text"
+        android:textSize="11sp" />
     <Button
         android:id="@+id/run_ads_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight=".45"
-        android:textSize="11sp"
+        android:layout_weight=".60"
+        android:textSize="14sp"
         android:text="@string/run_ads_button_text" />
   </LinearLayout>
   <LinearLayout
@@ -342,7 +360,7 @@
         android:id="@+id/ad_selection_id_impression_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight=".45"
+        android:layout_weight=".50"
         android:hint="@string/edit_text_ad_selection_input_hint"
         android:inputType="numberSigned"
         android:minHeight="48dp"
@@ -353,7 +371,7 @@
         android:id="@+id/run_report_impression_button"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight=".55"
+        android:layout_weight=".50"
         android:text="@string/report_impression_button_text"
         android:textSize="11sp"/>
   </LinearLayout>
@@ -368,7 +386,7 @@
         android:id="@+id/ad_selection_id_histogram_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight=".45"
+        android:layout_weight=".50"
         android:hint="@string/edit_text_ad_selection_input_hint"
         android:inputType="numberSigned"
         android:minHeight="48dp"
@@ -379,7 +397,7 @@
         android:id="@+id/run_update_ad_counter_histogram_button"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:layout_weight=".55"
+        android:layout_weight=".50"
         android:text="@string/update_ad_counter_histogram_button_text"
         android:textSize="11sp"/>
   </LinearLayout>

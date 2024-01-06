@@ -20,7 +20,7 @@ import static android.adservices.adselection.ReportEventRequest.FLAG_REPORTING_D
 
 import android.adservices.adselection.AdWithBid;
 import android.adservices.adselection.BuyersDecisionLogic;
-import android.adservices.adselection.ContextualAds;
+import android.adservices.adselection.SignedContextualAds;
 import android.adservices.adselection.DecisionLogic;
 import android.adservices.common.AdData;
 import android.adservices.common.AdFilters;
@@ -39,7 +39,7 @@ import android.widget.RadioGroup;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding;
-import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.example.adservices.samples.fledge.signature.SignatureHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.io.BufferedReader;
@@ -48,14 +48,12 @@ import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.json.JSONObject;
 
 /**
@@ -135,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
     private Uri mScoringLogicUri;
     private Uri mTrustedDataUri;
     private Uri mContextualLogicUri;
+    private Uri mInvalidContextualLogicUri;
     private AdTechIdentifier mBuyer;
     private AdTechIdentifier mSeller;
     private Uri mAuctionServerSellerSfeUri;
@@ -150,7 +149,8 @@ public class MainActivity extends AppCompatActivity {
     private Context context;
     private ActivityMainBinding binding;
     private EventLogManager eventLog;
-    private ContextualAds contextualAds;
+    private SignedContextualAds signedContextualAds;
+    private SignedContextualAds unsignedContextualAds;
 
 
     /**
@@ -173,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
         mScoringLogicUri = Uri.parse(mBaseUriString + "/scoring");
         mTrustedDataUri = Uri.parse(mBiddingLogicUri + "/trusted");
         mContextualLogicUri = Uri.parse(mBaseUriString + "/contextual");
+        mInvalidContextualLogicUri = Uri.parse("https://www.buyerwithinvalidsignature.com/unsigned_contextual");
         mBuyer = resolveAdTechIdentifier(mBiddingLogicUri);
         mSeller = resolveAdTechIdentifier(mScoringLogicUri);
 
@@ -194,10 +195,18 @@ public class MainActivity extends AppCompatActivity {
             overrideContextualJs = replaceReportingURI(assetFileToString(CONTEXTUAL_LOGIC_FILE),
                 reportingUriString);
 
-            contextualAds = new ContextualAds.Builder()
+            signedContextualAds = new SignedContextualAds.Builder()
                 .setBuyer(AdTechIdentifier.fromString(mBiddingLogicUri.getHost()))
                 .setDecisionLogicUri(mContextualLogicUri)
                 .setAdsWithBid(new ArrayList<>())
+                // Signature to be set right before ad selection run
+                .setSignature(new byte[] {})
+                .build();
+            unsignedContextualAds = new SignedContextualAds.Builder()
+                .setBuyer(AdTechIdentifier.fromString(mInvalidContextualLogicUri.getHost()))
+                .setDecisionLogicUri(mInvalidContextualLogicUri)
+                .setAdsWithBid(new ArrayList<>())
+                .setSignature(new byte[] {})
                 .build();
 
             // Set up the contextual ads switches
@@ -294,8 +303,17 @@ public class MainActivity extends AppCompatActivity {
     private void setAdSelectionWrapper() {
         List<AdTechIdentifier> buyers = (binding.noBuyers.isChecked()) ?
             Collections.emptyList() : Collections.singletonList(mBuyer);
+        signedContextualAds = SignatureHelper.signContextualAdsOrReturn(signedContextualAds);
+        // don't sign the invalid contextual ad bundle
+        List<SignedContextualAds> contextualAdsList = new ArrayList<>();
+        if (binding.contextualAdSwitch.isChecked() || binding.contextualAdAiSwitch.isChecked()) {
+            contextualAdsList.add(signedContextualAds);
+        }
+        if (binding.contextualAdInvalidSignature.isChecked()) {
+            contextualAdsList.add(unsignedContextualAds);
+        }
         adWrapper = new AdSelectionWrapper(
-            buyers, mSeller, mScoringLogicUri, mTrustedDataUri, contextualAds, binding.usePrebuiltForScoring.isChecked(), Uri.parse(mBaseUriString + "/scoring"), context, EXECUTOR);
+            buyers, mSeller, mScoringLogicUri, mTrustedDataUri, contextualAdsList, binding.usePrebuiltForScoring.isChecked(), Uri.parse(mBaseUriString + "/scoring"), context, EXECUTOR);
 
         if (binding.auctionServer.isChecked()) {
             binding.runAdsButton.setOnClickListener(
@@ -310,7 +328,8 @@ public class MainActivity extends AppCompatActivity {
         if (binding.overrideOff.isChecked()) {
             try {
                 // Set with new scoring uri
-                adWrapper.resetAdSelectionConfig(Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri, contextualAds);
+                adWrapper.resetAdSelectionConfig(Collections.singletonList(mBuyer), mSeller, mScoringLogicUri, mTrustedDataUri,
+                    signedContextualAds);
 
                 // Reset CA switches as they rely on different biddingLogicUri
                 setupCASwitches(caWrapper, eventLog, binding, mBiddingLogicUri, context);
@@ -358,12 +377,12 @@ public class MainActivity extends AppCompatActivity {
                 .setRenderUri(Uri.parse(baseUri + NO_FILTER_RENDER_SUFFIX))
                 .build();
             AdWithBid noFilterAdWithBid = new AdWithBid(noFilterAd, NO_FILTER_BID);
-            if (isChecked && !contextualAds.getAdsWithBid().contains(noFilterAdWithBid)) {
+            if (isChecked && !signedContextualAds.getAdsWithBid().contains(noFilterAdWithBid)) {
                 eventLog.writeEvent("Will insert a normal contextual ad into all auctions");
-                contextualAds.getAdsWithBid().add(noFilterAdWithBid);
+                signedContextualAds.getAdsWithBid().add(noFilterAdWithBid);
             } else {
                 eventLog.writeEvent("Will stop inserting a normal contextual ad into all auctions");
-                contextualAds.getAdsWithBid().remove(noFilterAdWithBid);
+                signedContextualAds.getAdsWithBid().remove(noFilterAdWithBid);
             }
 
             setAdSelectionWrapper();
@@ -375,13 +394,13 @@ public class MainActivity extends AppCompatActivity {
                 .setAdFilters(getAppInstallFilterForPackage(binding.contextualAiDataInput.getText().toString()))
                 .build();
             AdWithBid appInstallAdWithBid = new AdWithBid(appInstallAd, APP_INSTALL_BID);
-            if (isChecked && !contextualAds.getAdsWithBid().contains(appInstallAdWithBid)) {
+            if (isChecked && !signedContextualAds.getAdsWithBid().contains(appInstallAdWithBid)) {
                 eventLog.writeEvent("Will insert an app install contextual ad into all auctions");
-                contextualAds.getAdsWithBid().add(appInstallAdWithBid);
+                signedContextualAds.getAdsWithBid().add(appInstallAdWithBid);
                 binding.contextualAiDataInput.setEnabled(false);
             } else {
                 eventLog.writeEvent("Will stop inserting an app install contextual ad into all auctions");
-                contextualAds.getAdsWithBid().remove(appInstallAdWithBid);
+                signedContextualAds.getAdsWithBid().remove(appInstallAdWithBid);
                 binding.contextualAiDataInput.setEnabled(true);
             }
 
@@ -581,12 +600,12 @@ public class MainActivity extends AppCompatActivity {
         BuyersDecisionLogic buyersDecisionLogic = new BuyersDecisionLogic(Collections.singletonMap(mBuyer,
             new DecisionLogic(contextualLogicJs)));
         adSelectionWrapper.overrideAdSelection(eventLog::writeEvent, decisionLogicJs, trustedScoringSignals, buyersDecisionLogic);
-        customAudienceWrapper.addCAOverride(SHOES_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, biddingLogicJsVersion, trustedBiddingSignals, eventLog::writeEvent);
-        customAudienceWrapper.addCAOverride(SHIRTS_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, biddingLogicJsVersion, trustedBiddingSignals, eventLog::writeEvent);
-        customAudienceWrapper.addCAOverride(SHORT_EXPIRING_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, biddingLogicJsVersion, trustedBiddingSignals, eventLog::writeEvent);
-        customAudienceWrapper.addCAOverride(INVALID_FIELD_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, biddingLogicJsVersion, trustedBiddingSignals, eventLog::writeEvent);
-        customAudienceWrapper.addCAOverride(APP_INSTALL_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, biddingLogicJsVersion, trustedBiddingSignals, eventLog::writeEvent);
-        customAudienceWrapper.addCAOverride(FREQ_CAP_CA_NAME, context.getPackageName(), AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, biddingLogicJsVersion, trustedBiddingSignals, eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(SHOES_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, biddingLogicJsVersion, trustedBiddingSignals, eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(SHIRTS_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, biddingLogicJsVersion, trustedBiddingSignals, eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(SHORT_EXPIRING_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, biddingLogicJsVersion, trustedBiddingSignals, eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(INVALID_FIELD_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, biddingLogicJsVersion, trustedBiddingSignals, eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(APP_INSTALL_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, biddingLogicJsVersion, trustedBiddingSignals, eventLog::writeEvent);
+        customAudienceWrapper.addCAOverride(FREQ_CAP_CA_NAME, AdTechIdentifier.fromString(biddingUri.getHost()), biddingLogicJs, biddingLogicJsVersion, trustedBiddingSignals, eventLog::writeEvent);
     }
 
     private void resetOverrides(EventLogManager eventLog, AdSelectionWrapper adSelectionWrapper, CustomAudienceWrapper customAudienceWrapper) {

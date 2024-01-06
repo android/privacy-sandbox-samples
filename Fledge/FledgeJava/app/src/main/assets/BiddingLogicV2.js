@@ -23,6 +23,10 @@ function generateBid(ad, auction_signals, per_buyer_signals,
   } else if (custom_audience_bidding_signals.name === "freq_cap") {
     bid = 20;
   }
+  if ('user_bidding_signals' in custom_audience_bidding_signals
+          && 'bid' in custom_audience_bidding_signals.user_bidding_signals) {
+    bid = custom_audience_bidding_signals.user_bidding_signals.bid;
+  }
   return {'status': 0, 'ad': ad, 'bid': bid };
 }
 
@@ -36,5 +40,5 @@ function reportWin(ad_selection_signals, per_buyer_signals, signals_for_buyer,
   const beacons = {'click': clickUri, 'view': viewUri}
   registerAdBeacon(beacons)
   return {'status': 0, 'results': {'reporting_uri':
-         reporting_address + '/reportWin?ca=' + custom_audience_reporting_signals.name} };
+         reporting_address + '/buyer/reportImpression?ca=' + custom_audience_reporting_signals.name} };
 }

@@ -22,6 +22,10 @@ function generateBid(custom_audience, auction_signals, per_buyer_signals, truste
     } else if (custom_audience.name === "freq_cap") {
         bid = 20;
     }
+    if ('user_bidding_signals' in contextual_signals
+            && 'bid' in contextual_signals.user_bidding_signals) {
+        bid = contextual_signals.user_bidding_signals.bid;
+    }
     return {
         'status': 0,
         'ad': custom_audience.ads[0],
@@ -40,5 +44,5 @@ function reportWin(ad_selection_signals, per_buyer_signals, signals_for_buyer,
   const beacons = {'click': clickUri, 'view': viewUri}
   registerAdBeacon(beacons)
   return {'status': 0, 'results': {'reporting_uri':
-         reporting_address + '/reportWin?ca=' + custom_audience_reporting_signals.name} };
+         reporting_address + '/buyer/reportImpression?ca=' + custom_audience_reporting_signals.name} };
 }

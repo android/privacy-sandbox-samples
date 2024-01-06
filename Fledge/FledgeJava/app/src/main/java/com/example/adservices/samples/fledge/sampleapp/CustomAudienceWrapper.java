@@ -276,7 +276,7 @@ public class CustomAudienceWrapper {
    * @param statusReceiver A consumer function that is run after the API call and returns a
    * string indicating the outcome of the call.
    */
-  public void addCAOverride(String name, String owner, AdTechIdentifier buyer, String biddingLogicJs, long biddingLogicJsVersion, AdSelectionSignals trustedBiddingSignals,
+  public void addCAOverride(String name, AdTechIdentifier buyer, String biddingLogicJs, long biddingLogicJsVersion, AdSelectionSignals trustedBiddingSignals,
       Consumer<String> statusReceiver) {
     try {
       AddCustomAudienceOverrideRequest request =
@@ -284,7 +284,7 @@ public class CustomAudienceWrapper {
               .setBuyer(buyer)
               .setName(name)
               .setBiddingLogicJs(biddingLogicJs)
-                  .setBiddingLogicJsVersion(biddingLogicJsVersion)
+              .setBiddingLogicJsVersion(biddingLogicJsVersion)
               .setTrustedBiddingSignals(trustedBiddingSignals)
               .build();
       Futures.addCallback(mCaOverrideClient.overrideCustomAudienceRemoteInfo(request),

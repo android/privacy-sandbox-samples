@@ -13,11 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /**
  * Trivial scoring function -- scores each ad with the value of its bid.
  */
 function scoreAd(ad, bid, auction_config, seller_signals, trusted_scoring_signals,
   contextual_signal, user_signal, custom_audience_scoring_signals) {
+  if ('bid_floor' in seller_signals && bid < seller_signals.bid_floor) {
+        bid = -1;
+  }
   return {'status': 0, 'score': bid };
 }
 
@@ -30,7 +34,7 @@ function reportResult(ad_selection_config, render_uri, bid, contextual_signals) 
   let viewUri = reporting_address + '/sellerInteraction?view';
   const beacons = {'click': clickUri, 'view': viewUri}
   registerAdBeacon(beacons)
-  return {'status': 0, 'results': {'signals_for_buyer': '{"signals_for_buyer" : 1}'
-          , 'reporting_uri': reporting_address + '/reportResult?render_uri='
-            + render_uri + '?bid=' + bid } };
+  return {'status': 0, 'results': {'signals_for_buyer': '{"signals_for_buyer" : 1}',
+          'reporting_uri': reporting_address + '/buyer/reportImpression?render_uri='
+                  + render_uri + '?bid=' + bid } };
 }
