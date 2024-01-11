@@ -18,6 +18,7 @@ package com.example.adservices.samples.fledge.clients
 import android.adservices.adselection.AdSelectionManager
 import android.adservices.adselection.AddAdSelectionFromOutcomesOverrideRequest
 import android.adservices.adselection.AddAdSelectionOverrideRequest
+import android.adservices.adselection.RemoveAdSelectionFromOutcomesOverrideRequest
 import android.adservices.adselection.RemoveAdSelectionOverrideRequest
 import android.adservices.adselection.TestAdSelectionManager
 import android.content.Context
@@ -31,10 +32,11 @@ import java.util.concurrent.Executor
 
 /** This is the Override Ad Selection Client */
 @RequiresApi(api = 34)
-class TestAdSelectionClient private constructor(
+class TestAdSelectionClient
+private constructor(
   mContext: Context,
   private val mExecutor: Executor,
-){
+) {
   private val mTestAdSelectionManager: TestAdSelectionManager
 
   /**
@@ -44,9 +46,9 @@ class TestAdSelectionClient private constructor(
    * <p>This method is only available when Developer mode is enabled and the app is debuggable.
    */
   fun overrideAdSelectionConfigRemoteInfo(
-    request: AddAdSelectionOverrideRequest,
-  ): ListenableFuture<Void?>? {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
+    request: AddAdSelectionOverrideRequest): ListenableFuture<Void?>? {
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?>
+      ->
       mTestAdSelectionManager.overrideAdSelectionConfigRemoteInfo(
         request,
         mExecutor,
@@ -58,7 +60,8 @@ class TestAdSelectionClient private constructor(
           override fun onError(error: java.lang.Exception) {
             completer.setException(error)
           }
-        })
+        }
+      )
       "overrideAdSelectionConfigRemoteInfo"
     }
   }
@@ -72,7 +75,8 @@ class TestAdSelectionClient private constructor(
   fun removeAdSelectionConfigRemoteInfoOverride(
     request: RemoveAdSelectionOverrideRequest,
   ): ListenableFuture<Void?>? {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?>
+      ->
       mTestAdSelectionManager.removeAdSelectionConfigRemoteInfoOverride(
         request,
         mExecutor,
@@ -84,7 +88,8 @@ class TestAdSelectionClient private constructor(
           override fun onError(error: java.lang.Exception) {
             completer.setException(error)
           }
-        })
+        }
+      )
       "removeAdSelectionConfigRemoteInfoOverride"
     }
   }
@@ -96,7 +101,8 @@ class TestAdSelectionClient private constructor(
    * <p>This method is only available when Developer mode is enabled and the app is debuggable.
    */
   fun resetAllAdSelectionConfigRemoteOverrides(): ListenableFuture<Void?>? {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?>
+      ->
       mTestAdSelectionManager.resetAllAdSelectionConfigRemoteOverrides(
         mExecutor,
         object : OutcomeReceiver<Any?, Exception> {
@@ -107,72 +113,20 @@ class TestAdSelectionClient private constructor(
           override fun onError(error: Exception) {
             completer.setException(error)
           }
-        })
-      "resetAllAdSelectionConfigRemoteOverrides"
-    }
-  }
-
-  /**
-   * Invokes the {@code overrideAdSelectionFromOutcomesConfigRemoteInfo} method of {@link
-   * AdSelectionManager}, and returns a Void future
-   *
-   * <p>This method is only available when Developer mode is enabled and the app is debuggable.
-   *
-   * @hide
-   */
-  fun overrideAdSelectionFromOutcomesConfigRemoteInfo(
-    request: AddAdSelectionFromOutcomesOverrideRequest,
-  ): ListenableFuture<Void?> {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
-      mTestAdSelectionManager.overrideAdSelectionFromOutcomesConfigRemoteInfo(
-        request,
-        mExecutor,
-        object : OutcomeReceiver<Any?, java.lang.Exception> {
-          override fun onResult(p0: Any?) {
-            completer.set(null)
-          }
-
-          override fun onError(error: java.lang.Exception) {
-            completer.setException(error)
-          }
-        })
-      "overrideAdSelectionConfigRemoteInfo"
-    }
-  }
-
-  /**
-   * Invokes the {@code removeAdSelectionConfigRemoteInfoOverride} method of {@link
-   * AdSelectionManager}, and returns a Void future
-   *
-   * <p>This method is only available when Developer mode is enabled and the app is debuggable.
-   *
-   * @hide
-   */
-  fun resetAllAdSelectionFromOutcomesConfigRemoteOverrides(): ListenableFuture<Void?> {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
-      mTestAdSelectionManager.resetAllAdSelectionFromOutcomesConfigRemoteOverrides(
-        mExecutor,
-        object : OutcomeReceiver<Any?, Exception> {
-          override fun onResult(p0: Any?) {
-            completer.set(null)
-          }
-
-          override fun onError(error: Exception) {
-            completer.setException(error)
-          }
-        })
+        }
+      )
       "resetAllAdSelectionConfigRemoteOverrides"
     }
   }
 
   /** Builder class */
   class Builder
-  /** Empty-arg constructor with an empty body for Builder  */
+    /** Empty-arg constructor with an empty body for Builder */
   {
     private var mContext: Context? = null
     private var mExecutor: Executor? = null
 
-    /** Sets the context.  */
+    /** Sets the context. */
     fun setContext(context: Context): TestAdSelectionClient.Builder {
       Objects.requireNonNull(context)
       mContext = context
@@ -184,7 +138,7 @@ class TestAdSelectionClient private constructor(
      *
      * @param executor the worker executor used to run heavy background tasks.
      */
-    fun setExecutor(executor: Executor) : TestAdSelectionClient.Builder {
+    fun setExecutor(executor: Executor): TestAdSelectionClient.Builder {
       Objects.requireNonNull(executor)
       mExecutor = executor
       return this
@@ -195,7 +149,7 @@ class TestAdSelectionClient private constructor(
      *
      * @throws NullPointerException if {@code mContext} is null or if {@code mExecutor} is null
      */
-    fun build() : TestAdSelectionClient {
+    fun build(): TestAdSelectionClient {
       Objects.requireNonNull(mContext)
       Objects.requireNonNull(mExecutor)
       return TestAdSelectionClient(mContext!!, mExecutor!!)
@@ -204,6 +158,6 @@ class TestAdSelectionClient private constructor(
 
   init {
     mTestAdSelectionManager =
-      mContext.getSystemService(AdSelectionManager::class.java).testAdSelectionManager
+     AdSelectionManager.get(mContext).testAdSelectionManager
   }
 }

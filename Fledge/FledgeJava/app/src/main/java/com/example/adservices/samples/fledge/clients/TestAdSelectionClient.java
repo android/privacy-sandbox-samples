@@ -29,7 +29,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
-/** This is the Overrides Ad Selection Client  */
+/** This is the Overrides Ad Selection Client */
 public class TestAdSelectionClient {
   private TestAdSelectionManager mTestAdSelectionManager;
   private Context mContext;
@@ -39,7 +39,7 @@ public class TestAdSelectionClient {
     mContext = context;
     mExecutor = executor;
     mTestAdSelectionManager =
-        mContext.getSystemService(AdSelectionManager.class).getTestAdSelectionManager();
+        AdSelectionManager.get(mContext).getTestAdSelectionManager();
   }
 
   /**

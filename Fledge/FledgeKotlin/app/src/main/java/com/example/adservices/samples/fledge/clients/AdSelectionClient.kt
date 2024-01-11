@@ -16,7 +16,6 @@
 package com.example.adservices.samples.fledge.clients
 
 import android.adservices.adselection.AdSelectionConfig
-import android.adservices.adselection.AdSelectionFromOutcomesConfig
 import android.adservices.adselection.AdSelectionManager
 import android.adservices.adselection.AdSelectionOutcome
 import android.adservices.adselection.GetAdSelectionDataOutcome
@@ -24,85 +23,33 @@ import android.adservices.adselection.GetAdSelectionDataRequest
 import android.adservices.adselection.PersistAdSelectionResultRequest
 import android.adservices.adselection.ReportEventRequest
 import android.adservices.adselection.ReportImpressionRequest
-import android.adservices.adselection.SetAppInstallAdvertisersRequest
 import android.adservices.adselection.UpdateAdCounterHistogramRequest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.OutcomeReceiver
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.concurrent.futures.CallbackToFutureAdapter
+import com.example.adservices.samples.fledge.sdkExtensionsHelpers.VersionCompatUtil.isTestableVersion
+import com.example.adservices.samples.fledge.sampleapp.TAG
+import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.Objects
 import java.util.concurrent.Executor
 
-/**
- * The ad selection client.
- */
+
+/** The ad selection client. */
 @RequiresApi(api = 34)
-class AdSelectionClient private constructor(
-  mContext: Context,
-  private val executor: Executor,
-) {
+class AdSelectionClient private constructor(mContext: Context, private val executor: Executor) {
   private val adSelectionManager: AdSelectionManager
-
-  /**
-   * Invokes the {@getAdSelectionData} method of [AdSelectionManager], and returns a
-   * GetAdSelectionDataOutcome future.
-   */
-  @SuppressLint("MissingPermission")
-  fun getAdSelectionData(
-    request: GetAdSelectionDataRequest,
-  ): ListenableFuture<GetAdSelectionDataOutcome?> {
-    return CallbackToFutureAdapter.getFuture<GetAdSelectionDataOutcome?> { completer: CallbackToFutureAdapter.Completer<GetAdSelectionDataOutcome?> ->
-      adSelectionManager.getAdSelectionData(
-        request,
-        executor,
-        object : OutcomeReceiver<GetAdSelectionDataOutcome, java.lang.Exception> {
-          override fun onResult(result: GetAdSelectionDataOutcome) {
-            completer.set(result)
-          }
-
-          override fun onError(error: java.lang.Exception) {
-            completer.setException(error)
-          }
-        })
-      "getAdSelectionData"
-    }
-  }
-
-  /**
-   * Invokes the {@persistAdSelectionResult} method of [AdSelectionManager], and returns a
-   * AdSelectionOutcome future.
-   */
-  @SuppressLint("MissingPermission")
-  fun persistAdSelectionResult(
-    request: PersistAdSelectionResultRequest,
-  ): ListenableFuture<AdSelectionOutcome?> {
-    return CallbackToFutureAdapter.getFuture<AdSelectionOutcome?> { completer: CallbackToFutureAdapter.Completer<AdSelectionOutcome?> ->
-      adSelectionManager.persistAdSelectionResult(
-        request,
-        executor,
-        object : OutcomeReceiver<AdSelectionOutcome, java.lang.Exception> {
-          override fun onResult(result: AdSelectionOutcome) {
-            completer.set(result)
-          }
-
-          override fun onError(error: java.lang.Exception) {
-            completer.setException(error)
-          }
-        })
-      "persistAdSelectionResult"
-    }
-  }
 
   /**
    * Invokes the {@code selectAds} method of {@link AdSelectionManager}, and returns a future with
    * {@link AdSelectionOutcome} if succeeds, or an {@link Exception} if fails.
    */
-  fun selectAds(
-    adSelectionConfig: AdSelectionConfig,
-  ): ListenableFuture<AdSelectionOutcome?> {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<AdSelectionOutcome?> ->
+  fun selectAds(adSelectionConfig: AdSelectionConfig): ListenableFuture<AdSelectionOutcome?> {
+    return CallbackToFutureAdapter.getFuture {
+      completer: CallbackToFutureAdapter.Completer<AdSelectionOutcome?> ->
       adSelectionManager.selectAds(
         adSelectionConfig,
         executor,
@@ -112,49 +59,23 @@ class AdSelectionClient private constructor(
               AdSelectionOutcome.Builder()
                 .setAdSelectionId(result.adSelectionId)
                 .setRenderUri(result.renderUri)
-                .build())
+                .build()
+            )
           }
 
           override fun onError(error: Exception) {
             completer.setException(error)
           }
-        })
+        }
+      )
       "Ad Selection"
     }
   }
 
-  /**
-   * Invokes the {@code selectAds} method of {@link AdSelectionManager}, and returns a future with
-   * {@link AdSelectionOutcome} if succeeds, or an {@link Exception} if fails.
-   */
-  fun selectAds(
-    adSelectionFromOutcomesConfig: AdSelectionFromOutcomesConfig,
-  ): ListenableFuture<AdSelectionOutcome?> {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<AdSelectionOutcome?> ->
-      adSelectionManager.selectAds(
-        adSelectionFromOutcomesConfig,
-        executor,
-        object : OutcomeReceiver<AdSelectionOutcome, Exception> {
-          override fun onResult(result: AdSelectionOutcome) {
-            completer.set(result)
-          }
-
-          override fun onError(error: Exception) {
-            completer.setException(error)
-          }
-        })
-      "Ad Selection"
-    }
-  }
-
-  /**
-   * Invokes the `reportImpression` method of [AdSelectionManager], and returns a Void
-   * future
-   */
-  fun reportImpression(
-    input: ReportImpressionRequest,
-  ): ListenableFuture<Void?> {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
+  /** Invokes the `reportImpression` method of [AdSelectionManager], and returns a Void future */
+  fun reportImpression(input: ReportImpressionRequest): ListenableFuture<Void?> {
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?>
+      ->
       adSelectionManager.reportImpression(
         input,
         executor,
@@ -166,39 +87,20 @@ class AdSelectionClient private constructor(
           override fun onError(error: java.lang.Exception?) {
             completer.setException(error!!)
           }
-        })
+        }
+      )
       "reportImpression"
     }
   }
-
-  /**
-   * Invokes the `setAppInstallAdvertisers` method of [AdSelectionManager], and returns a Void
-   * future
-   */
-  fun setAppInstallAdvertisers(
-    input: SetAppInstallAdvertisersRequest,
-  ): ListenableFuture<Void?> {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
-      adSelectionManager.setAppInstallAdvertisers(
-        input,
-        executor,
-        object : NullableOutcomeReceiver<Any?, java.lang.Exception?> {
-          override fun onResult(result: Any?) {
-            completer.set(null)
-          }
-
-          override fun onError(error: java.lang.Exception?) {
-            completer.setException(error!!)
-          }
-        })
-      "setAppInstallAdvertisers"
+  @SuppressLint("NewApi")
+  fun reportEvent(request: ReportEventRequest): ListenableFuture<Void?> {
+    if (!isTestableVersion(8, 9)) {
+      Log.w(TAG, "Unsupported SDK Extension: Event reporting requires 8 for T+ or 9 for S-, skipping")
+      return Futures.immediateVoidFuture()
     }
-  }
 
-  fun reportInteraction(
-    request: ReportEventRequest,
-  ): ListenableFuture<Void?> {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?>
+      ->
       adSelectionManager.reportEvent(
         request,
         executor,
@@ -210,19 +112,27 @@ class AdSelectionClient private constructor(
           override fun onError(error: java.lang.Exception) {
             completer.setException(error)
           }
-        })
-      "reportInteraction"
+        }
+      )
+      "reportEvent"
     }
   }
 
   /**
-   * Invokes the `updateAdCounterHistogram` method of [AdSelectionManager], and returns
-   * a Void future.
+   * Invokes the `updateAdCounterHistogram` method of [AdSelectionManager], and returns a Void
+   * future.
    */
+  @SuppressLint("NewApi")
   fun updateAdCounterHistogram(
-    updateAdCounterHistogramRequest: UpdateAdCounterHistogramRequest,
+    updateAdCounterHistogramRequest: UpdateAdCounterHistogramRequest
   ): ListenableFuture<Void?> {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
+    if (!isTestableVersion(8, 9)) {
+      Log.w(TAG, "Unsupported SDK Extension: Ad counter histogram update requires 8 for T+ or 9 for S-, skipping")
+      return Futures.immediateVoidFuture()
+    }
+
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?>
+      ->
       adSelectionManager.updateAdCounterHistogram(
         updateAdCounterHistogramRequest,
         executor,
@@ -234,20 +144,86 @@ class AdSelectionClient private constructor(
           override fun onError(error: java.lang.Exception) {
             completer.setException(error)
           }
-        })
+        }
+      )
       "updateAdCounterHistogram"
     }
   }
 
+  /**
+   * Invokes the `getAdSelectionData` method of [AdSelectionManager], and returns a
+   * GetAdSelectionDataOutcome future.
+   */
+  @SuppressLint("NewApi")
+  fun getAdSelectionData(
+          request: GetAdSelectionDataRequest): ListenableFuture<GetAdSelectionDataOutcome?> {
+    if (!isTestableVersion(10, 10)) {
+      Log.w(
+          TAG,
+          "Unsupported SDK Extension: Get Ad Selection Data requires 10, skipping")
+      return Futures.immediateFailedFuture(
+          IllegalStateException("Unsupported SDK Extension: Get Ad Selection Data requires 10, skipping")
+      )
+    }
+    return CallbackToFutureAdapter.getFuture {
+      completer: CallbackToFutureAdapter.Completer<GetAdSelectionDataOutcome?> ->
+              adSelectionManager.getAdSelectionData(
+                      request,
+                      executor,
+                      object : OutcomeReceiver<GetAdSelectionDataOutcome, Exception> {
+                        override fun onResult(result: GetAdSelectionDataOutcome) {
+                          completer.set(result)
+                        }
 
-  /** Builder class.  */
+                        override fun onError(error: Exception) {
+                          completer.setException(error)
+                        }
+                      })
+              "getAdSelectionData"
+            }
+  }
+
+  /**
+   * Invokes the `persistAdSelectionResult` method of [AdSelectionManager], and returns a
+   * AdSelectionOutcome future.
+   */
+  @SuppressLint("NewApi")
+  fun persistAdSelectionResult(
+          request: PersistAdSelectionResultRequest): ListenableFuture<AdSelectionOutcome?> {
+    if (!isTestableVersion(10, 10)) {
+      Log.w(
+          TAG,
+          "Unsupported SDK Extension: Persist Ad Selection Result requires 10, skipping")
+      return Futures.immediateFailedFuture(
+          IllegalStateException("Unsupported SDK Extension: Persist Ad Selection Result requires 10, skipping")
+      )
+    }
+    return CallbackToFutureAdapter.getFuture {
+        completer: CallbackToFutureAdapter.Completer<AdSelectionOutcome?> ->
+              adSelectionManager.persistAdSelectionResult(
+                      request,
+                      executor,
+                      object : OutcomeReceiver<AdSelectionOutcome, Exception> {
+                        override fun onResult(result: AdSelectionOutcome) {
+                          completer.set(result)
+                        }
+
+                        override fun onError(error: Exception) {
+                          completer.setException(error)
+                        }
+                      })
+              "persistAdSelectionResult"
+            }
+  }
+
+  /** Builder class. */
   class Builder
-  /** Empty-arg constructor with an empty body for Builder  */
+    /** Empty-arg constructor with an empty body for Builder */
   {
     private var mContext: Context? = null
     private var mExecutor: Executor? = null
 
-    /** Sets the context.  */
+    /** Sets the context. */
     fun setContext(context: Context): Builder {
       Objects.requireNonNull(context)
       mContext = context
@@ -278,6 +254,6 @@ class AdSelectionClient private constructor(
   }
 
   init {
-    adSelectionManager = mContext.getSystemService(AdSelectionManager::class.java)
+    adSelectionManager = AdSelectionManager.get(mContext)
   }
 }

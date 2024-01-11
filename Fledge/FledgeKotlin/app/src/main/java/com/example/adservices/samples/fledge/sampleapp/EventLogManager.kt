@@ -16,17 +16,12 @@
 package com.example.adservices.samples.fledge.sampleapp
 
 import android.widget.TextView
-import java.lang.StringBuilder
 import java.util.LinkedList
 
-/**
- * Text that appears above the event log
- */
+/** Text that appears above the event log */
 private const val TITLE = "Event Log"
 
-/**
- * The number of events to display
- */
+/** The number of events to display */
 private const val HISTORY_LENGTH = 30
 
 /**
@@ -35,19 +30,16 @@ private const val HISTORY_LENGTH = 30
  * @param display The TextView to manage.
  */
 class EventLogManager(
-  /**
-   * A text view to display the events
-   */
+  /** A text view to display the events */
   private val display: TextView
 ) {
 
-  /**
-   * A queue of the HISTORY_LENGTH most recent events
-   */
+  /** A queue of the HISTORY_LENGTH most recent events */
   private val events = LinkedList<String>()
 
   /**
    * Add an event string to the front of the event log.
+   *
    * @param event The events string to add.
    */
   fun writeEvent(event: String) {
@@ -61,21 +53,20 @@ class EventLogManager(
   }
 
   fun flush() {
-    synchronized(events) {
-      events.clear()
-    }
+    synchronized(events) { events.clear() }
     render()
   }
 
-  /**
-   * Re-renders the event log with the current events from [.mEvents].
-   */
+  /** Re-renders the event log with the current events from [.mEvents]. */
   private fun render() {
     val output = StringBuilder()
-    output.append("""
+    output.append(
+      """
   $TITLE
   
-  """.trimIndent())
+  """
+        .trimIndent()
+    )
     var eventNumber = 1
     synchronized(events) {
       val it = events.descendingIterator()
@@ -86,9 +77,7 @@ class EventLogManager(
     }
   }
 
-  /**
-   * Does the initial render.
-   */
+  /** Does the initial render. */
   init {
     render()
   }

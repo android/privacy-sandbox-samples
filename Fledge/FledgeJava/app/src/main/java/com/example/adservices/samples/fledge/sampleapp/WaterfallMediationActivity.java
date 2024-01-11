@@ -1,10 +1,12 @@
 package com.example.adservices.samples.fledge.sampleapp;
 
+import static com.example.adservices.samples.fledge.SdkExtensionsHelpers.VersionCompatUtil.isTestableVersion;
 import static com.example.adservices.samples.fledge.WaterfallMediationHelpers.Constants.TAG;
 import static com.example.adservices.samples.fledge.WaterfallMediationHelpers.Constants.USE_ONLY_ADDITIONAL_IDS_INTENT;
 
 import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.common.AdTechIdentifier;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -63,6 +65,14 @@ public class WaterfallMediationActivity extends AppCompatActivity {
   }
 
   private void buttonOnClickRunWaterfallMediation() {
+    if (!isTestableVersion(10, 10)) {
+      eventLog.writeEvent(
+          "Unsupported SDK Extension: Waterfall Truncation requires 10, skipping");
+      Log.w(
+          TAG, "Unsupported SDK Extension: Waterfall Truncation requires 10, skipping");
+      return;
+    }
+
     eventLog.flush();
     binding.adSpace.setText("");
     if (!Constants.hasTextNotEmpty(binding.network1pBid)) {
@@ -92,6 +102,7 @@ public class WaterfallMediationActivity extends AppCompatActivity {
     }
   }
 
+  @SuppressLint("NewApi")
   private void notifyOfResults(Pair<AdSelectionOutcome, NetworkAdapter> winner) {
     if (winner.first.hasOutcome()) {
       writeEvent("Winner ad selection id is %s from %s", winner.first.getAdSelectionId(), winner.second.getNetworkName());

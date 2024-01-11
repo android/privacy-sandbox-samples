@@ -15,16 +15,12 @@
  */
 package com.example.adservices.samples.fledge.ServerAuctionHelpers;
 
-import static com.example.adservices.samples.fledge.WaterfallMediationHelpers.Constants.TAG;
-
-import android.net.Uri;
-import android.util.Log;
 import java.util.Collections;
 
 public class AuctionConfigGenerator {
   private static final String HTTPS_SCHEME = "https";
   private static final String SELLER_SIGNALS = "[[72]]";
-  private static final String AUCTION_SIGNALS = "{\"someFooAuctionSignal\": 42}";
+  private static final String AUCTION_SIGNALS = "{\"maxFloorCpmUsdMicros\": 6250}";
   private static final String BUYER_SIGNALS = "[[42]]";
   private static final String BUYER_DEBUG_ID = "buyer_123";
   private static final String SELLER_DEBUG_ID = "seller_123";
