@@ -46,7 +46,7 @@ class BiddingAuctionServerClient(private val context: Context) {
     val auctionConfig = AuctionConfigGenerator.getAuctionConfig(seller, buyer)
     val selectAdsRequest = SelectAdsRequest(
       auctionConfig = auctionConfig,
-      clientType = "ANDROID",
+      clientType = "CLIENT_TYPE_ANDROID",
       protectedAudienceCiphertext = BaseEncoding.base64().encode(adSelectionData)
     )
     Log.d(TAG, selectAdsRequest.toString())

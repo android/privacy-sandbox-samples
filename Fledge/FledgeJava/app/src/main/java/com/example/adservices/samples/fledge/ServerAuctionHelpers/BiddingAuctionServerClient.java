@@ -53,7 +53,7 @@ public class BiddingAuctionServerClient {
     SelectAdsRequest selectAdsRequest =
         SelectAdsRequest.builder()
             .setAuctionConfig(AuctionConfigGenerator.getAuctionConfig(seller, buyer))
-            .setClientType("ANDROID")
+            .setClientType("CLIENT_TYPE_ANDROID")
             // Because we are making a HTTPS call, we need to encode the ciphertext byte array
             .setProtectedAudienceCiphertext(
                 BaseEncoding.base64().encode(adSelectionData)).build();
