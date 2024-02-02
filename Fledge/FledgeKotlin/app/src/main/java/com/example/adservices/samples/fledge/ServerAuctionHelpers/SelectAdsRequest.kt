@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.adservices.samples.fledge.ServerAuctionHelpers;
+package com.example.adservices.samples.fledge.ServerAuctionHelpers
+
 /**
- * A simple SelectAdResponse POJO used to convert to and from json that will be returned as a
- * response by HTTPS POST SelectAd call.
- *
- * <p>https://github.com/privacysandbox/fledge-docs/blob/main/bidding_auction_services_api.md#sellerfrontend-service-and-api-endpoints
+ * The request sent to a Bidding and Auction server.
  */
-public class SelectAdsResponse {
-  public String auctionResultCiphertext;
-}
+data class SelectAdsRequest(
+  val protectedAudienceCiphertext: String,
+  val auctionConfig: AuctionConfig,
+  val clientType: String
+)

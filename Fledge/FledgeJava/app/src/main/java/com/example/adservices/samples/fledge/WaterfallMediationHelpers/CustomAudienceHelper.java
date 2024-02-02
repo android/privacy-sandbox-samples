@@ -54,7 +54,7 @@ public class CustomAudienceHelper {
     }
 
     joinCustomAudience(customAudience);
-    Log.i(TAG, customAudience.getBuyer() + " buyer is returned");
+    Log.i(TAG, customAudience.getBuyer().toString() + " buyer is returned");
     return customAudience.getBuyer();
   }
 

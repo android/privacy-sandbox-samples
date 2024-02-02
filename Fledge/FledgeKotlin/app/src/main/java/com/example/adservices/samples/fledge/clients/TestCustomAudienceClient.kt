@@ -27,13 +27,15 @@ import com.google.common.util.concurrent.ListenableFuture
 import java.util.Objects
 import java.util.concurrent.Executor
 
-/** Client for override APIs. */
+
+/**
+ * Client for override APIs.
+ */
 @RequiresApi(api = 34)
-class TestCustomAudienceClient
-private constructor(
+class TestCustomAudienceClient private constructor(
   mContext: Context,
   private val mExecutor: Executor,
-) {
+){
   private val mTestCustomAudienceManager: TestCustomAudienceManager
 
   /**
@@ -43,8 +45,7 @@ private constructor(
   fun overrideCustomAudienceRemoteInfo(
     request: AddCustomAudienceOverrideRequest,
   ): ListenableFuture<Void?>? {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?>
-      ->
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
       mTestCustomAudienceManager.overrideCustomAudienceRemoteInfo(
         request,
         mExecutor,
@@ -54,10 +55,9 @@ private constructor(
           }
 
           override fun onError(error: java.lang.Exception) {
-            completer.setException(error)
+            completer.setException(error!!)
           }
-        }
-      )
+        })
       "overrideCustomAudienceRemoteInfo"
     }
   }
@@ -69,8 +69,7 @@ private constructor(
   fun removeCustomAudienceRemoteInfoOverride(
     request: RemoveCustomAudienceOverrideRequest,
   ): ListenableFuture<Void?>? {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?>
-      ->
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
       mTestCustomAudienceManager.removeCustomAudienceRemoteInfoOverride(
         request,
         mExecutor,
@@ -82,8 +81,7 @@ private constructor(
           override fun onError(error: java.lang.Exception) {
             completer.setException(error!!)
           }
-        }
-      )
+        })
       "removeCustomAudienceRemoteInfoOverride"
     }
   }
@@ -93,8 +91,7 @@ private constructor(
    * and returns a Void future
    */
   fun resetAllCustomAudienceOverrides(): ListenableFuture<Void?>? {
-    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?>
-      ->
+    return CallbackToFutureAdapter.getFuture { completer: CallbackToFutureAdapter.Completer<Void?> ->
       mTestCustomAudienceManager.resetAllCustomAudienceOverrides(
         mExecutor,
         object : OutcomeReceiver<Any?, Exception?> {
@@ -105,20 +102,19 @@ private constructor(
           override fun onError(error: Exception) {
             completer.setException(error!!)
           }
-        }
-      )
+        })
       "resetAllCustomAudienceOverrides"
     }
   }
 
   /** Builder class */
   class Builder
-    /** Empty-arg constructor with an empty body for Builder */
+  /** Empty-arg constructor with an empty body for Builder  */
   {
     private var mContext: Context? = null
     private var mExecutor: Executor? = null
 
-    /** Sets the context. */
+    /** Sets the context.  */
     fun setContext(context: Context): TestCustomAudienceClient.Builder {
       Objects.requireNonNull(context)
       mContext = context
@@ -130,7 +126,7 @@ private constructor(
      *
      * @param executor the worker executor used to run heavy background tasks.
      */
-    fun setExecutor(executor: Executor): TestCustomAudienceClient.Builder {
+    fun setExecutor(executor: Executor) : TestCustomAudienceClient.Builder {
       Objects.requireNonNull(executor)
       mExecutor = executor
       return this
@@ -141,7 +137,7 @@ private constructor(
      *
      * @throws NullPointerException if {@code mContext} is null or if {@code mExecutor} is null
      */
-    fun build(): TestCustomAudienceClient {
+    fun build() : TestCustomAudienceClient {
       Objects.requireNonNull(mContext)
       Objects.requireNonNull(mExecutor)
       return TestCustomAudienceClient(mContext!!, mExecutor!!)
@@ -150,6 +146,6 @@ private constructor(
 
   init {
     mTestCustomAudienceManager =
-      CustomAudienceManager.get(mContext).testCustomAudienceManager
+      mContext.getSystemService(CustomAudienceManager::class.java).testCustomAudienceManager
   }
 }

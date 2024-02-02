@@ -56,8 +56,18 @@ adb shell device_config put adservices fledge_select_ads_kill_switch false
 
 Once the above steps are completed, you must launch with this command:
 
+1. For single-SSP ad selection and reporting
 ```shell
 adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity -e baseUrl [base server url] 
+```
+
+2. For Waterfall mediation flow
+```shell
+adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.WaterfallMediationActivity \
+-e mediationNetwork [waterfall_mediation_network_url] \
+-e networkA [waterfall_network_A_url] \
+-e networkB [waterfall_network_B_url] \
+-e networkC [waterfall_network_C_url]
 ```
 
 This command will inform the app where your server endpoints are running.

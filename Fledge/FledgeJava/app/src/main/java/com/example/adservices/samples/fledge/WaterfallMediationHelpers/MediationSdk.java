@@ -9,7 +9,6 @@ import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.adselection.AddAdSelectionFromOutcomesOverrideRequest;
 import android.adservices.common.AdSelectionSignals;
 import android.adservices.common.AdTechIdentifier;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
@@ -54,7 +53,6 @@ public class MediationSdk extends NetworkAdapter {
     this.useOnlyAdditionalIds = useOnlyAdditionalIds;
   }
 
-  @SuppressLint("NewApi")
   public Pair<AdSelectionOutcome, NetworkAdapter> orchestrateMediation(List<NetworkAdapter> mediationChain) throws Exception  {
     writeEvent("Mediation chain:\n%s", Joiner.on("\n").skipNulls().join(mediationChain));
 
@@ -88,7 +86,6 @@ public class MediationSdk extends NetworkAdapter {
     return new Pair<>(outcome1p, this);
   }
 
-  @SuppressLint("NewApi")
   public AdSelectionOutcome runSelectOutcome(AdSelectionOutcome outcome1p, NetworkAdapter network3p)
       throws Exception {
     AdSelectionFromOutcomesConfig config = prepareWaterfallConfig(outcome1p.getAdSelectionId(), network3p.getBidFloor());
@@ -108,7 +105,6 @@ public class MediationSdk extends NetworkAdapter {
     return result;
   }
 
-  @SuppressLint("NewApi")
   private void addAdSelectionFromOutcomesOverride(AdSelectionFromOutcomesConfig config) {
     try {
       testAdSelectionClient
@@ -123,7 +119,6 @@ public class MediationSdk extends NetworkAdapter {
     }
   }
 
-  @SuppressLint("NewApi")
   private AdSelectionFromOutcomesConfig prepareWaterfallConfig(Long outcome1pId, double bidFloor) {
     // inject a flag to run only with "Additional ad selection ids from the UX"
     List<Long> outcomeIds = new ArrayList<>();

@@ -13,13 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.adservices.samples.fledge.ServerAuctionHelpers;
-/**
- * A simple SelectAdResponse POJO used to convert to and from json that will be returned as a
- * response by HTTPS POST SelectAd call.
- *
- * <p>https://github.com/privacysandbox/fledge-docs/blob/main/bidding_auction_services_api.md#sellerfrontend-service-and-api-endpoints
- */
-public class SelectAdsResponse {
-  public String auctionResultCiphertext;
+function reportWin(ad_selection_signals, per_buyer_signals, signals_for_buyer,
+ contextual_signals, custom_audience_reporting_signals) {
+  // Add the address of your reporting server here
+  let reporting_address = 'https://reporting.example.com';
+  return {'status': 0, 'results': {'reporting_uri':
+         reporting_address + '/reportWin?ca=' + custom_audience_reporting_signals.name} };
 }

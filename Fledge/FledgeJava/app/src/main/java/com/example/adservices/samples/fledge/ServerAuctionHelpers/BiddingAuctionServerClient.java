@@ -34,8 +34,6 @@ import java.nio.charset.StandardCharsets;
  * Class to call and receive response from Bidding Auction Server.
  */
 public class BiddingAuctionServerClient {
-
-  private static final String CLIENT_TYPE = "CLIENT_TYPE_ANDROID";
   private static final Gson sGson =
       new GsonBuilder()
           .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
@@ -55,7 +53,7 @@ public class BiddingAuctionServerClient {
     SelectAdsRequest selectAdsRequest =
         SelectAdsRequest.builder()
             .setAuctionConfig(AuctionConfigGenerator.getAuctionConfig(seller, buyer))
-            .setClientType(CLIENT_TYPE)
+            .setClientType("ANDROID")
             // Because we are making a HTTPS call, we need to encode the ciphertext byte array
             .setProtectedAudienceCiphertext(
                 BaseEncoding.base64().encode(adSelectionData)).build();

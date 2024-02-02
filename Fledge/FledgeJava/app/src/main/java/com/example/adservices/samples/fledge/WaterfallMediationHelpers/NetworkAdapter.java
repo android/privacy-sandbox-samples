@@ -13,7 +13,6 @@ import android.adservices.adselection.AddAdSelectionOverrideRequest;
 import android.adservices.adselection.ReportImpressionRequest;
 import android.adservices.common.AdSelectionSignals;
 import android.adservices.common.AdTechIdentifier;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
@@ -88,7 +87,6 @@ public class NetworkAdapter {
         .build();
   }
 
-  @SuppressLint("NewApi")
   public AdSelectionOutcome runAdSelection() {
     if (useOverrides) {
       addAdSelectionOverrides();

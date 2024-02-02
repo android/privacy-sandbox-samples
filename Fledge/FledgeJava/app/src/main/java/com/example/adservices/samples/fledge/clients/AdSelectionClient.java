@@ -16,7 +16,6 @@
 
 package com.example.adservices.samples.fledge.clients;
 
-import static com.example.adservices.samples.fledge.SdkExtensionsHelpers.VersionCompatUtil.isTestableVersion;
 
 import android.adservices.adselection.AdSelectionConfig;
 import android.adservices.adselection.AdSelectionFromOutcomesConfig;
@@ -25,27 +24,28 @@ import android.adservices.adselection.AdSelectionOutcome;
 import android.adservices.adselection.GetAdSelectionDataOutcome;
 import android.adservices.adselection.GetAdSelectionDataRequest;
 import android.adservices.adselection.PersistAdSelectionResultRequest;
-import android.adservices.adselection.ReportEventRequest;
 import android.adservices.adselection.ReportImpressionRequest;
+import android.adservices.adselection.SetAppInstallAdvertisersRequest;
+import android.adservices.adselection.ReportEventRequest;
 import android.adservices.adselection.UpdateAdCounterHistogramRequest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.OutcomeReceiver;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.concurrent.futures.CallbackToFutureAdapter;
 
-import com.example.adservices.samples.fledge.sampleapp.MainActivity;
-import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
-/** The ad selection client. */
+
+/**
+ * The ad selection client.
+ */
 @RequiresApi(api = 34)
 public class AdSelectionClient {
   private final AdSelectionManager mAdSelectionManager;
@@ -53,7 +53,7 @@ public class AdSelectionClient {
 
   private AdSelectionClient(@NonNull Context context, @NonNull Executor executor) {
     mExecutor = executor;
-    mAdSelectionManager = AdSelectionManager.get(context);
+    mAdSelectionManager = context.getSystemService(AdSelectionManager.class);
   }
 
   /**
@@ -69,14 +69,9 @@ public class AdSelectionClient {
               adSelectionConfig,
               mExecutor,
               new OutcomeReceiver<AdSelectionOutcome, Exception>() {
-
                 @Override
                 public void onResult(@NonNull AdSelectionOutcome result) {
-                  completer.set(
-                      new AdSelectionOutcome.Builder()
-                          .setAdSelectionId(result.getAdSelectionId())
-                          .setRenderUri(result.getRenderUri())
-                          .build());
+                  completer.set(result);
                 }
 
                 @Override
@@ -93,15 +88,8 @@ public class AdSelectionClient {
    * {@link AdSelectionOutcome} if succeeds, or an {@link Exception} if fails.
    */
   @NonNull
-  @SuppressLint("NewApi")
   public ListenableFuture<AdSelectionOutcome> selectAds(
       @NonNull AdSelectionFromOutcomesConfig config) {
-    if (!isTestableVersion(10, 10)) {
-      Log.w(MainActivity.TAG, "Unsupported SDK Extension: Ad Selection From Outcomes Config requires 10, skipping");
-      return Futures.immediateFailedFuture(
-          new IllegalStateException("Unsupported SDK Extension: Ad Selection From Outcomes Config requires 10, skipping")
-      );
-    }
     return CallbackToFutureAdapter.getFuture(
         completer -> {
           mAdSelectionManager.selectAds(
@@ -127,7 +115,8 @@ public class AdSelectionClient {
    * future
    */
   @NonNull
-  public ListenableFuture<Void> reportImpression(@NonNull ReportImpressionRequest input) {
+  public ListenableFuture<Void> reportImpression(
+      @NonNull ReportImpressionRequest input) {
     return CallbackToFutureAdapter.getFuture(
         completer -> {
           mAdSelectionManager.reportImpression(
@@ -148,17 +137,41 @@ public class AdSelectionClient {
         });
   }
 
-  /**
-   * Invokes the {@code reportEvent} method of {@link AdSelectionManager}, and returns a Void future
-   */
-  @SuppressLint("NewApi")
-  @NonNull
-  public ListenableFuture<Void> reportEvent(@NonNull ReportEventRequest request) {
-    if (!isTestableVersion(8, 9)) {
-      Log.w(MainActivity.TAG, "Unsupported SDK Extension: Event reporting requires 8 for T+ or 9 for S-, skipping");
-      return Futures.immediateVoidFuture();
-    }
 
+  /**
+   * Invokes the {@code setAppInstallAdvertisers} method of {@link AdSelectionManager}, and returns
+   * a Void future.
+   */
+  @NonNull
+  public ListenableFuture<Void> setAppInstallAdvertisers(
+      @NonNull SetAppInstallAdvertisersRequest setAppInstallAdvertisersRequest) {
+    return CallbackToFutureAdapter.getFuture(
+        completer -> {
+          mAdSelectionManager.setAppInstallAdvertisers(
+              setAppInstallAdvertisersRequest,
+              mExecutor,
+              new OutcomeReceiver<Object, Exception>() {
+                @Override
+                public void onResult(@NonNull Object ignoredResult) {
+                  completer.set(null);
+                }
+
+                @Override
+                public void onError(@NonNull Exception error) {
+                  completer.setException(error);
+                }
+              });
+          return "setAppInstallAdvertisers";
+        });
+  }
+
+  /**
+   * Invokes the {@code reportInteraction} method of {@link AdSelectionManager}, and returns a Void
+   * future
+   */
+  @NonNull
+  public ListenableFuture<Void> reportInteraction(
+      @NonNull ReportEventRequest request) {
     return CallbackToFutureAdapter.getFuture(
         completer -> {
           mAdSelectionManager.reportEvent(
@@ -175,7 +188,7 @@ public class AdSelectionClient {
                   completer.setException(error);
                 }
               });
-          return "reportEvent";
+          return "reportInteraction";
         });
   }
 
@@ -183,17 +196,9 @@ public class AdSelectionClient {
    * Invokes the {@code updateAdCounterHistogram} method of {@link AdSelectionManager}, and returns
    * a Void future.
    */
-  @SuppressLint("NewApi")
   @NonNull
   public ListenableFuture<Void> updateAdCounterHistogram(
       @NonNull UpdateAdCounterHistogramRequest updateAdCounterHistogramRequest) {
-    if (!isTestableVersion(8, 9)) {
-      Log.w(
-          MainActivity.TAG,
-          "Unsupported SDK Extension: Ad counter histogram update requires 8 for T+ or 9 for S-, skipping");
-      return Futures.immediateVoidFuture();
-    }
-
     return CallbackToFutureAdapter.getFuture(
         completer -> {
           mAdSelectionManager.updateAdCounterHistogram(
@@ -215,20 +220,13 @@ public class AdSelectionClient {
   }
 
   /**
-   * Invokes {@link AdSelectionManager#getAdSelectionData}, and returns a GetAdSelectionDataOutcome future.
+   * Invokes the {@getAdSelectionData} method of {@link AdSelectionManager}, and returns a
+   * GetAdSelectionDataOutcome future.
    */
   @NonNull
-  @SuppressLint({"MissingPermission", "NewApi"})
+  @SuppressLint("MissingPermission")
   public ListenableFuture<GetAdSelectionDataOutcome> getAdSelectionData(
       @NonNull GetAdSelectionDataRequest request) {
-    if (!isTestableVersion(10, 10)) {
-      Log.w(
-          MainActivity.TAG,
-          "Unsupported SDK Extension: Get Ad Selection Data requires 10, skipping");
-      return Futures.immediateFailedFuture(
-          new IllegalStateException("Unsupported SDK Extension: Get Ad Selection Data requires 10, skipping")
-      );
-    }
     return CallbackToFutureAdapter.getFuture(
         completer -> {
           mAdSelectionManager.getAdSelectionData(
@@ -250,20 +248,13 @@ public class AdSelectionClient {
   }
 
   /**
-   * Invokes {@link AdSelectionManager#persistAdSelectionResult} and returns an AdSelectionOutcome future.
+   * Invokes the {@persistAdSelectionResult} method of {@link AdSelectionManager}, and returns a
+   * AdSelectionOutcome future.
    */
   @NonNull
-  @SuppressLint({"MissingPermission", "NewApi"})
+  @SuppressLint("MissingPermission")
   public ListenableFuture<AdSelectionOutcome> persistAdSelectionResult(
       @NonNull PersistAdSelectionResultRequest request) {
-    if (!isTestableVersion(10, 10)) {
-      Log.w(
-          MainActivity.TAG,
-          "Unsupported SDK Extension: Persist Ad Selection Result requires 10, skipping");
-      return Futures.immediateFailedFuture(
-          new IllegalStateException("Unsupported SDK Extension: Persist Ad Selection Result requires 10, skipping")
-      );
-    }
     return CallbackToFutureAdapter.getFuture(
         completer -> {
           mAdSelectionManager.persistAdSelectionResult(

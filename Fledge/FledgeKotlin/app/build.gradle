@@ -17,28 +17,34 @@ plugins {
     id 'com.android.application'
 }
 apply plugin: 'kotlin-android'
+
 android {
-    compileSdk = 34
-    compileSdkExtension = 10
+    compileSdkPreview "UpsideDownCakePrivacySandbox"
+
     defaultConfig {
         applicationId "com.example.adservices.samples.fledge.sampleapp"
-        minSdkVersion 31
-        targetSdkVersion 34
+        minSdkPreview "UpsideDownCakePrivacySandbox"
+        targetSdkPreview "UpsideDownCakePrivacySandbox"
         versionCode 2
         versionName "1.01"
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
     flavorDimensions 'androidSdk'
+
     productFlavors {
         preview {
             dimension 'androidSdk'
         }
+
         oem {
             dimension 'androidSdk'
-            minSdkVersion 31
+            minSdkVersion 34
             targetSdkVersion 34
         }
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -49,16 +55,18 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     buildFeatures {
         viewBinding = true
     }
 }
+
 dependencies {
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'com.google.guava:guava:29.0-android'
     implementation "androidx.concurrent:concurrent-futures:1.1.0"
-    implementation 'com.google.code.gson:gson:2.9.0'
 }
+
 repositories {
     mavenCentral()
 }
