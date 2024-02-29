@@ -14,31 +14,8 @@
  * limitations under the License.
  */
 
-import com.android.build.api.attributes.ProductFlavorAttr
-import javax.inject.Inject
-
 plugins {
     id "com.android.privacy-sandbox-sdk"
-}
-
-/*
- * This class serves to disambiguate which flavor of the underlying libraries to build against.
- * OEMs will need to update the "params" value of the dependencies.attributesSchema snippet below
- * to "oem".
- */
-class FlavorPicker implements AttributeDisambiguationRule<ProductFlavorAttr> {
-    private final String choice
-    @Inject
-    FlavorPicker(String choice) {
-        this.choice = choice
-    }
-    void execute(MultipleCandidatesDetails<ProductFlavorAttr> details) {
-        for (value in details.candidateValues) {
-            if (value.name == choice) {
-                details.closestMatch(value)
-            }
-        }
-    }
 }
 
 android {
@@ -51,8 +28,8 @@ android {
 
         setVersion(1, 0, 0)
         // SDK provider defined in the SDK Runtime library. This is an important part of the
-        // future backwards compatibility support, so most SDKs won"t need to change it.
-        sdkProviderClassName = "androidx.privacysandbox.sdkruntime.core.SandboxedSdkProviderAdapter"
+        // future backwards compatibility support, so most SDKs won't need to change it.
+        sdkProviderClassName = "androidx.privacysandbox.sdkruntime.provider.SandboxedSdkProviderAdapter"
         // SDK provider defined by the example-sdk itself.
         compatSdkProviderClassName = "com.example.implementation.SdkProvider"
     }
@@ -61,10 +38,3 @@ android {
 dependencies {
     include project(":example-sdk")
 }
-
-dependencies.attributesSchema
-        .attribute(ProductFlavorAttr.of("androidSdk"))
-        .disambiguationRules
-        .add(FlavorPicker.class) {
-            params = ["preview"] // OEMs will need to update this value to "oem"
-        }

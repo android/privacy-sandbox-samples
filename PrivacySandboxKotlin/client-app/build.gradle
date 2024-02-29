@@ -20,6 +20,10 @@ apply plugin: "kotlin-android"
 
 android {
 
+    privacySandbox {
+        enable = true
+    }
+
     defaultConfig {
         applicationId "com.example.privacysandbox.client"
         minSdkVersion 21
@@ -29,20 +33,6 @@ android {
         versionName "1.01"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    flavorDimensions "androidSdk"
-
-    productFlavors {
-        preview {
-            dimension "androidSdk"
-        }
-
-        oem {
-            dimension "androidSdk"
-            minSdkVersion 33
-            targetSdkVersion 33
-        }
     }
 
     buildTypes {
