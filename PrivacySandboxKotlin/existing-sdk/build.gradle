@@ -41,6 +41,8 @@ android {
     experimentalProperties["android.privacySandboxSdk.apiGenerator.generatedRuntimeDependencies"] = [
             project.dependencies.create("org.jetbrains.kotlin:kotlin-stdlib:1.7.20-RC"),
             project.dependencies.create("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1"),
+            project.dependencies.create("androidx.privacysandbox.activity:activity-core:1.0.0-alpha01"),
+            project.dependencies.create("androidx.privacysandbox.activity:activity-client:1.0.0-alpha01"),
             project.dependencies.create("androidx.privacysandbox.ui:ui-core:1.0.0-alpha05"),
             project.dependencies.create("androidx.privacysandbox.ui:ui-client:1.0.0-alpha05"),
     ]
@@ -55,13 +57,16 @@ dependencies {
     debugImplementation project(':example-sdk-bundle')
 
     // Required for backwards compatibility on devices where SDK Runtime is unavailable.
-    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-alpha08"
-    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-alpha08"
+    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-alpha12"
+    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-alpha12"
 
     // This is required to display banner ads using the SandboxedUiAdapter interface.
-    implementation "androidx.privacysandbox.ui:ui-core:1.0.0-alpha05"
+    implementation "androidx.privacysandbox.ui:ui-core:1.0.0-alpha07"
+    implementation "androidx.privacysandbox.ui:ui-client:1.0.0-alpha07"
 
     // This is required to use SDK ActivityLaunchers.
-    implementation "androidx.privacysandbox.ui:ui-client:1.0.0-alpha05"
+    implementation "androidx.privacysandbox.activity:activity-core:1.0.0-alpha01"
+    implementation "androidx.privacysandbox.activity:activity-client:1.0.0-alpha01"
+
     implementation 'androidx.appcompat:appcompat:1.6.1'
 }

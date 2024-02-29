@@ -16,7 +16,7 @@
 package com.example.api
 
 import androidx.privacysandbox.tools.PrivacySandboxValue
-import androidx.privacysandbox.ui.core.SdkActivityLauncher
+import androidx.privacysandbox.activity.core.SdkActivityLauncher
 
 @PrivacySandboxValue
 data class SdkBannerRequest(
