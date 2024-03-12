@@ -47,7 +47,6 @@ dependencies {
     ksp "androidx.privacysandbox.tools:tools-apicompiler:$privacy_sandbox_tools_version"
     implementation "androidx.privacysandbox.tools:tools:$privacy_sandbox_tools_version"
     implementation "androidx.lifecycle:lifecycle-common:2.7.0"
-    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-core:$privacy_sandbox_sdk_runtime_version"
     implementation "androidx.privacysandbox.sdkruntime:sdkruntime-provider:$privacy_sandbox_sdk_runtime_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"

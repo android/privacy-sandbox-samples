@@ -62,7 +62,6 @@ dependencies {
 
     // Required for backwards compatibility on devices where SDK Runtime is unavailable.
     implementation "androidx.privacysandbox.sdkruntime:sdkruntime-client:$privacy_sandbox_sdk_runtime_version"
-    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-core:$privacy_sandbox_sdk_runtime_version"
 
     // This is required to display banner ads using the SandboxedUiAdapter interface.
     implementation "androidx.privacysandbox.ui:ui-core:$privacy_sandbox_ui_version"
