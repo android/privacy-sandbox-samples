@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,39 +14,29 @@
  * limitations under the License.
  */
 plugins {
-    id "com.android.application"
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
 }
-apply plugin: "kotlin-android"
 
+// A standard android library that uses a Runtime-enabled Ad library to show "ads".
 android {
-
+    namespace 'com.existing.sdk'
     privacySandbox {
         enable = true
     }
-
     defaultConfig {
-        applicationId "com.example.privacysandbox.client"
-        minSdkVersion 21
         compileSdk 34
         compileSdkExtension 10
-        targetSdkVersion 34
-        versionCode 2
-        versionName "1.01"
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
-        }
+        targetSdk 34
+        minSdk 21
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
-    namespace "com.example.privacysandbox.client"
+    kotlinOptions {
+        jvmTarget = '17'
+    }
 
     experimentalProperties["android.privacySandboxSdk.apiGenerator"] =
             project.dependencies.create(
@@ -63,9 +53,23 @@ android {
 }
 
 dependencies {
-    // Depend on the SDK library that will run inside the app.
-    implementation project(':existing-sdk')
+    // Note that here we depend on the example-sdk-bundle, not the example-sdk.
+    //
+    // The example-sdk library contains all the logic, but apps are not compiled using its full
+    // classpath. Instead, the bundle contains information about the SDK API and the Android Gradle
+    // Plugin uses it to generate sources and compile the app.
+    debugImplementation project(':example-sdk-bundle')
 
-    implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "com.google.android.material:material:1.9.0"
+    // Required for backwards compatibility on devices where SDK Runtime is unavailable.
+    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-client:$privacy_sandbox_sdk_runtime_version"
+
+    // This is required to display banner ads using the SandboxedUiAdapter interface.
+    implementation "androidx.privacysandbox.ui:ui-core:$privacy_sandbox_ui_version"
+    implementation "androidx.privacysandbox.ui:ui-client:$privacy_sandbox_ui_version"
+
+    // This is required to use SDK ActivityLaunchers.
+    implementation "androidx.privacysandbox.activity:activity-core:$privacy_sandbox_activity_version"
+    implementation "androidx.privacysandbox.activity:activity-client:$privacy_sandbox_activity_version"
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
 }

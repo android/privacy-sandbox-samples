@@ -16,7 +16,7 @@
 
 pluginManagement {
     repositories {
-        maven {url 'https://androidx.dev/snapshots/builds/9263393/artifacts/repository/'}
+        maven {url 'https://androidx.dev/snapshots/builds/11514708/artifacts/repository/'}
         gradlePluginPortal()
         google()
         mavenCentral()
@@ -25,7 +25,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        maven {url 'https://androidx.dev/snapshots/builds/9263393/artifacts/repository/'}
+        maven {url 'https://androidx.dev/snapshots/builds/11514708/artifacts/repository/'}
         google()
         mavenCentral()
     }
@@ -33,6 +33,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "PrivacySandboxSample"
 include ':client-app'
-include ':sdk-implementation'
 include ':example-sdk'
-include ':example-aidl-library'
+include ':example-sdk-bundle'
+include ':existing-sdk'

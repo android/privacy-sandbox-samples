@@ -13,47 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import com.android.build.api.attributes.ProductFlavorAttr
-import javax.inject.Inject
 plugins {
-    id 'com.android.privacy-sandbox-sdk'
+    id "androidx.privacysandbox.library"
+    id "org.jetbrains.kotlin.android"
 }
-/*
- * This class serves to disambiguate which flavor of the underlying libraries to build against.
- * OEMs will need to update the "params" value of the dependencies.attributesSchema snippet below
- * to "oem".
- */
-class FlavorPicker implements AttributeDisambiguationRule<ProductFlavorAttr> {
-    private final String choice
-    @Inject
-    FlavorPicker(String choice) {
-        this.choice = choice;
-    }
-    void execute(MultipleCandidatesDetails<ProductFlavorAttr> details) {
-        for (value in details.candidateValues) {
-            if (value.name == choice) {
-                details.closestMatch(value)
-            }
-        }
-    }
-}
+
 android {
-    namespace = "com.example.example-sdk"
-    compileSdk = 33
-    compileSdkExtension = 5
-    minSdk = 33
-    bundle {
-        packageName = "com.example.privacysandbox.provider"
-        sdkProviderClassName = "com.example.sdkimplementation.SdkProviderImpl"
-        setVersion(1, 0, 0)
+    namespace "com.example"
+
+    defaultConfig {
+        minSdk 21
+        compileSdk 34
+        compileSdkExtension 10
+        targetSdk 34
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
-dependencies.attributesSchema
-        .attribute(ProductFlavorAttr.of("androidSdk"))
-        .disambiguationRules
-        .add(FlavorPicker.class) {
-            params = ["preview"] // OEMs will need to update this value to "oem"
-        }
+
 dependencies {
-    include project(':sdk-implementation')
+    ksp "androidx.privacysandbox.tools:tools-apicompiler:$privacy_sandbox_tools_version"
+    implementation "androidx.privacysandbox.tools:tools:$privacy_sandbox_tools_version"
+    implementation "androidx.lifecycle:lifecycle-common:2.7.0"
+    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-provider:$privacy_sandbox_sdk_runtime_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
+    implementation "androidx.privacysandbox.activity:activity-core:$privacy_sandbox_activity_version"
+    implementation "androidx.privacysandbox.activity:activity-provider:$privacy_sandbox_activity_version"
+    implementation "androidx.privacysandbox.ui:ui-core:$privacy_sandbox_ui_version"
+    implementation "androidx.privacysandbox.ui:ui-provider:$privacy_sandbox_ui_version"
 }
