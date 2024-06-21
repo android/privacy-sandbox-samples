@@ -20,7 +20,7 @@ plugins {
 
 android {
     compileSdk 34
-    compileSdkExtension 10
+    compileSdkExtension 12
     minSdk 21
 
     bundle {

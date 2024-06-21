@@ -62,6 +62,13 @@
             android:text="@string/sdk_activity_launch_checkbox_label" />
 
         <Button
+            android:id="@+id/fullscreen_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/show_fullscreen_view_Button" />
+
+        <Button
             android:id="@+id/create_file_button"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"

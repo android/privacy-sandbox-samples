@@ -16,6 +16,7 @@
 package com.example.implementation
 
 import android.content.Context
+import com.example.api.FullscreenAd
 import com.example.api.SdkBannerRequest
 import com.example.api.SdkService
 import kotlinx.coroutines.Dispatchers
@@ -45,4 +46,9 @@ class SdkServiceImpl(private val context: Context) : SdkService {
 
     override suspend fun getBanner(request: SdkBannerRequest) =
         SdkSandboxedUiAdapterImpl(context, request)
+
+    override suspend fun getFullscreenAd() : FullscreenAd {
+        return FullscreenAdImpl(context)
+    }
+
 }
