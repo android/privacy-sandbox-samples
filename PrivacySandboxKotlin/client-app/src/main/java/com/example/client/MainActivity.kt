@@ -26,6 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.privacysandbox.client.R
 import com.existing.sdk.BannerAd
 import com.existing.sdk.ExistingSdk
+import com.inappmediatee.sdk.InAppMediateeSdk
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -33,6 +34,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bannerAd: BannerAd
 
     private val existingSdk = ExistingSdk(this)
+
+    private val inAppMediateeSdk = InAppMediateeSdk(this)
 
     /** A spinner for selecting the size of the file created in the sandbox. */
     private lateinit var fileSizeSpinner: Spinner
@@ -68,6 +71,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.request_banner_button).setOnClickListener {
             onRequestBannerButtonPressed()
         }
+        findViewById<Button>(R.id.load_in_app_mediatee_sdk_from_re_sdk_button).setOnClickListener {
+            onRequestLoadInAppMediateeSdkFromReSdkPressed()
+        }
 
         fileSizeSpinner = findViewById<Spinner>(R.id.create_file_size_spinner).apply {
             adapter = ArrayAdapter(this@MainActivity,
@@ -87,6 +93,35 @@ class MainActivity : AppCompatActivity() {
             makeToast("Failed to initialize SDK")
         } else {
             makeToast("Initialized SDK!")
+        }
+    }
+
+    private fun onRequestLoadInAppMediateeSdkFromReSdkPressed() = lifecycleScope.launch {
+        if (findViewById<CheckBox>(R.id.register_in_app_mediatee_sdk_checkbox).isChecked) {
+            inAppMediateeSdk.register()
+            if (existingSdk.loadInAppMediateeSdkFromReSdk()) {
+                makeToast("In-app mediatee loaded from RE SDK!")
+            } else {
+                makeToast(
+                    "In-app mediatee could not be loaded from RE SDK! Please make sure the" +
+                            " RE SDK was initialized!"
+                )
+            }
+        } else {
+            inAppMediateeSdk.unregister()
+            try {
+                if (!existingSdk.loadInAppMediateeSdkFromReSdk()) {
+                    makeToast(
+                        "In-app mediatee could not be loaded from RE SDK! Please make sure" +
+                                " the RE SDK was initialized!"
+                    )
+                }
+            } catch (e: Exception) {
+                makeToast(
+                    "In-app mediatee could not be loaded from RE SDK! Please make sure the" +
+                            " In-app mediatee SDK was initialized!"
+                )
+            }
         }
     }
 

@@ -23,6 +23,9 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
+import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
+import com.example.api.SdkSandboxedUiAdapter
+import android.content.res.Resources
 
 class SdkServiceImpl(private val context: Context) : SdkService {
     override suspend fun getMessage(): String = "Hello from Privacy Sandbox!"
@@ -43,6 +46,13 @@ class SdkServiceImpl(private val context: Context) : SdkService {
         return "Created $actualFileSize MB file successfully"
     }
 
-    override suspend fun getBanner(request: SdkBannerRequest) =
-        SdkSandboxedUiAdapterImpl(context, request)
+    override suspend fun getBanner(request: SdkBannerRequest): SdkSandboxedUiAdapter = SdkSandboxedUiAdapterImpl(context, request)
+
+    override suspend fun loadInAppMediateeSdk() {
+        // An [SdkSandboxControllerCompat], used to communicate with the sandbox and load SDKs.
+        val controller = SdkSandboxControllerCompat.from(context)
+        val sandboxedSdks = controller.getAppOwnedSdkSandboxInterfaces()
+        sandboxedSdks.find { x -> x.getName().equals("com.inappmediatee.sdk") }
+            ?: throw Resources.NotFoundException("com.inappmediatee sdk not found in the runtime")
+    }
 }
