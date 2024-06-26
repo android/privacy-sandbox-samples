@@ -28,7 +28,6 @@ android {
         applicationId "com.example.privacysandbox.client"
         minSdkVersion 21
         compileSdk 34
-        compileSdkExtension 10
         targetSdkVersion 34
         versionCode 2
         versionName "1.01"
@@ -55,6 +54,7 @@ android {
     experimentalProperties["android.privacySandboxSdk.apiGenerator.generatedRuntimeDependencies"] = [
             project.dependencies.create("org.jetbrains.kotlin:kotlin-stdlib:1.7.20-RC"),
             project.dependencies.create("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1"),
+            project.dependencies.create("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.0.1"),
             project.dependencies.create("androidx.privacysandbox.activity:activity-core:$privacy_sandbox_activity_version"),
             project.dependencies.create("androidx.privacysandbox.activity:activity-client:$privacy_sandbox_activity_version"),
             project.dependencies.create("androidx.privacysandbox.ui:ui-core:$privacy_sandbox_ui_version"),
@@ -65,7 +65,10 @@ android {
 dependencies {
     // Depend on the SDK library that will run inside the app.
     implementation project(':existing-sdk')
+    implementation project(':example-sdk')
+    implementation project(':in-app-mediatee-sdk')
 
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation "com.google.android.material:material:1.9.0"
+    implementation 'androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-alpha12'
 }

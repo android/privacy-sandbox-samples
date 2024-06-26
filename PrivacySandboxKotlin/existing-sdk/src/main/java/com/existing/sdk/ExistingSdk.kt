@@ -22,6 +22,14 @@ class ExistingSdk(private val context: Context) {
         return loadSdkIfNeeded(context)?.createFile(size)
     }
 
+    suspend fun loadInAppMediateeSdkFromReSdk(): Boolean {
+        if (isSdkLoaded()) {
+            loadSdkIfNeeded(context)?.loadInAppMediateeSdk()
+            return true
+        }
+        return false
+    }
+
     /** Keeps a reference to a sandboxed SDK and makes sure it's only loaded once. */
     internal companion object Loader {
 

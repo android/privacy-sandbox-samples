@@ -16,6 +16,8 @@
   <string name="create_file_size_label">File size: </string>
   <string name="create_file_button_label">Create file in SDK Runtime</string>
   <string name="initialize_sdk_button_label">Initialize SDK</string>
+  <string name="register_in_app_mediatee_sdk_checkbox_label">Register In-App Mediatee SDK</string>
+  <string name="load_in_app_mediatee_sdk_from_re_sdk_button_label">Load In-App Mediatee SDK from RE SDK</string>
   <string name="request_banner_view_button_label">Show banner view</string>
   <string name="sdk_activity_launch_checkbox_label">Allow activities from SDK</string>
 </resources>

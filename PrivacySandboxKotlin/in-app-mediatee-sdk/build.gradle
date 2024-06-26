@@ -19,7 +19,7 @@ plugins {
 }
 
 android {
-    namespace "com.example"
+    namespace "com.inappmediatee"
 
     defaultConfig {
         minSdk 21
@@ -45,6 +45,7 @@ android {
 dependencies {
     ksp "androidx.privacysandbox.tools:tools-apicompiler:$privacy_sandbox_tools_version"
     ksp 'androidx.annotation:annotation:1.6.0'
+    implementation project(':example-sdk')
     implementation 'androidx.privacysandbox.ui:ui-client:1.0.0-alpha07'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10'
     implementation "androidx.privacysandbox.tools:tools:$privacy_sandbox_tools_version"

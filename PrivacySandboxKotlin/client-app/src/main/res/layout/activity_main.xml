@@ -39,6 +39,19 @@
             android:layout_height="wrap_content"
             android:text="@string/initialize_sdk_button_label" />
 
+        <CheckBox android:id="@+id/register_in_app_mediatee_sdk_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="@string/register_in_app_mediatee_sdk_checkbox_label" />
+
+        <Button
+            android:id="@+id/load_in_app_mediatee_sdk_from_re_sdk_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/load_in_app_mediatee_sdk_from_re_sdk_button_label" />
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
