@@ -13,23 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.implementation
+package com.mediatee.implementation
 
 import android.content.Context
 import android.content.res.Configuration
 import android.os.IBinder
 import android.view.View
-import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.TextView
 import androidx.privacysandbox.sdkruntime.core.activity.ActivityHolder
 import androidx.privacysandbox.sdkruntime.core.activity.SdkSandboxActivityHandlerCompat
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
-import androidx.privacysandbox.ui.client.view.SandboxedSdkView
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
-import com.example.R
-import com.example.api.SdkBannerRequest
-import com.example.api.SdkSandboxedUiAdapter
+import com.mediatee.R
+import com.mediatee.api.SdkBannerRequest
+import com.mediatee.api.SdkSandboxedUiAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -40,8 +38,7 @@ import kotlin.random.Random
 
 class SdkSandboxedUiAdapterImpl(
     private val sdkContext: Context,
-    private val request: SdkBannerRequest,
-    private val mediateeAdapter: SandboxedUiAdapter?
+    private val request: SdkBannerRequest
 ) : SdkSandboxedUiAdapter {
     override fun openSession(
         context: Context,
@@ -52,21 +49,9 @@ class SdkSandboxedUiAdapterImpl(
         clientExecutor: Executor,
         client: SandboxedUiAdapter.SessionClient
     ) {
-        if (mediateeAdapter == null) {
-            val session = SdkUiSession(clientExecutor, sdkContext, request /*, mediateeAdapter*/)
-            clientExecutor.execute {
-                client.onSessionOpened(session)
-            }
-        } else {
-            mediateeAdapter.openSession(
-                context,
-                windowInputToken,
-                initialWidth,
-                initialHeight,
-                isZOrderOnTop,
-                clientExecutor,
-                client
-            )
+        val session = SdkUiSession(clientExecutor, sdkContext, request)
+        clientExecutor.execute {
+            client.onSessionOpened(session)
         }
     }
 }
@@ -74,8 +59,7 @@ class SdkSandboxedUiAdapterImpl(
 private class SdkUiSession(
     clientExecutor: Executor,
     private val sdkContext: Context,
-    private val request: SdkBannerRequest,
-    // private val mediateeAdapter: SandboxedUiAdapter?
+    private val request: SdkBannerRequest
 ) : SandboxedUiAdapter.Session {
 
     private val controller = SdkSandboxControllerCompat.from(sdkContext)
@@ -90,12 +74,6 @@ private class SdkUiSession(
     override val view: View = getAdView()
 
     private fun getAdView() : View {
-//        if (mediateeAdapter != null) {
-//            return View.inflate(sdkContext, R.layout.banner, null).apply {
-//                val sandboxedView = findViewById<SandboxedSdkView>(R.id.sandboxed_sdk_view)
-//                sandboxedView.setAdapter(mediateeAdapter)
-//            }
-//        }
         if (request.isWebViewBannerAd) {
             val webview = WebView(sdkContext)
             webview.loadUrl(urls[Random.nextInt(urls.size)])
@@ -142,7 +120,6 @@ private class SdkUiSession(
         }
 
         val token = controller.registerSdkSandboxActivityHandler(handler)
-        val launched = request.activityLauncher.launchSdkActivity(token)
-        if (!launched) controller.unregisterSdkSandboxActivityHandler(handler)
+        controller.unregisterSdkSandboxActivityHandler(handler)
     }
 }

@@ -23,5 +23,5 @@ interface SdkService {
 
     suspend fun createFile(sizeInMb: Int): String
 
-    suspend fun getBanner(request: SdkBannerRequest): SdkSandboxedUiAdapter
+    suspend fun getBanner(request: SdkBannerRequest, isMediateeSdkEnabled: Boolean): SdkSandboxedUiAdapter?
 }

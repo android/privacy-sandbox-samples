@@ -19,7 +19,7 @@ plugins {
 }
 
 android {
-    namespace "com.example"
+    namespace "com.mediatee"
 
     defaultConfig {
         minSdk 21
@@ -56,8 +56,6 @@ android {
 }
 
 dependencies {
-    debugImplementation project(":mediatee-sdk-bundle")
-
     ksp "androidx.privacysandbox.tools:tools-apicompiler:$privacy_sandbox_tools_version"
     ksp 'androidx.annotation:annotation:1.6.0'
     implementation 'androidx.privacysandbox.ui:ui-client:1.0.0-alpha07'
