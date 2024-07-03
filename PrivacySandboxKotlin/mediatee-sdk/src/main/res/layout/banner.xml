@@ -26,13 +26,6 @@
         android:padding="16dp"
         android:background="@android:color/background_light">
 
-<!--        <androidx.privacysandbox.ui.client.view.SandboxedSdkView-->
-<!--            android:id="@+id/sandboxed_sdk_view"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_centerHorizontal="true"-->
-<!--            android:layout_alignParentBottom="true">-->
-<!--        </androidx.privacysandbox.ui.client.view.SandboxedSdkView>-->
         <TextView
             android:id="@+id/banner_header_view"
             android:layout_width="match_parent"
