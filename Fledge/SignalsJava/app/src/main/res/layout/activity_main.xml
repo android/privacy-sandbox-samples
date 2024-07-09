@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2022 The Android Open Source Project
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+          http://www.apache.org/licenses/LICENSE-2.0
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+  <TextView
+      android:id="@+id/event_log"
+      android:layout_width="match_parent"
+      android:layout_weight=".20"
+      android:layout_height="0dp"
+      android:layout_marginTop="5dp"
+      android:layout_marginStart="5dp"
+      android:layout_marginEnd="5dp"
+      android:textIsSelectable="true"
+      android:text="@string/event_log_text" />
+  <EditText
+      android:id="@+id/url_input"
+      android:layout_width="match_parent"
+      android:layout_height="40dp"
+      android:hint="@string/url_hint"
+      android:importantForAutofill="no"
+      android:inputType="textUri"
+      android:minHeight="48dp"
+      android:textColorHint="#78909C"
+      android:layout_margin="10dp"/>
+  <Button
+      android:id="@+id/update_signals_button"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="5dp"
+      android:layout_marginStart="5dp"
+      android:layout_marginTop="5dp"
+      android:layout_marginBottom="5dp"
+      android:text="@string/update_signals_text" />
+  <EditText
+      android:id="@+id/auction_seller_input"
+      android:layout_width="match_parent"
+      android:layout_height="40dp"
+      android:hint="@string/auction_seller_hint"
+      android:importantForAutofill="no"
+      android:inputType="textUri"
+      android:minHeight="48dp"
+      android:textColorHint="#78909C"
+      android:layout_margin="10dp"/>
+  <EditText
+      android:id="@+id/auction_url_input"
+      android:layout_width="match_parent"
+      android:layout_height="40dp"
+      android:hint="@string/auction_url_hint"
+      android:importantForAutofill="no"
+      android:inputType="textUri"
+      android:minHeight="48dp"
+      android:textColorHint="#78909C"
+      android:layout_margin="10dp"/>
+  <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      tools:context=".MainActivity"
+      >
+    <CheckBox
+        android:id="@+id/isContextualAdsRequested"
+        android:layout_width="250dp"
+        android:layout_height="40dp"
+        android:checked="false"
+        android:text="@string/with_contextual_ads" />
+    <Button
+        android:id="@+id/auction_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="5dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:text="@string/auction_text" />
+  </LinearLayout>
+  <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      tools:context=".MainActivity"
+      >
+    <EditText
+        android:id="@+id/ad_selection_id"
+        android:layout_width="250dp"
+        android:layout_height="40dp"
+        android:hint="@string/ad_selection_id_hint"
+        android:importantForAutofill="no"
+        android:inputType="textUri"
+        android:minHeight="48dp"
+        android:textColorHint="#78909C"
+        android:layout_margin="10dp"/>
+    <Button
+        android:id="@+id/report_impression_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="5dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp"
+        android:text="@string/report_impression_text" />
+  </LinearLayout>
+</LinearLayout>
