@@ -21,6 +21,7 @@ import android.os.IBinder
 import android.view.View
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.privacysandbox.sdkruntime.core.activity.ActivityHolder
 import androidx.privacysandbox.sdkruntime.core.activity.SdkSandboxActivityHandlerCompat
@@ -52,21 +53,9 @@ class SdkSandboxedUiAdapterImpl(
         clientExecutor: Executor,
         client: SandboxedUiAdapter.SessionClient
     ) {
-        if (mediateeAdapter == null) {
-            val session = SdkUiSession(clientExecutor, sdkContext, request /*, mediateeAdapter*/)
-            clientExecutor.execute {
-                client.onSessionOpened(session)
-            }
-        } else {
-            mediateeAdapter.openSession(
-                context,
-                windowInputToken,
-                initialWidth,
-                initialHeight,
-                isZOrderOnTop,
-                clientExecutor,
-                client
-            )
+        val session = SdkUiSession(clientExecutor, sdkContext, request, mediateeAdapter)
+        clientExecutor.execute {
+            client.onSessionOpened(session)
         }
     }
 }
@@ -75,7 +64,7 @@ private class SdkUiSession(
     clientExecutor: Executor,
     private val sdkContext: Context,
     private val request: SdkBannerRequest,
-    // private val mediateeAdapter: SandboxedUiAdapter?
+    private val mediateeAdapter: SandboxedUiAdapter?
 ) : SandboxedUiAdapter.Session {
 
     private val controller = SdkSandboxControllerCompat.from(sdkContext)
@@ -90,12 +79,17 @@ private class SdkUiSession(
     override val view: View = getAdView()
 
     private fun getAdView() : View {
-//        if (mediateeAdapter != null) {
-//            return View.inflate(sdkContext, R.layout.banner, null).apply {
-//                val sandboxedView = findViewById<SandboxedSdkView>(R.id.sandboxed_sdk_view)
-//                sandboxedView.setAdapter(mediateeAdapter)
-//            }
-//        }
+        if (mediateeAdapter != null) {
+            return View.inflate(sdkContext, R.layout.banner, null).apply {
+                val adLayout = findViewById<LinearLayout>(R.id.ad_layout)
+                adLayout.removeView(findViewById(R.id.click_ad_header))
+                val textView = findViewById<TextView>(R.id.banner_header_view)
+                textView.text =
+                    context.getString(R.string.banner_ad_label, request.appPackageName)
+                val ssv = findViewById<SandboxedSdkView>(R.id.sandboxed_sdk_view)
+                ssv.setAdapter(mediateeAdapter)
+            }
+        }
         if (request.isWebViewBannerAd) {
             val webview = WebView(sdkContext)
             webview.loadUrl(urls[Random.nextInt(urls.size)])

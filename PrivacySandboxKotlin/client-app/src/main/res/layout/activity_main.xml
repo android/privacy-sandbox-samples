@@ -43,24 +43,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-            <Button
-                android:id="@+id/request_banner_button"
-                style="?android:attr/buttonBarButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/request_banner_view_button_label" />
             <Spinner
                 android:id="@+id/request_ad_spinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
+            <Spinner
+                android:id="@+id/mediation_options_dropdown"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:drawable/btn_dropdown"
+                android:spinnerMode="dropdown"/>
         </LinearLayout>
 
-        <Spinner
-            android:id="@+id/mediation_options_dropdown"
+        <Button
+            android:id="@+id/request_banner_button"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@android:drawable/btn_dropdown"
-            android:spinnerMode="dropdown"/>
+            android:text="@string/request_banner_view_button_label"
+            android:backgroundTint="#FFFFFF"/>
 
         <CheckBox android:id="@+id/sdk_activity_launch_checkbox"
             android:layout_width="wrap_content"
@@ -109,15 +110,9 @@
     <com.existing.sdk.BannerAd
         android:id="@+id/banner_ad"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="150dp"
         android:layout_gravity="end"
-         />
-
-    <com.existing.sdk.BannerAd
-        android:id="@+id/banner_ad_2"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_gravity="end" />
+        />
     </LinearLayout>
     </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -34,6 +34,8 @@ class SdkServiceImpl(private val context: Context) : SdkService {
 
     private val tag = "ExampleSdk"
 
+    private var remoteInstance: com.mediatee.api.SdkService? = null
+
     /** Name of the SDK to be loaded. */
     private val mediateeSdkName = "com.mediatee.sdk"
 
@@ -58,16 +60,15 @@ class SdkServiceImpl(private val context: Context) : SdkService {
             return SdkSandboxedUiAdapterImpl(context, request, null)
         }
         try {
-            val controller = SdkSandboxControllerCompat.from(context)
-
-            val sandboxedSdk = controller.loadSdk(mediateeSdkName, Bundle.EMPTY)
-            val remoteInstance = SdkServiceFactory.wrapToSdkService(sandboxedSdk.getInterface()!!)
+            if (remoteInstance == null) {
+                val controller = SdkSandboxControllerCompat.from(context)
+                val sandboxedSdk = controller.loadSdk(mediateeSdkName, Bundle.EMPTY)
+                remoteInstance = SdkServiceFactory.wrapToSdkService(sandboxedSdk.getInterface()!!)
+            }
 
             val newRequest: com.mediatee.api.SdkBannerRequest =
-                com.mediatee.api.SdkBannerRequest(
-                      context.packageName,
-                    false)
-            return SdkSandboxedUiAdapterImpl(context, request, remoteInstance.getBanner(newRequest))
+                com.mediatee.api.SdkBannerRequest(context.packageName, request.isWebViewBannerAd)
+            return SdkSandboxedUiAdapterImpl(context, request, remoteInstance!!.getBanner(newRequest))
         } catch (e: Exception) {
             Log.e(tag, "Failed to load SDK, error code: $e", e)
             return null

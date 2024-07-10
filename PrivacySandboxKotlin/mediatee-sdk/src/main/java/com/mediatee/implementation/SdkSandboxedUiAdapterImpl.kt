@@ -21,18 +21,13 @@ import android.os.IBinder
 import android.view.View
 import android.webkit.WebView
 import android.widget.TextView
-import androidx.privacysandbox.sdkruntime.core.activity.ActivityHolder
-import androidx.privacysandbox.sdkruntime.core.activity.SdkSandboxActivityHandlerCompat
-import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
-import com.mediatee.R
 import com.mediatee.api.SdkBannerRequest
 import com.mediatee.api.SdkSandboxedUiAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 import kotlin.random.Random
 
@@ -62,14 +57,14 @@ private class SdkUiSession(
     private val request: SdkBannerRequest
 ) : SandboxedUiAdapter.Session {
 
-    private val controller = SdkSandboxControllerCompat.from(sdkContext)
-
     /** A scope for launching coroutines in the client executor. */
     private val scope = CoroutineScope(clientExecutor.asCoroutineDispatcher() + Job())
 
     private val urls = listOf(
         "https://github.com", "https://developer.android.com/"
     )
+
+    private val bannerAdMsg = "Rendered from Runtime Enabled Mediatee SDK"
 
     override val view: View = getAdView()
 
@@ -79,15 +74,9 @@ private class SdkUiSession(
             webview.loadUrl(urls[Random.nextInt(urls.size)])
             return webview
         }
-        return View.inflate(sdkContext, R.layout.banner, null).apply {
-            val textView = findViewById<TextView>(R.id.banner_header_view)
-            textView.text =
-                context.getString(R.string.banner_ad_label, request.appPackageName)
-
-            setOnClickListener {
-                launchActivity()
-            }
-        }
+        val textView = TextView(sdkContext)
+        textView.text = bannerAdMsg
+        return textView
     }
 
     override fun close() {
@@ -106,20 +95,5 @@ private class SdkUiSession(
 
     override fun notifyZOrderChanged(isZOrderOnTop: Boolean) {
         // Notifies that the Z order has changed for the UI associated by this session.
-    }
-
-    private fun launchActivity() = scope.launch {
-        val handler = object : SdkSandboxActivityHandlerCompat {
-            override fun onActivityCreated(activityHolder: ActivityHolder) {
-                val contentView = View.inflate(sdkContext, R.layout.full_screen, null)
-                contentView.findViewById<WebView>(R.id.full_screen_ad_webview).apply {
-                    loadUrl(urls[Random.nextInt(urls.size)])
-                }
-                activityHolder.getActivity().setContentView(contentView)
-            }
-        }
-
-        val token = controller.registerSdkSandboxActivityHandler(handler)
-        controller.unregisterSdkSandboxActivityHandler(handler)
     }
 }
