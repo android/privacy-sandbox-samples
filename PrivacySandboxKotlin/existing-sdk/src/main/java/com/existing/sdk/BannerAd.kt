@@ -20,9 +20,10 @@ class BannerAd(context: Context, attrs: AttributeSet) : LinearLayout(context, at
         baseActivity: AppCompatActivity,
         clientMessage: String,
         allowSdkActivityLaunch: () -> Boolean,
-        shouldLoadWebView: Boolean) {
+        shouldLoadWebView: Boolean,
+        mediationEnabled: Boolean) {
         val bannerAd = getBannerAdFromRuntimeEnabledSdkIfExists(
-                            baseActivity, clientMessage, allowSdkActivityLaunch, shouldLoadWebView)
+                            baseActivity, clientMessage, allowSdkActivityLaunch, shouldLoadWebView, mediationEnabled)
         if (bannerAd != null) {
             val sandboxedSdkView = SandboxedSdkView(context)
             addViewToLayout(sandboxedSdkView)
@@ -39,7 +40,8 @@ class BannerAd(context: Context, attrs: AttributeSet) : LinearLayout(context, at
         baseActivity: AppCompatActivity,
         message: String,
         allowSdkActivityLaunch: () -> Boolean,
-        shouldLoadWebView: Boolean
+        shouldLoadWebView: Boolean,
+        mediationEnabled: Boolean
     ): SandboxedUiAdapter? {
         if (!ExistingSdk.isSdkLoaded()) {
             return null
@@ -47,7 +49,7 @@ class BannerAd(context: Context, attrs: AttributeSet) : LinearLayout(context, at
 
         val launcher = baseActivity.createSdkActivityLauncher(allowSdkActivityLaunch)
         val request = SdkBannerRequest(message, launcher, shouldLoadWebView)
-        return ExistingSdk.loadSdkIfNeeded(context)?.getBanner(request);
+        return ExistingSdk.loadSdkIfNeeded(context)?.getBanner(request, mediationEnabled)
     }
 
     private fun addViewToLayout(view: View) {

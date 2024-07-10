@@ -13,19 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.api
+package com.mediatee.api
 
 import androidx.privacysandbox.tools.PrivacySandboxValue
-import androidx.privacysandbox.activity.core.SdkActivityLauncher
 
 @PrivacySandboxValue
 data class SdkBannerRequest(
     /** The package name of the app. */
     val appPackageName: String,
-    /**
-     *  An [SdkActivityLauncher] that will be used to launch an activity when the banner is clicked.
-     */
-     val activityLauncher: SdkActivityLauncher,
     /**
      * Denotes if a WebView banner ad needs to be loaded.
      */

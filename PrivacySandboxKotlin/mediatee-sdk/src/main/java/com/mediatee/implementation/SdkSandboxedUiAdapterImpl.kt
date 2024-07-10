@@ -13,36 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.implementation
+package com.mediatee.implementation
 
 import android.content.Context
 import android.content.res.Configuration
 import android.os.IBinder
 import android.view.View
-import android.webkit.WebSettings
 import android.webkit.WebView
-import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.privacysandbox.sdkruntime.core.activity.ActivityHolder
-import androidx.privacysandbox.sdkruntime.core.activity.SdkSandboxActivityHandlerCompat
-import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
-import androidx.privacysandbox.ui.client.view.SandboxedSdkView
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
-import com.example.R
-import com.example.api.SdkBannerRequest
-import com.example.api.SdkSandboxedUiAdapter
+import com.mediatee.api.SdkBannerRequest
+import com.mediatee.api.SdkSandboxedUiAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 import kotlin.random.Random
 
 class SdkSandboxedUiAdapterImpl(
     private val sdkContext: Context,
-    private val request: SdkBannerRequest,
-    private val mediateeAdapter: SandboxedUiAdapter?
+    private val request: SdkBannerRequest
 ) : SdkSandboxedUiAdapter {
     override fun openSession(
         context: Context,
@@ -53,7 +44,7 @@ class SdkSandboxedUiAdapterImpl(
         clientExecutor: Executor,
         client: SandboxedUiAdapter.SessionClient
     ) {
-        val session = SdkUiSession(clientExecutor, sdkContext, request, mediateeAdapter)
+        val session = SdkUiSession(clientExecutor, sdkContext, request)
         clientExecutor.execute {
             client.onSessionOpened(session)
         }
@@ -63,11 +54,8 @@ class SdkSandboxedUiAdapterImpl(
 private class SdkUiSession(
     clientExecutor: Executor,
     private val sdkContext: Context,
-    private val request: SdkBannerRequest,
-    private val mediateeAdapter: SandboxedUiAdapter?
+    private val request: SdkBannerRequest
 ) : SandboxedUiAdapter.Session {
-
-    private val controller = SdkSandboxControllerCompat.from(sdkContext)
 
     /** A scope for launching coroutines in the client executor. */
     private val scope = CoroutineScope(clientExecutor.asCoroutineDispatcher() + Job())
@@ -76,34 +64,19 @@ private class SdkUiSession(
         "https://github.com", "https://developer.android.com/"
     )
 
+    private val bannerAdMsg = "Rendered from Runtime Enabled Mediatee SDK"
+
     override val view: View = getAdView()
 
     private fun getAdView() : View {
-        if (mediateeAdapter != null) {
-            return View.inflate(sdkContext, R.layout.banner, null).apply {
-                val adLayout = findViewById<LinearLayout>(R.id.ad_layout)
-                adLayout.removeView(findViewById(R.id.click_ad_header))
-                val textView = findViewById<TextView>(R.id.banner_header_view)
-                textView.text =
-                    context.getString(R.string.banner_ad_label, request.appPackageName)
-                val ssv = findViewById<SandboxedSdkView>(R.id.sandboxed_sdk_view)
-                ssv.setAdapter(mediateeAdapter)
-            }
-        }
         if (request.isWebViewBannerAd) {
             val webview = WebView(sdkContext)
             webview.loadUrl(urls[Random.nextInt(urls.size)])
             return webview
         }
-        return View.inflate(sdkContext, R.layout.banner, null).apply {
-            val textView = findViewById<TextView>(R.id.banner_header_view)
-            textView.text =
-                context.getString(R.string.banner_ad_label, request.appPackageName)
-
-            setOnClickListener {
-                launchActivity()
-            }
-        }
+        val textView = TextView(sdkContext)
+        textView.text = bannerAdMsg
+        return textView
     }
 
     override fun close() {
@@ -122,21 +95,5 @@ private class SdkUiSession(
 
     override fun notifyZOrderChanged(isZOrderOnTop: Boolean) {
         // Notifies that the Z order has changed for the UI associated by this session.
-    }
-
-    private fun launchActivity() = scope.launch {
-        val handler = object : SdkSandboxActivityHandlerCompat {
-            override fun onActivityCreated(activityHolder: ActivityHolder) {
-                val contentView = View.inflate(sdkContext, R.layout.full_screen, null)
-                contentView.findViewById<WebView>(R.id.full_screen_ad_webview).apply {
-                    loadUrl(urls[Random.nextInt(urls.size)])
-                }
-                activityHolder.getActivity().setContentView(contentView)
-            }
-        }
-
-        val token = controller.registerSdkSandboxActivityHandler(handler)
-        val launched = request.activityLauncher.launchSdkActivity(token)
-        if (!launched) controller.unregisterSdkSandboxActivityHandler(handler)
     }
 }
