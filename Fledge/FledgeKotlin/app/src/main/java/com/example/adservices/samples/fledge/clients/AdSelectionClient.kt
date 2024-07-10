@@ -1,0 +1,119 @@
+/*
+ * Copyright (C) 2022 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.example.adservices.samples.fledge.clients
+
+import android.content.Context
+import androidx.annotation.RequiresApi
+import androidx.privacysandbox.ads.adservices.adselection.AdSelectionConfig
+import androidx.privacysandbox.ads.adservices.adselection.AdSelectionManager
+import androidx.privacysandbox.ads.adservices.adselection.AdSelectionOutcome
+import androidx.privacysandbox.ads.adservices.adselection.GetAdSelectionDataOutcome
+import androidx.privacysandbox.ads.adservices.adselection.GetAdSelectionDataRequest
+import androidx.privacysandbox.ads.adservices.adselection.PersistAdSelectionResultRequest
+import androidx.privacysandbox.ads.adservices.adselection.ReportEventRequest
+import androidx.privacysandbox.ads.adservices.adselection.ReportImpressionRequest
+import androidx.privacysandbox.ads.adservices.adselection.UpdateAdCounterHistogramRequest
+import androidx.privacysandbox.ads.adservices.common.ExperimentalFeatures
+import java.util.Objects
+import java.util.concurrent.Executor
+
+
+/** The ad selection client. */
+@ExperimentalFeatures.Ext10OptIn
+@OptIn(ExperimentalFeatures.Ext8OptIn::class)
+@RequiresApi(api = 34)
+class AdSelectionClient private constructor(mContext: Context, private val executor: Executor) {
+    private val adSelectionManager: AdSelectionManager = AdSelectionManager.obtain(mContext)!!
+
+    /**
+     * Invokes the {@code selectAds} method of {@link AdSelectionManager}, and returns a future with
+     * {@link AdSelectionOutcome} if succeeds, or an {@link Exception} if fails.
+     */
+    suspend fun selectAds(adSelectionConfig: AdSelectionConfig): AdSelectionOutcome {
+        return adSelectionManager.selectAds(adSelectionConfig)
+    }
+
+    /** Invokes the `reportImpression` method of [AdSelectionManager], and returns a Void future */
+    suspend fun reportImpression(input: ReportImpressionRequest) {
+        adSelectionManager.reportImpression(input)
+    }
+
+    /** Invokes the `reportEvent` method of [AdSelectionManager], and returns a Void future */
+    suspend fun reportEvent(request: ReportEventRequest) {
+        adSelectionManager.reportEvent(request)
+    }
+
+    /**
+     * Invokes the `updateAdCounterHistogram` method of [AdSelectionManager], and returns a Void
+     * future.
+     */
+    suspend fun updateAdCounterHistogram(request: UpdateAdCounterHistogramRequest) {
+        adSelectionManager.updateAdCounterHistogram(request)
+    }
+
+    /**
+     * Invokes the `getAdSelectionData` method of [AdSelectionManager], and returns a
+     * GetAdSelectionDataOutcome future.
+     */
+    suspend fun getAdSelectionData(
+            request: GetAdSelectionDataRequest): GetAdSelectionDataOutcome {
+        return adSelectionManager.getAdSelectionData(request)
+    }
+
+    /**
+     * Invokes the `persistAdSelectionResult` method of [AdSelectionManager], and returns a
+     * AdSelectionOutcome future.
+     */
+    suspend fun persistAdSelectionResult(
+            request: PersistAdSelectionResultRequest): AdSelectionOutcome {
+        return adSelectionManager.persistAdSelectionResult(request)
+    }
+
+    /** Builder class. */
+    class Builder {
+        private var mContext: Context? = null
+        private var mExecutor: Executor? = null
+
+        /** Sets the context. */
+        fun setContext(context: Context): Builder {
+            Objects.requireNonNull(context)
+            mContext = context
+            return this
+        }
+
+        /**
+         * Sets the worker executor.
+         *
+         * @param executor the worker executor used to run heavy background tasks.
+         */
+        fun setExecutor(executor: Executor): Builder {
+            Objects.requireNonNull(executor)
+            mExecutor = executor
+            return this
+        }
+
+        /**
+         * Builds the Ad Selection Client.
+         *
+         * @throws NullPointerException if `mContext` is null or if `mExecutor` is null
+         */
+        fun build(): AdSelectionClient {
+            Objects.requireNonNull(mContext)
+            Objects.requireNonNull(mExecutor)
+            return AdSelectionClient(mContext!!, mExecutor!!)
+        }
+    }
+}

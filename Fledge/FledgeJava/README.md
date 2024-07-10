@@ -40,23 +40,44 @@ First install the app on your device by running
 Then, you will need to [enable developer
 options](https://developer.android.com/studio/debug/dev-options) on your device.
 
-Next, run the following command 
+Next, run the following commands 
 ```
-adb shell "device_config put adservices fledge_js_isolate_enforce_max_heap_size false"
+adb shell device_config put adservices ppapi_app_allow_list \"*\"
+adb shell device_config put adservices ppapi_app_signature_allow_list \"*\"
+adb shell device_config put adservices adservice_system_service_enabled true
+adb shell device_config put adservices adservice_enabled true
+adb shell device_config put adservices adservice_enable_status true
+adb shell device_config put adservices fledge_js_isolate_enforce_max_heap_size false
+adb shell device_config put adservices global_kill_switch false
+adb shell setprop debug.adservices.disable_fledge_enrollment_check true
+adb shell device_config put adservices fledge_custom_audience_service_kill_switch false
+adb shell device_config put adservices fledge_select_ads_kill_switch false
+adb shell device_config put adservices fledge_auction_server_kill_switch false
+adb shell device_config put adservices fledge_auction_server_ad_render_id_enabled true
+adb shell device_config put adservices fledge_auction_server_enabled true
 ```
 
-Once the above steps are completed, you must launch it with these options:
+Once the above steps are completed, you must launch with this command:
 
-If you only wish to use the remote overrides you can run:
 ```shell
-adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity
+adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity -e baseUrl [base server url] 
 ```
 
-Otherwise, to optionally use remote overrides or mock servers, run:
-```shell
-adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity -e reportingUrl [reporting endpoint] -e biddingUrl [bidding endpoint] -e scoringUrl [scoring endpoint]
-```
-These commands will inform the app where your server endpoints are running.
+This command will inform the app where your server endpoints are running.
+
+For ad selection on Auction Server
+1. Set your key value server endpoint
+   ```shell
+   adb shell "device_config put adservices ad_selection_data_auction_key_fetch_uri [your key fetch endpoint uri]"
+   ```
+2. Start the app with auction server configurations
+   ```shell
+   adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity \
+   -e baseUrl [base server url] \
+   -e auctionServerSellerSfeUrl [auction server seller front end uri] \
+   -e auctionServerSeller [auction server seller name] \
+   -e auctionServerBuyer [auction server buyer name]
+   ```
 
 ## Manage custom audiences and run ad selection
 

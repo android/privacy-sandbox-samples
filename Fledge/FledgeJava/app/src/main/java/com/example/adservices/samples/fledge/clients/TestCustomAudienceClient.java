@@ -20,6 +20,9 @@ import android.adservices.customaudience.CustomAudienceManager;
 import android.adservices.customaudience.RemoveCustomAudienceOverrideRequest;
 import android.adservices.customaudience.TestCustomAudienceManager;
 import android.content.Context;
+import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.OutcomeReceiver;
 
 import androidx.annotation.NonNull;
@@ -31,144 +34,141 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
-/**
- * Client for override APIs.
- */
+/** Client for override APIs. */
 @RequiresApi(api = 34)
 public class TestCustomAudienceClient {
-  private final TestCustomAudienceManager mTestCustomAudienceManager;
-  private final Context mContext;
-  private final Executor mExecutor;
+    private final TestCustomAudienceManager mTestCustomAudienceManager;
+    private final Context mContext;
+    private final Executor mExecutor;
 
-  private TestCustomAudienceClient(
-      @NonNull Context context, @NonNull Executor executor) {
-    mContext = context;
-    mExecutor = executor;
-    mTestCustomAudienceManager =
-        mContext.getSystemService(CustomAudienceManager.class)
-            .getTestCustomAudienceManager();
-  }
-
-  /**
-   * Invokes the {@code overrideCustomAudienceRemoteInfo} method of {@link CustomAudienceManager},
-   * and returns a Void future
-   */
-  @NonNull
-  public ListenableFuture<Void> overrideCustomAudienceRemoteInfo(
-      @NonNull AddCustomAudienceOverrideRequest request) {
-    return CallbackToFutureAdapter.getFuture(
-        completer -> {
-          mTestCustomAudienceManager.overrideCustomAudienceRemoteInfo(
-              request,
-              mExecutor,
-              new OutcomeReceiver<Object, Exception>() {
-                @Override
-                public void onResult(Object ignoredResult) {
-                  completer.set(null);
-                }
-
-                @Override
-                public void onError(Exception error) {
-                  completer.setException(error);
-                }
-              });
-          // This value is used only for debug purposes: it will be used in toString()
-          // of returned future or error cases.
-          return "overrideCustomAudienceRemoteInfo";
-        });
-  }
-
-  /**
-   * Invokes the {@code removeCustomAudienceRemoteInfoOverride} method of {@link
-   * CustomAudienceManager}, and returns a Void future
-   */
-  @NonNull
-  public ListenableFuture<Void> removeCustomAudienceRemoteInfoOverride(
-      @NonNull RemoveCustomAudienceOverrideRequest request) {
-    return CallbackToFutureAdapter.getFuture(
-        completer -> {
-          mTestCustomAudienceManager.removeCustomAudienceRemoteInfoOverride(
-              request,
-              mExecutor,
-              new OutcomeReceiver<Object, Exception>() {
-                @Override
-                public void onResult(Object ignoredResult) {
-                  completer.set(null);
-                }
-
-                @Override
-                public void onError(Exception error) {
-                  completer.setException(error);
-                }
-              });
-          // This value is used only for debug purposes: it will be used in toString()
-          // of returned future or error cases.
-          return "removeCustomAudienceRemoteInfoOverride";
-        });
-  }
-
-  /**
-   * Invokes the {@code resetAllCustomAudienceOverrides} method of {@link CustomAudienceManager},
-   * and returns a Void future
-   */
-  @NonNull
-  public ListenableFuture<Void> resetAllCustomAudienceOverrides() {
-    return CallbackToFutureAdapter.getFuture(
-        completer -> {
-          mTestCustomAudienceManager.resetAllCustomAudienceOverrides(
-              mExecutor,
-              new OutcomeReceiver<Object, Exception>() {
-                @Override
-                public void onResult(Object ignoredResult) {
-                  completer.set(null);
-                }
-
-                @Override
-                public void onError(Exception error) {
-                  completer.setException(error);
-                }
-              });
-          // This value is used only for debug purposes: it will be used in toString()
-          // of returned future or error cases.
-          return "resetAllCustomAudienceOverrides";
-        });
-  }
-
-  /** Builder class. */
-  public static final class Builder {
-    private Context mContext;
-    private Executor mExecutor;
-
-    /** Empty-arg constructor with an empty body for Builder */
-    public Builder() {}
-
-    /** Sets the context. */
-    @NonNull
-    public TestCustomAudienceClient.Builder setContext(@NonNull Context context) {
-      Objects.requireNonNull(context);
-      mContext = context;
-      return this;
+    private TestCustomAudienceClient(@NonNull Context context, @NonNull Executor executor) {
+        mContext = context;
+        mExecutor = executor;
+        mTestCustomAudienceManager =
+                mContext.getSystemService(CustomAudienceManager.class)
+                        .getTestCustomAudienceManager();
     }
 
     /**
-     * Sets the worker executor.
-     *
-     * @param executor the worker executor used to run heavy background tasks.
+     * Invokes the {@code overrideCustomAudienceRemoteInfo} method of {@link CustomAudienceManager},
+     * and returns a Void future
      */
     @NonNull
-    public TestCustomAudienceClient.Builder setExecutor(@NonNull Executor executor) {
-      Objects.requireNonNull(executor);
-      mExecutor = executor;
-      return this;
+    public ListenableFuture<Void> overrideCustomAudienceRemoteInfo(
+            @NonNull AddCustomAudienceOverrideRequest request) {
+        return CallbackToFutureAdapter.getFuture(
+                completer -> {
+                    mTestCustomAudienceManager.overrideCustomAudienceRemoteInfo(
+                            request,
+                            mExecutor,
+                            new OutcomeReceiver<Object, Exception>() {
+                                @Override
+                                public void onResult(Object ignoredResult) {
+                                    completer.set(null);
+                                }
+
+                                @Override
+                                public void onError(Exception error) {
+                                    completer.setException(error);
+                                }
+                            });
+                    // This value is used only for debug purposes: it will be used in toString()
+                    // of returned future or error cases.
+                    return "overrideCustomAudienceRemoteInfo";
+                });
     }
 
-    /** Builds a {@link TestCustomAudienceClient} instance */
+    /**
+     * Invokes the {@code removeCustomAudienceRemoteInfoOverride} method of {@link
+     * CustomAudienceManager}, and returns a Void future
+     */
     @NonNull
-    public TestCustomAudienceClient build() {
-      Objects.requireNonNull(mContext);
-      Objects.requireNonNull(mExecutor);
+    public ListenableFuture<Void> removeCustomAudienceRemoteInfoOverride(
+            @NonNull RemoveCustomAudienceOverrideRequest request) {
+        return CallbackToFutureAdapter.getFuture(
+                completer -> {
+                    mTestCustomAudienceManager.removeCustomAudienceRemoteInfoOverride(
+                            request,
+                            mExecutor,
+                            new OutcomeReceiver<Object, Exception>() {
+                                @Override
+                                public void onResult(Object ignoredResult) {
+                                    completer.set(null);
+                                }
 
-      return new TestCustomAudienceClient(mContext, mExecutor);
+                                @Override
+                                public void onError(Exception error) {
+                                    completer.setException(error);
+                                }
+                            });
+                    // This value is used only for debug purposes: it will be used in toString()
+                    // of returned future or error cases.
+                    return "removeCustomAudienceRemoteInfoOverride";
+                });
     }
-  }
+
+    /**
+     * Invokes the {@code resetAllCustomAudienceOverrides} method of {@link CustomAudienceManager},
+     * and returns a Void future
+     */
+    @NonNull
+    public ListenableFuture<Void> resetAllCustomAudienceOverrides() {
+        return CallbackToFutureAdapter.getFuture(
+                completer -> {
+                    mTestCustomAudienceManager.resetAllCustomAudienceOverrides(
+                            mExecutor,
+                            new OutcomeReceiver<Object, Exception>() {
+                                @Override
+                                public void onResult(Object ignoredResult) {
+                                    completer.set(null);
+                                }
+
+                                @Override
+                                public void onError(Exception error) {
+                                    completer.setException(error);
+                                }
+                            });
+                    // This value is used only for debug purposes: it will be used in toString()
+                    // of returned future or error cases.
+                    return "resetAllCustomAudienceOverrides";
+                });
+    }
+
+    /** Builder class. */
+    public static final class Builder {
+        private Context mContext;
+        private Executor mExecutor;
+
+        /** Empty-arg constructor with an empty body for Builder */
+        public Builder() {}
+
+        /** Sets the context. */
+        @NonNull
+        public TestCustomAudienceClient.Builder setContext(@NonNull Context context) {
+            Objects.requireNonNull(context);
+            mContext = context;
+            return this;
+        }
+
+        /**
+         * Sets the worker executor.
+         *
+         * @param executor the worker executor used to run heavy background tasks.
+         */
+        @NonNull
+        public TestCustomAudienceClient.Builder setExecutor(@NonNull Executor executor) {
+            Objects.requireNonNull(executor);
+            mExecutor = executor;
+            return this;
+        }
+
+        /** Builds a {@link TestCustomAudienceClient} instance */
+        @NonNull
+        public TestCustomAudienceClient build() {
+            Objects.requireNonNull(mContext);
+            Objects.requireNonNull(mExecutor);
+
+            return new TestCustomAudienceClient(mContext, mExecutor);
+        }
+    }
 }

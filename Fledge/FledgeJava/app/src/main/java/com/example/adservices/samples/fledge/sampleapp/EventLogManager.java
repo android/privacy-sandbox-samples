@@ -15,9 +15,14 @@
  */
 package com.example.adservices.samples.fledge.sampleapp;
 
+import static com.example.adservices.samples.fledge.sampleapp.MainActivity.TAG;
+
+import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.widget.TextView;
 import java.util.Iterator;
 import java.util.LinkedList;
+
 
 /**
  * Class that manages a text view event log and shows the HISTORY_LENGTH most recent events
@@ -27,7 +32,7 @@ public class EventLogManager {
   /**
    * The number of events to display
    */
-  private final int HISTORY_LENGTH = 8;
+  private final int HISTORY_LENGTH = 30;
 
   /**
    * Text that appears above the event log
@@ -49,6 +54,7 @@ public class EventLogManager {
    */
   public EventLogManager(TextView display) {
     this.mDisplay = display;
+    this.mDisplay.setMovementMethod(new ScrollingMovementMethod());
     render();
   }
 
@@ -66,6 +72,13 @@ public class EventLogManager {
     render();
   }
 
+  public void flush() {
+    synchronized (mEvents) {
+      mEvents.clear();
+    }
+    render();
+  }
+
   /**
    * Re-renders the event log with the current events from {@link #mEvents}.
    */
@@ -78,7 +91,7 @@ public class EventLogManager {
         output.append(eventNumber++).append(". ").append(it.next()).append("\n");
       }
       mDisplay.setText(output);
+      Log.v(TAG, "Event log set to: "+ output);
     }
   }
-
 }
