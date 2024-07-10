@@ -23,10 +23,20 @@
   <string name="override_switch_off">Off</string>
   <string name="ca_switch_on">JOINED</string>
   <string name="ca_switch_off">LEFT</string>
-  <string name="ca_switch_shoes_text">Shoes CA</string>
-  <string name="ca_switch_shirts_text">Shirts CA</string>
-  <string name="ca_switch_short_expiry_text">CA with short expiry</string>
-  <string name="ca_switch_invalid_fields_text">CA with invalid fields</string>
-  <string name="edit_text_ad_selection_input_hint">Enter Ad Selection Id</string>
+  <string name="ca_toggle">Join %1$s CA</string>
+  <string name="fetch_and_join_ca_toggle">Fetch and Join %1$s CA</string>
+  <string name="ca_switch_shoes_text">Join Shoes CA</string>
+  <string name="ca_switch_shirts_text">Join Shirts CA</string>
+  <string name="ca_switch_short_expiry_text">Join CA with short expiry</string>
+  <string name="ca_switch_invalid_fields_text">Join CA with invalid fields</string>
+  <string name="freq_cap_ca_switch_text">Join CA with frequency capping</string>
+  <string name="fetch_and_join_ca_text">Fetch and Join Hats CA</string>
+  <string name="edit_text_ad_selection_input_hint">Ad Selection Id</string>
+  <string name="edit_text_event_data_input_hint">Event Data</string>
   <string name="report_impression_button_text">Report Impression</string>
+  <string name="report_click_button_text">Report Click</string>
+  <string name="update_ad_counter_histogram_button_text">Update Click Hist</string>
+  <string name="auction_server_text">Auction server</string>
+  <string name="ca_switch_shoes_server_auction_text">Auction server Shoes CA</string>
+  <string name="ca_switch_shirts_server_auction_text">Auction server Shirts CA</string>
 </resources>
