@@ -20,6 +20,7 @@
     android:background="@android:color/holo_purple">
 
     <LinearLayout
+        android:id="@+id/ad_layout"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -30,11 +31,19 @@
             android:id="@+id/banner_header_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingBottom="8dp"
             android:text="@string/banner_ad_label"/>
         <TextView
+            android:id="@+id/click_ad_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingTop="8dp"
             android:text="@string/banner_ad_click_prompt"/>
+        <androidx.privacysandbox.ui.client.view.SandboxedSdkView
+            android:id="@+id/sandboxed_sdk_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:layout_alignParentBottom="true">
+        </androidx.privacysandbox.ui.client.view.SandboxedSdkView>
     </LinearLayout>
 </LinearLayout>

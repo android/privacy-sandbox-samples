@@ -13,31 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.implementation
+package com.mediatee.implementation
 
 import android.content.Context
-import android.os.Bundle
-import android.util.Log
-import com.example.api.SdkBannerRequest
-import com.example.api.SdkService
+import com.mediatee.api.SdkBannerRequest
+import com.mediatee.api.SdkService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
-import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
-import com.mediatee.api.SdkServiceFactory
-import com.example.api.SdkSandboxedUiAdapter
 
 class SdkServiceImpl(private val context: Context) : SdkService {
     override suspend fun getMessage(): String = "Hello from Privacy Sandbox!"
-
-    private val tag = "ExampleSdk"
-
-    private var remoteInstance: com.mediatee.api.SdkService? = null
-
-    /** Name of the SDK to be loaded. */
-    private val mediateeSdkName = "com.mediatee.sdk"
 
     override suspend fun createFile(sizeInMb: Int): String {
         val path = Paths.get(
@@ -55,23 +43,6 @@ class SdkServiceImpl(private val context: Context) : SdkService {
         return "Created $actualFileSize MB file successfully"
     }
 
-    override suspend fun getBanner(request: SdkBannerRequest, isMediateeSdkEnabled: Boolean): SdkSandboxedUiAdapter? {
-        if (!isMediateeSdkEnabled) {
-            return SdkSandboxedUiAdapterImpl(context, request, null)
-        }
-        try {
-            if (remoteInstance == null) {
-                val controller = SdkSandboxControllerCompat.from(context)
-                val sandboxedSdk = controller.loadSdk(mediateeSdkName, Bundle.EMPTY)
-                remoteInstance = SdkServiceFactory.wrapToSdkService(sandboxedSdk.getInterface()!!)
-            }
-
-            val newRequest: com.mediatee.api.SdkBannerRequest =
-                com.mediatee.api.SdkBannerRequest(context.packageName, request.isWebViewBannerAd)
-            return SdkSandboxedUiAdapterImpl(context, request, remoteInstance!!.getBanner(newRequest))
-        } catch (e: Exception) {
-            Log.e(tag, "Failed to load SDK, error code: $e", e)
-            return null
-        }
-    }
+    override suspend fun getBanner(request: SdkBannerRequest) =
+        SdkSandboxedUiAdapterImpl(context, request)
 }

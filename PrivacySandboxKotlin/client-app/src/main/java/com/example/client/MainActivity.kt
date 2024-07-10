@@ -53,6 +53,17 @@ class MainActivity : AppCompatActivity() {
     private lateinit var adTypeSpinner: Spinner
     private val adTypes = listOf("Banner", "WebView Banner")
 
+    /** A spinner for selecting the mediation option. */
+    private lateinit var mediationDropDownMenu: Spinner
+
+    // Mediation Option values.
+    // Please keep the order here the same as the order in which the options occur in the
+    // mediation_dropdown_menu_array.
+    enum class MediationOption {
+        NONE,
+        RUNTIME_RUNTIME
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -80,6 +91,19 @@ class MainActivity : AppCompatActivity() {
             adapter = ArrayAdapter(
                 this@MainActivity, android.R.layout.simple_spinner_dropdown_item, adTypes)
         }
+
+        mediationDropDownMenu = findViewById(R.id.mediation_options_dropdown)
+
+        // Supply the mediation_option array to the mediationDropDownMenu spinner.
+        ArrayAdapter.createFromResource(
+            this@MainActivity,
+            R.array.mediation_dropdown_menu_array,
+            android.R.layout.simple_spinner_item
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            mediationDropDownMenu.adapter = adapter
+        }
+
     }
 
     private fun onInitializeSkButtonPressed() = lifecycleScope.launch {
@@ -104,7 +128,17 @@ class MainActivity : AppCompatActivity() {
             }
         }
         val loadWebView = adTypes[adTypeSpinner.selectedItemPosition].contains("WebView")
-        bannerAd.loadAd(this@MainActivity, PACKAGE_NAME, launchSdkActivity, loadWebView)
+        // Mediation is enabled if Runtime-Runtime Mediation option or Runtime-App Mediation
+        // option is selected.
+        val mediationEnabled =
+            mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_RUNTIME.ordinal.toLong()
+        bannerAd.loadAd(
+            this@MainActivity,
+            PACKAGE_NAME,
+            launchSdkActivity,
+            loadWebView,
+            mediationEnabled
+        )
     }
 
     private fun onCreateFileButtonPressed() {
