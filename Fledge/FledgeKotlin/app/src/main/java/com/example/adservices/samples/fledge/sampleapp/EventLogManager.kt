@@ -16,18 +16,13 @@
 package com.example.adservices.samples.fledge.sampleapp
 
 import android.widget.TextView
-import java.lang.StringBuilder
 import java.util.LinkedList
 
-/**
- * Text that appears above the event log
- */
+/** Text that appears above the event log */
 private const val TITLE = "Event Log"
 
-/**
- * The number of events to display
- */
-private const val HISTORY_LENGTH = 8
+/** The number of events to display */
+private const val HISTORY_LENGTH = 30
 
 /**
  * Class that manages a text view event log and shows the HISTORY_LENGTH most recent events
@@ -35,54 +30,55 @@ private const val HISTORY_LENGTH = 8
  * @param display The TextView to manage.
  */
 class EventLogManager(
-  /**
-   * A text view to display the events
-   */
-  private val display: TextView
+    /** A text view to display the events */
+    private val display: TextView
 ) {
 
-  /**
-   * A queue of the HISTORY_LENGTH most recent events
-   */
-  private val events = LinkedList<String>()
+    /** A queue of the HISTORY_LENGTH most recent events */
+    private val events = LinkedList<String>()
 
-  /**
-   * Add an event string to the front of the event log.
-   * @param event The events string to add.
-   */
-  fun writeEvent(event: String) {
-    synchronized(events) {
-      events.add(event)
-      if (events.size > HISTORY_LENGTH) {
-        events.remove()
-      }
+    /**
+     * Add an event string to the front of the event log.
+     *
+     * @param event The events string to add.
+     */
+    fun writeEvent(event: String) {
+        synchronized(events) {
+            events.add(event)
+            if (events.size > HISTORY_LENGTH) {
+                events.remove()
+            }
+        }
+        render()
     }
-    render()
-  }
 
-  /**
-   * Re-renders the event log with the current events from [.mEvents].
-   */
-  private fun render() {
-    val output = StringBuilder()
-    output.append("""
+    fun flush() {
+        synchronized(events) { events.clear() }
+        render()
+    }
+
+    /** Re-renders the event log with the current events from [.mEvents]. */
+    private fun render() {
+        val output = StringBuilder()
+        output.append(
+            """
   $TITLE
   
-  """.trimIndent())
-    var eventNumber = 1
-    synchronized(events) {
-      val it = events.descendingIterator()
-      while (it.hasNext()) {
-        output.append(eventNumber++).append(". ").append(it.next()).append("\n")
-      }
-      display.text = output
+  """
+                .trimIndent()
+        )
+        var eventNumber = 1
+        synchronized(events) {
+            val it = events.descendingIterator()
+            while (it.hasNext()) {
+                output.append(eventNumber++).append(". ").append(it.next()).append("\n")
+            }
+            display.text = output
+        }
     }
-  }
 
-  /**
-   * Does the initial render.
-   */
-  init {
-    render()
-  }
+    /** Does the initial render. */
+    init {
+        render()
+    }
 }

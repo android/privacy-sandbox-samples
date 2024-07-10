@@ -25,6 +25,11 @@ function scoreAd(ad, bid, auction_config, seller_signals, trusted_scoring_signal
 function reportResult(ad_selection_config, render_uri, bid, contextual_signals) {
   // Add the address of your reporting server here
   let reporting_address = 'https://reporting.example.com';
+  // Register beacons
+  let clickUri = reporting_address + '/sellerInteraction?click';
+  let viewUri = reporting_address + '/sellerInteraction?view';
+  const beacons = {'click': clickUri, 'view': viewUri};
+  registerAdBeacon(beacons);
   return {'status': 0, 'results': {'signals_for_buyer': '{"signals_for_buyer" : 1}'
           , 'reporting_uri': reporting_address + 'reportResult?render_uri='
             + render_uri + '?bid=' + bid } };

@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
      Copyright (C) 2022 The Android Open Source Project
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -15,150 +14,152 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     tools:context=".MainActivity">
-  <TextView
-      android:id="@+id/ad_space"
-      android:layout_width="match_parent"
-      android:layout_weight=".10"
-      android:layout_height="0dp"
-      android:layout_marginTop="18dp"
-      android:layout_marginStart="5dp"
-      android:layout_marginEnd="5dp"
-      android:background="@color/purple_200"
-      android:text="@string/ad_space_text"
-      android:textColor="#311B92" />
-  <TextView
-      android:id="@+id/event_log"
-      android:layout_width="match_parent"
-      android:layout_weight=".20"
-      android:layout_height="0dp"
-      android:layout_marginTop="5dp"
-      android:layout_marginStart="5dp"
-      android:layout_marginEnd="5dp"
-      android:textIsSelectable="true"
-      android:text="@string/event_log_text" />
-  <RelativeLayout
-      android:layout_width="match_parent"
-      android:layout_weight=".10"
-      android:layout_height="0dp">
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/override_switch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="119dp"
-        android:layout_centerInParent="true"
-        android:checked="true"
-        android:text="@string/override_switch_text"
-        android:textOff="@string/override_switch_off"
-        android:textOn="@string/override_switch_on" />
-  </RelativeLayout>
-  <RelativeLayout
-      android:layout_width="match_parent"
-      android:layout_weight=".10"
-      android:layout_height="0dp">
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/shoes_ca_switch"
+    <TextView
+        android:id="@+id/ad_space"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="119dp"
-        android:layout_centerInParent="true"
-        android:checked="false"
-        android:text="@string/ca_switch_shoes_text"
-        android:textOff="@string/ca_switch_off"
-        android:textOn="@string/ca_switch_on" />
-  </RelativeLayout>
-  <RelativeLayout
-      android:layout_width="match_parent"
-      android:layout_weight=".10"
-      android:layout_height="0dp">
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/shirts_ca_switch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="119dp"
-        android:layout_centerInParent="true"
-        android:checked="false"
-        android:text="@string/ca_switch_shirts_text"
-        android:textOff="@string/ca_switch_off"
-        android:textOn="@string/ca_switch_on" />
-  </RelativeLayout>
-  <RelativeLayout
-      android:layout_width="match_parent"
-      android:layout_weight=".10"
-      android:layout_height="0dp">
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/short_expiry_ca_switch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="119dp"
-        android:layout_centerInParent="true"
-        android:checked="false"
-        android:text="@string/ca_switch_short_expiry_text"
-        android:textOff="@string/ca_switch_off"
-        android:textOn="@string/ca_switch_on" />
-  </RelativeLayout>
-  <RelativeLayout
-      android:layout_width="match_parent"
-      android:layout_weight=".10"
-      android:layout_height="0dp">
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/invalid_fields_ca_switch"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="119dp"
-        android:layout_centerInParent="true"
-        android:checked="false"
-        android:text="@string/ca_switch_invalid_fields_text"
-        android:textOff="@string/ca_switch_off"
-        android:textOn="@string/ca_switch_on" />
-  </RelativeLayout>
-  <RelativeLayout
-      android:layout_width="match_parent"
-      android:layout_weight=".10"
-      android:layout_height="0dp">
-    <Button
-        android:id="@+id/run_ads_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="5dp"
-        android:layout_marginStart="5dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginBottom="5dp"
-        android:text="@string/run_ads_button_text" />
-  </RelativeLayout>
+        android:layout_height="0dp"
+        android:layout_weight=".10"
+        android:background="@color/purple_200"
+        android:text="@string/ad_space_text"
+        android:textColor="#311B92" />
 
-  <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_weight=".10"
-      android:layout_height="0dp"
-      android:orientation="horizontal">
-    <EditText
-        android:id="@+id/ad_selection_id_input"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight=".45"
-        android:hint="@string/edit_text_ad_selection_input_hint"
-        android:inputType="numberSigned"
-        android:minHeight="48dp"
-        android:textColorHint="#78909C"
-        android:importantForAutofill="no" />
-    <Button
-        android:id="@+id/run_report_impression_button"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight=".55"
-        android:layout_marginEnd="5dp"
-        android:layout_marginStart="5dp"
-        android:layout_marginBottom="5dp"
-        android:text="@string/report_impression_button_text" />
-  </LinearLayout>
+    <TextView
+        android:id="@+id/event_log"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".30"
+        android:background="@color/event_log_bg"
+        android:text="@string/event_log_text"
+        android:textIsSelectable="true" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/option_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:scrollbarFadeDuration="0" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".10"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/auction_server"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".45"
+            android:enabled="false"
+            android:checked="false"
+            android:text="@string/auction_server_text" />
+
+        <Button
+            android:id="@+id/run_ads_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_weight=".55"
+            android:text="@string/run_ads_button_text" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".10"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/ad_selection_id_impression_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".45"
+            android:hint="@string/edit_text_ad_selection_input_hint"
+            android:importantForAutofill="no"
+            android:inputType="numberSigned"
+            android:minHeight="48dp"
+            android:textColorHint="#78909C" />
+
+        <Button
+            android:id="@+id/run_report_impression_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_weight=".55"
+            android:text="@string/report_impression_button_text" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".10"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/ad_selection_id_histogram_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".45"
+            android:hint="@string/edit_text_ad_selection_input_hint"
+            android:importantForAutofill="no"
+            android:inputType="numberSigned"
+            android:minHeight="48dp"
+            android:textColorHint="#78909C" />
+
+        <Button
+            android:id="@+id/run_update_ad_counter_histogram_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_weight=".55"
+            android:text="@string/update_ad_counter_histogram_button_text" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".10"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/ad_selection_id_click_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".45"
+            android:hint="@string/edit_text_ad_selection_input_hint"
+            android:importantForAutofill="no"
+            android:inputType="numberSigned"
+            android:minHeight="48dp"
+            android:textColorHint="#78909C" />
+
+        <EditText
+            android:id="@+id/interaction_data_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".45"
+            android:hint="@string/edit_text_event_data_input_hint"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:minHeight="48dp"
+            android:textColorHint="#78909C" />
+
+        <Button
+            android:id="@+id/run_report_click_button"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginBottom="5dp"
+            android:layout_weight=".55"
+            android:text="@string/report_click_button_text" />
+    </LinearLayout>
 
 </LinearLayout>
