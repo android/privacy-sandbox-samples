@@ -21,30 +21,23 @@ import android.adservices.customaudience.RemoveCustomAudienceOverrideRequest;
 import android.adservices.customaudience.TestCustomAudienceManager;
 import android.content.Context;
 import android.os.OutcomeReceiver;
-
 import androidx.annotation.NonNull;
 import androidx.concurrent.futures.CallbackToFutureAdapter;
-
 import com.google.common.util.concurrent.ListenableFuture;
-
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
-/**
- * Client for override APIs.
- */
+/** Client for override APIs. */
 public class TestCustomAudienceClient {
   private final TestCustomAudienceManager mTestCustomAudienceManager;
   private final Context mContext;
   private final Executor mExecutor;
 
-  private TestCustomAudienceClient(
-      @NonNull Context context, @NonNull Executor executor) {
+  private TestCustomAudienceClient(@NonNull Context context, @NonNull Executor executor) {
     mContext = context;
     mExecutor = executor;
     mTestCustomAudienceManager =
-        mContext.getSystemService(CustomAudienceManager.class)
-            .getTestCustomAudienceManager();
+        CustomAudienceManager.get(mContext).getTestCustomAudienceManager();
   }
 
   /**

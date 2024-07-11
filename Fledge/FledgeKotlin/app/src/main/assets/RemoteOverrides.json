@@ -1,0 +1,69 @@
+{
+  "scoring_logic_js_asset": "DecisionLogic.js",
+  "trusted_scoring_signals": {
+    "render_uri_1": "signals_for_1",
+    "render_uri_2": "signals_for_2"
+  },
+  "customAudienceDevOverrides": [
+    {
+      "name": "shirts",
+      "buyer": "{base_uri_buyer}",
+      "trusted_bidding_signals": {
+        "example": "example",
+        "valid": "Also valid",
+        "list": "list",
+        "of": "of",
+        "keys": "trusted bidding signal values"
+      },
+      "bidding_logic_js_asset": "BiddingLogic.js"
+    },
+    {
+      "name": "shoes",
+      "buyer": "{base_uri_buyer}",
+      "trusted_bidding_signals": {
+        "example": "example",
+        "valid": "Also valid",
+        "list": "list",
+        "of": "of",
+        "keys": "trusted bidding signal values"
+      },
+      "bidding_logic_js_asset": "BiddingLogic.js"
+    },
+    {
+      "name": "short_expiring",
+      "buyer": "{base_uri_buyer}",
+      "trusted_bidding_signals": {
+        "example": "example",
+        "valid": "Also valid",
+        "list": "list",
+        "of": "of",
+        "keys": "trusted bidding signal values"
+      },
+      "bidding_logic_js_asset": "BiddingLogic.js"
+    },
+    {
+      "name": "invalid_fields",
+      "buyer": "{base_uri_buyer}",
+      "trusted_bidding_signals": {
+        "example": "example",
+        "valid": "Also valid",
+        "list": "list",
+        "of": "of",
+        "keys": "trusted bidding signal values"
+      },
+      "bidding_logic_js_asset": "BiddingLogic.js"
+    },
+    {
+      "name": "freq_cap",
+      "buyer": "{base_uri_buyer}",
+      "trusted_bidding_signals": {
+        "example": "example",
+        "valid": "Also valid",
+        "list": "list",
+        "of": "of",
+        "keys": "trusted bidding signal values"
+      },
+      "bidding_logic_js_asset": "BiddingLogic.js"
+    }
+  ]
+}

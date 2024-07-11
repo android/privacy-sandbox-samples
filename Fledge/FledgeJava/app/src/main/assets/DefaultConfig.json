@@ -1,0 +1,208 @@
+{
+  "customAudiences": [
+      {
+      "name": "shirts",
+      "buyer": "{buyer}",
+      "bidding_logic_uri": "https://{buyer}/bidding",
+      "user_bidding_signals": {},
+      "ads": [
+        {
+          "render_uri": "https://{buyer}/bidding/render_shirts",
+          "metadata": {}
+        }
+      ],
+      "daily_update_uri": "https://{buyer}/bidding/daily",
+      "trusted_bidding_data": {
+        "keys": [
+          "shoes",
+          "{buyer}",
+          "key1",
+          "key2"
+        ],
+        "uri": "https://{buyer}/bidding/trusted"
+      }
+    },
+    {
+      "name": "shoes",
+      "buyer": "{buyer}",
+      "bidding_logic_uri": "https://{buyer}/bidding",
+      "user_bidding_signals": {},
+      "ads": [
+        {
+          "render_uri": "https://{buyer}/bidding/render_shoes",
+          "metadata": {}
+        }
+      ],
+      "daily_update_uri": "https://{buyer}/bidding/daily",
+      "trusted_bidding_data": {
+        "keys": [
+          "shoes",
+          "{buyer}",
+          "key1",
+          "key2"
+        ],
+        "uri": "https://{buyer}/bidding/trusted"
+      }
+    },
+    {
+      "name": "winningCA",
+      "buyer": "{server_auction_buyer}",
+      "bidding_logic_uri": "https://{server_auction_buyer}/bidding",
+      "expiration_time_from_now_in_sec": 86400,
+      "user_bidding_signals": {},
+      "ads": [
+        {
+          "render_uri": "https://{server_auction_buyer}/bidding/render_short_expiring",
+          "ad_render_id": 1,
+          "ad_counter_keys": [
+            1
+          ],
+          "ad_filters": {
+            "frequency_cap": {
+              "for_click_events": [
+                {
+                  "ad_counter_key": 1,
+                  "max_count": 1,
+                  "interval_in_sec": 86400
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      ],
+      "daily_update_uri": "https://{server_auction_buyer}/bidding/daily",
+      "trusted_bidding_data": {
+        "keys": [
+          "shoes",
+          "{server_auction_buyer}",
+          "key1",
+          "key2"
+        ],
+        "uri": "https://{server_auction_buyer}/bidding/trusted"
+      }
+    },
+    {
+      "name": "shirts_server",
+      "buyer": "{server_auction_buyer}",
+      "bidding_logic_uri": "https://{server_auction_buyer}/bidding",
+      "expiration_time_from_now_in_sec": 86400,
+      "user_bidding_signals": {},
+      "ads": [
+        {
+          "render_uri": "https://{server_auction_buyer}/2",
+          "ad_render_id": 2,
+          "ad_counter_keys": [
+            2
+          ],
+          "ad_filters": {
+            "frequency_cap": {
+              "for_click_events": [
+                {
+                  "ad_counter_key": 2,
+                  "max_count": 1,
+                  "interval_in_sec": 86400
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      ],
+      "daily_update_uri": "https://{server_auction_buyer}/bidding/daily",
+      "trusted_bidding_data": {
+        "keys": [
+          "shoes",
+          "{server_auction_buyer}",
+          "key1",
+          "key2"
+        ],
+        "uri": "https://{server_auction_buyer}/bidding/trusted"
+      }
+    },
+    {
+      "name": "short_expiring",
+      "buyer": "{buyer}",
+      "bidding_logic_uri": "https://{buyer}/bidding",
+      "expiration_time_from_now_in_sec": 30,
+      "user_bidding_signals": {},
+      "ads": [
+        {
+          "render_uri": "https://{buyer}/bidding/render_short_expiring",
+          "metadata": {}
+        }
+      ],
+      "daily_update_uri": "https://{buyer}/bidding/daily",
+      "trusted_bidding_data": {
+        "keys": [
+          "shoes",
+          "{buyer}",
+          "key1",
+          "key2"
+        ],
+        "uri": "https://{buyer}/bidding/trusted"
+      }
+    },
+    {
+      "name": "invalid_fields",
+      "buyer": "{buyer}",
+      "bidding_logic_uri": "https://{buyer}/bidding",
+      "daily_update_uri": "https://{buyer}/bidding/daily"
+    },
+    {
+      "name": "freq_cap",
+      "buyer": "{buyer}",
+      "bidding_logic_uri": "https://{buyer}/bidding",
+      "expiration_time_from_now_in_sec": 86400,
+      "user_bidding_signals": {},
+      "ads": [
+        {
+          "render_uri": "https://{buyer}/render/freq_cap",
+          "ad_render_id": 1,
+          "ad_counter_keys": [
+            1,
+            2
+          ],
+          "ad_filters": {
+            "frequency_cap": {
+              "for_click_events": [
+                {
+                  "ad_counter_key": 1,
+                  "max_count": 1,
+                  "interval_in_sec": 10
+                }
+              ],
+              "for_impression_events": [
+                {
+                  "ad_counter_key": 1,
+                  "max_count": 2,
+                  "interval_in_sec": 10
+                }
+              ]
+            }
+          },
+          "metadata": {}
+        }
+      ],
+      "daily_update_uri": "https://{buyer}/bidding/daily",
+      "trusted_bidding_data": {
+        "keys": [
+          "shoes",
+          "{buyer}",
+          "key1",
+          "key2"
+        ],
+        "uri": "https://{buyer}/bidding/trusted"
+      }
+    }
+  ],
+  "fetchAndJoinCustomAudiences": [
+    {
+      "name": "hats",
+      "buyer": "{buyer}",
+      "fetch_uri": "https://{buyer}/fetch/ca",
+      "activation_time_in_sec_from_now": 0,
+      "user_bidding_signals": {}
+    }
+  ]
+}

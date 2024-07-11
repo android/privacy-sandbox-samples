@@ -52,6 +52,9 @@ adb shell device_config put adservices global_kill_switch false
 adb shell setprop debug.adservices.disable_fledge_enrollment_check true
 adb shell device_config put adservices fledge_custom_audience_service_kill_switch false
 adb shell device_config put adservices fledge_select_ads_kill_switch false
+adb shell device_config put adservices fledge_auction_server_kill_switch false
+adb shell device_config put adservices fledge_auction_server_ad_render_id_enabled true
+adb shell device_config put adservices fledge_auction_server_enabled true
 ```
 
 Once the above steps are completed, you must launch with this command:
@@ -61,6 +64,20 @@ adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActiv
 ```
 
 This command will inform the app where your server endpoints are running.
+
+For ad selection on Auction Server
+1. Set your key value server endpoint
+   ```shell
+   adb shell "device_config put adservices ad_selection_data_auction_key_fetch_uri [your key fetch endpoint uri]"
+   ```
+2. Start the app with auction server configurations
+   ```shell
+   adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity \
+   -e baseUrl [base server url] \
+   -e auctionServerSellerSfeUrl [auction server seller front end uri] \
+   -e auctionServerSeller [auction server seller name] \
+   -e auctionServerBuyer [auction server buyer name]
+   ```
 
 ## Manage custom audiences and run ad selection
 
