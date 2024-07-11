@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,5 +23,5 @@ interface SdkService {
 
     suspend fun createFile(sizeInMb: Int): String
 
-    suspend fun getBanner(request: SdkBannerRequest, isMediateeSdkEnabled: Boolean): SdkSandboxedUiAdapter?
+    suspend fun getBanner(request: SdkBannerRequest, requestMediatedAd: Boolean): SdkSandboxedUiAdapter?
 }

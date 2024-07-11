@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,8 +55,11 @@ class SdkServiceImpl(private val context: Context) : SdkService {
         return "Created $actualFileSize MB file successfully"
     }
 
-    override suspend fun getBanner(request: SdkBannerRequest, isMediateeSdkEnabled: Boolean): SdkSandboxedUiAdapter? {
-        if (!isMediateeSdkEnabled) {
+    override suspend fun getBanner(
+        request: SdkBannerRequest,
+        shouldLoadMediatedAd: Boolean
+    ): SdkSandboxedUiAdapter? {
+        if (!shouldLoadMediatedAd) {
             return SdkSandboxedUiAdapterImpl(context, request, null)
         }
         try {
@@ -68,7 +71,11 @@ class SdkServiceImpl(private val context: Context) : SdkService {
 
             val newRequest: com.mediatee.api.SdkBannerRequest =
                 com.mediatee.api.SdkBannerRequest(context.packageName, request.isWebViewBannerAd)
-            return SdkSandboxedUiAdapterImpl(context, request, remoteInstance!!.getBanner(newRequest))
+            return SdkSandboxedUiAdapterImpl(
+                context,
+                request,
+                remoteInstance!!.getBanner(newRequest)
+            )
         } catch (e: Exception) {
             Log.e(tag, "Failed to load SDK, error code: $e", e)
             return null

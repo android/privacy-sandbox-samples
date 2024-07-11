@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ data class SdkBannerRequest(
     /**
      *  An [SdkActivityLauncher] that will be used to launch an activity when the banner is clicked.
      */
-     val activityLauncher: SdkActivityLauncher,
+    val activityLauncher: SdkActivityLauncher,
     /**
      * Denotes if a WebView banner ad needs to be loaded.
      */

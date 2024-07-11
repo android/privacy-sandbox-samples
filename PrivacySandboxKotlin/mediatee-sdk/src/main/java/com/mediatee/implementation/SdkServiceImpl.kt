@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,24 +25,6 @@ import java.nio.file.Files
 import java.nio.file.Paths
 
 class SdkServiceImpl(private val context: Context) : SdkService {
-    override suspend fun getMessage(): String = "Hello from Privacy Sandbox!"
-
-    override suspend fun createFile(sizeInMb: Int): String {
-        val path = Paths.get(
-            context.applicationContext.dataDir.path, "file.txt"
-        )
-        withContext(Dispatchers.IO) {
-            Files.deleteIfExists(path)
-            Files.createFile(path)
-            val buffer = ByteArray(sizeInMb * 1024 * 1024)
-            Files.write(path, buffer)
-        }
-
-        val file = File(path.toString())
-        val actualFileSize: Long = file.length() / (1024 * 1024)
-        return "Created $actualFileSize MB file successfully"
-    }
-
     override suspend fun getBanner(request: SdkBannerRequest) =
         SdkSandboxedUiAdapterImpl(context, request)
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,6 +80,10 @@ private class SdkUiSession(
 
     private fun getAdView() : View {
         if (mediateeAdapter != null) {
+            // The Mediator (example-sdk) view contains a SandboxedSdkView that is being populated
+            // with the ad view from the Runtime-enabled Mediatee, which runs in the same process
+            // as the Mediator. The view also has an overlay from the Mediator sdk. This will be
+            // sent to the Publisher as a SandboxedUiAdapter by the Mediator.
             return View.inflate(sdkContext, R.layout.banner, null).apply {
                 val adLayout = findViewById<LinearLayout>(R.id.ad_layout)
                 adLayout.removeView(findViewById(R.id.click_ad_header))
