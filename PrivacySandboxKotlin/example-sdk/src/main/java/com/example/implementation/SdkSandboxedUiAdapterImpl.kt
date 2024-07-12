@@ -81,7 +81,7 @@ private class SdkUiSession(
     private fun getAdView() : View {
         if (mediateeAdapter != null) {
             // The Mediator (example-sdk) view contains a SandboxedSdkView that is being populated
-            // with the ad view from the Runtime-enabled Mediatee, which runs in the same process
+            // with the ad view from the Runtime enabled Mediatee, which runs in the same process
             // as the Mediator. The view also has an overlay from the Mediator sdk. This will be
             // sent to the Publisher as a SandboxedUiAdapter by the Mediator.
             return View.inflate(sdkContext, R.layout.banner, null).apply {
