@@ -18,11 +18,6 @@ package com.mediatee.implementation
 import android.content.Context
 import com.mediatee.api.SdkBannerRequest
 import com.mediatee.api.SdkService
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.nio.file.Files
-import java.nio.file.Paths
 
 class SdkServiceImpl(private val context: Context) : SdkService {
     override suspend fun getBanner(request: SdkBannerRequest) =

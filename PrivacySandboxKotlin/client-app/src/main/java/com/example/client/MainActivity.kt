@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
     //
     // As SDKs transition into the SDK Runtime, we may have some SDKs still in the app process
     // while the mediator and other SDKs have moved.
-    // RE_RE Mediated Ads is the scenario when the winning ad network is Runtime Enables as is the
+    // RE_RE Mediated Ads is the scenario when the winning ad network is Runtime Enabled as is the
     // Mediator.
     enum class MediationOption {
         NONE,
@@ -133,15 +133,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
         val loadWebView = adTypes[adTypeSpinner.selectedItemPosition].contains("WebView")
-        // Mediated Ads are enabled when RE-RE Mediation option is chosen
-        val shouldLoadMediatedAd =
+        // Mediated Ads are enabled when RE-RE Mediation option is chosen.
+        val loadMediatedAd =
             mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_RUNTIME.ordinal.toLong()
         bannerAd.loadAd(
             this@MainActivity,
             PACKAGE_NAME,
             launchSdkActivity,
             loadWebView,
-            shouldLoadMediatedAd
+            loadMediatedAd
         )
     }
 

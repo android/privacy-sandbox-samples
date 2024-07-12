@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,8 @@ class SdkServiceImpl(private val context: Context) : SdkService {
         try {
             if (remoteInstance == null) {
                 val controller = SdkSandboxControllerCompat.from(context)
+                // Runtime enabled Mediator SDK can load another SDK in the SDK Runtime or if it is
+                // already loaded they may get the SDK binder from controller#getSandboxedSdks.
                 val sandboxedSdk = controller.loadSdk(mediateeSdkName, Bundle.EMPTY)
                 remoteInstance = SdkServiceFactory.wrapToSdkService(sandboxedSdk.getInterface()!!)
             }
