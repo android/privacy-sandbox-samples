@@ -14,7 +14,16 @@ adb shell am start -n com.google.android.adservices.api/com.android.adservices.u
 Then select the option shown to consent to app-suggested ads
 3. Run the following command to enable the relevant APIs. You may need to re-run this occasionally as the default configuration of disabled will be periodically synced
 ```
-adb shell device_config put adservices fledge_custom_audience_service_kill_switch false;  adb shell device_config put adservices fledge_select_ads_kill_switch false; adb shell device_config put adservices fledge_on_device_auction_kill_switch false; adb shell device_config put adservices fledge_auction_server_kill_switch false; adb shell "device_config put adservices disable_fledge_enrollment_check true";  adb shell device_config put adservices ppapi_app_allow_list '\*'; adb shell device_config put adservices fledge_auction_server_overall_timeout_ms 60000;
+adb shell device_config put adservices fledge_custom_audience_service_kill_switch false
+adb shell device_config put adservices fledge_select_ads_kill_switch false
+adb shell device_config put adservices fledge_on_device_auction_kill_switch false
+adb shell device_config put adservices fledge_auction_server_kill_switch false
+adb shell "device_config put adservices disable_fledge_enrollment_check true"
+adb shell device_config put adservices ppapi_app_allow_list '\*'
+adb shell device_config put adservices fledge_auction_server_overall_timeout_ms 60000
+adb shell setprop debug.adservices.consent_manager_debug_mode true
+adb shell device_config put adservices protected_signals_enabled true
+adb shell device_config put adservices protected_signals_periodic_encoding_enabled true
 ```
 4. Restart the device
 5. Set up a server with valid encoding logic (See "encodeSignals Example" section below)
