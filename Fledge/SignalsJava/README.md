@@ -6,7 +6,7 @@ This sample demonstrates the creation and storage of signals using the Protected
 
 This app contains two text boxes with attached buttons: one that takes a URL to fetch signals from, and one that takes an auction server URL. One possible way to test the APIs with the sample app would be to:
 
-1. Create an emulator or physical device that is running the Developer Preview 10 image
+1. Create an emulator or physical device that is running an API 34 SDK extension 12 image.
 2. Run the following:
 ```
 adb shell am start -n com.google.android.adservices.api/com.android.adservices.ui.settings.activities.AdServicesSettingsMainActivity
