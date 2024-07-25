@@ -12,8 +12,9 @@ This app contains two text boxes with attached buttons: one that takes a URL to 
 adb shell am start -n com.google.android.adservices.api/com.android.adservices.ui.settings.activities.AdServicesSettingsMainActivity
 ```
 Then select the option shown to consent to app-suggested ads
-3. Run the following command to enable the relevant APIs. You may need to re-run this occasionally as the default configuration of disabled will be periodically synced
+3. Run the following command to enable the relevant APIs.
 ```
+adb shell device_config set_sync_disabled_for_tests persistent
 adb shell device_config put adservices fledge_custom_audience_service_kill_switch false
 adb shell device_config put adservices fledge_select_ads_kill_switch false
 adb shell device_config put adservices fledge_on_device_auction_kill_switch false
