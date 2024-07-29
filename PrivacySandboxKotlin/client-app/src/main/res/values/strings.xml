@@ -17,5 +17,6 @@
   <string name="create_file_button_label">Create file in SDK Runtime</string>
   <string name="initialize_sdk_button_label">Initialize SDK</string>
   <string name="request_banner_view_button_label">Show banner view</string>
+  <string name="request_interstitial_view_button_label">Show interstitial view</string>
   <string name="sdk_activity_launch_checkbox_label">Allow activities from SDK</string>
 </resources>
