@@ -24,10 +24,13 @@ class ExistingSdk(private val context: Context) {
         return loadSdkIfNeeded(context)?.createFile(size)
     }
 
-    suspend fun showInterstitialAd(baseActivity: AppCompatActivity): Boolean {
+    suspend fun showInterstitialAd(
+        baseActivity: AppCompatActivity,
+        shouldLoadMediatedAd: Boolean
+    ): Boolean {
         if (!isSdkLoaded()) return false
         val launcher = baseActivity.createSdkActivityLauncher { true }
-        loadSdkIfNeeded(context)?.getInterstitial(launcher)
+        loadSdkIfNeeded(context)?.getInterstitial(launcher, shouldLoadMediatedAd)
         return true
     }
 

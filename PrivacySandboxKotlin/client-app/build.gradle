@@ -47,19 +47,6 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
     namespace "com.example.privacysandbox.client"
-
-    experimentalProperties["android.privacySandboxSdk.apiGenerator"] =
-            project.dependencies.create(
-                    "androidx.privacysandbox.tools:tools-apigenerator:$privacy_sandbox_tools_version")
-
-    experimentalProperties["android.privacySandboxSdk.apiGenerator.generatedRuntimeDependencies"] = [
-            project.dependencies.create("org.jetbrains.kotlin:kotlin-stdlib:1.7.20-RC"),
-            project.dependencies.create("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1"),
-            project.dependencies.create("androidx.privacysandbox.activity:activity-core:$privacy_sandbox_activity_version"),
-            project.dependencies.create("androidx.privacysandbox.activity:activity-client:$privacy_sandbox_activity_version"),
-            project.dependencies.create("androidx.privacysandbox.ui:ui-core:$privacy_sandbox_ui_version"),
-            project.dependencies.create("androidx.privacysandbox.ui:ui-client:$privacy_sandbox_ui_version"),
-    ]
 }
 
 dependencies {
