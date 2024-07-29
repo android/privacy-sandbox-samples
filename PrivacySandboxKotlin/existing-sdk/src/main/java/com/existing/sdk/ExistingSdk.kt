@@ -7,7 +7,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.privacysandbox.activity.client.createSdkActivityLauncher
 import androidx.privacysandbox.sdkruntime.client.SdkSandboxManagerCompat
 import androidx.privacysandbox.sdkruntime.core.LoadSdkCompatException
-import com.example.api.SdkInterstitialRequest
 import com.example.api.SdkService
 import com.example.api.SdkServiceFactory
 
