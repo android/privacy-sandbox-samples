@@ -6,15 +6,25 @@ This sample demonstrates the creation and storage of signals using the Protected
 
 This app contains two text boxes with attached buttons: one that takes a URL to fetch signals from, and one that takes an auction server URL. One possible way to test the APIs with the sample app would be to:
 
-1. Create an emulator or physical device that is running the Developer Preview 10 image
+1. Create an emulator or physical device that is running an API 34 SDK extension 12 image.
 2. Run the following:
 ```
 adb shell am start -n com.google.android.adservices.api/com.android.adservices.ui.settings.activities.AdServicesSettingsMainActivity
 ```
 Then select the option shown to consent to app-suggested ads
-3. Run the following command to enable the relevant APIs. You may need to re-run this occasionally as the default configuration of disabled will be periodically synced
+3. Run the following command to enable the relevant APIs.
 ```
-adb shell device_config put adservices fledge_custom_audience_service_kill_switch false;  adb shell device_config put adservices fledge_select_ads_kill_switch false; adb shell device_config put adservices fledge_on_device_auction_kill_switch false; adb shell device_config put adservices fledge_auction_server_kill_switch false; adb shell "device_config put adservices disable_fledge_enrollment_check true";  adb shell device_config put adservices ppapi_app_allow_list '\*'; adb shell device_config put adservices fledge_auction_server_overall_timeout_ms 60000;
+adb shell device_config set_sync_disabled_for_tests persistent
+adb shell device_config put adservices fledge_custom_audience_service_kill_switch false
+adb shell device_config put adservices fledge_select_ads_kill_switch false
+adb shell device_config put adservices fledge_on_device_auction_kill_switch false
+adb shell device_config put adservices fledge_auction_server_kill_switch false
+adb shell "device_config put adservices disable_fledge_enrollment_check true"
+adb shell device_config put adservices ppapi_app_allow_list '\*'
+adb shell device_config put adservices fledge_auction_server_overall_timeout_ms 60000
+adb shell setprop debug.adservices.consent_manager_debug_mode true
+adb shell device_config put adservices protected_signals_enabled true
+adb shell device_config put adservices protected_signals_periodic_encoding_enabled true
 ```
 4. Restart the device
 5. Set up a server with valid encoding logic (See "encodeSignals Example" section below)
