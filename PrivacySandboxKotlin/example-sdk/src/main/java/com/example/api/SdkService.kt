@@ -26,5 +26,11 @@ interface SdkService {
 
     suspend fun getBanner(request: SdkBannerRequest, requestMediatedAd: Boolean): SdkSandboxedUiAdapter?
 
-    suspend fun getInterstitial(activityLauncher: SdkActivityLauncher, requestMediatedAd: Boolean)
+    suspend fun getInterstitial(
+        activityLauncher: SdkActivityLauncher,
+        requestMediatedAd: Boolean,
+        requestInAppMediatedAd: Boolean
+    )
+
+    suspend fun registerInAppMediatee(inAppMediateeSdkInterface: InAppMediateeSdkInterface)
 }
