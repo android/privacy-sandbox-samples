@@ -27,6 +27,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
+import com.example.api.InAppMediateeSdkInterface
 import com.mediatee.api.SdkServiceFactory
 import com.example.api.SdkSandboxedUiAdapter
 
@@ -36,6 +37,8 @@ class SdkServiceImpl(private val context: Context) : SdkService {
     private val tag = "ExampleSdk"
 
     private var remoteInstance: com.mediatee.api.SdkService? = null
+
+    private var inAppMediateeSdkInterface: InAppMediateeSdkInterface? = null
 
     /** Name of the SDK to be loaded. */
     private val mediateeSdkName = "com.mediatee.sdk"
@@ -87,11 +90,12 @@ class SdkServiceImpl(private val context: Context) : SdkService {
 
     override suspend fun getInterstitial(
         activityLauncher: SdkActivityLauncher,
-        requestMediatedAd: Boolean
+        requestMediatedAd: Boolean,
+        requestInAppMediatedAd: Boolean
     ) {
-        if (!requestMediatedAd) {
+        if (!requestMediatedAd && !requestInAppMediatedAd) {
             InterstitialAd(context).showAd(activityLauncher)
-        } else {
+        } else if (requestMediatedAd) {
             try {
                 if (remoteInstance == null) {
                     val controller = SdkSandboxControllerCompat.from(context)
@@ -106,6 +110,14 @@ class SdkServiceImpl(private val context: Context) : SdkService {
             } catch (e: Exception) {
                 Log.e(tag, "Failed to load SDK, error code: $e", e)
             }
+        } else {
+            if (inAppMediateeSdkInterface == null) return
+            (inAppMediateeSdkInterface as InAppMediateeSdkInterface).getInterstitial()
         }
+    }
+
+    // In App mediatee registration is done in the mediator.
+    override suspend fun registerInAppMediatee(inAppMediatee: InAppMediateeSdkInterface) {
+        inAppMediateeSdkInterface = inAppMediatee
     }
 }

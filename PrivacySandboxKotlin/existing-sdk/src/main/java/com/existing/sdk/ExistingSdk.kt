@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.privacysandbox.activity.client.createSdkActivityLauncher
 import androidx.privacysandbox.sdkruntime.client.SdkSandboxManagerCompat
 import androidx.privacysandbox.sdkruntime.core.LoadSdkCompatException
+import com.example.api.InAppMediateeSdkInterface
 import com.example.api.SdkService
 import com.example.api.SdkServiceFactory
 
@@ -26,12 +27,23 @@ class ExistingSdk(private val context: Context) {
 
     suspend fun showInterstitialAd(
         baseActivity: AppCompatActivity,
-        shouldLoadMediatedAd: Boolean
+        shouldLoadMediatedAd: Boolean,
+        shouldLoadInAppMediatedAd: Boolean
     ): Boolean {
         if (!isSdkLoaded()) return false
         val launcher = baseActivity.createSdkActivityLauncher { true }
-        loadSdkIfNeeded(context)?.getInterstitial(launcher, shouldLoadMediatedAd)
+        loadSdkIfNeeded(context)?.getInterstitial(
+            launcher,
+            shouldLoadMediatedAd,
+            shouldLoadInAppMediatedAd
+        )
         return true
+    }
+
+    suspend fun registerInAppMediateeSdk(inAppMediatee: InAppMediateeSdkInterface) {
+        if (isSdkLoaded()) {
+            remoteInstance?.registerInAppMediatee(inAppMediatee)
+        }
     }
 
     /** Keeps a reference to a sandboxed SDK and makes sure it's only loaded once. */

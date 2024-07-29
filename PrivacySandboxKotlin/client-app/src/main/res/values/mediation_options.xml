@@ -19,5 +19,6 @@
     <string-array name="mediation_dropdown_menu_array">
         <item>Mediated Ad > None (default)</item>
         <item>Runtime-Runtime Mediation</item>
+        <item>Runtime-InApp Mediation</item>
     </string-array>
 </resources>
