@@ -16,10 +16,14 @@
 package com.mediatee.implementation
 
 import android.content.Context
+import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import com.mediatee.api.SdkBannerRequest
 import com.mediatee.api.SdkService
 
 class SdkServiceImpl(private val context: Context) : SdkService {
     override suspend fun getBanner(request: SdkBannerRequest) =
         SdkSandboxedUiAdapterImpl(context, request)
+
+    override suspend fun getInterstitial(activityLauncher: SdkActivityLauncher) =
+        InterstitialAd(context).showAd(activityLauncher)
 }

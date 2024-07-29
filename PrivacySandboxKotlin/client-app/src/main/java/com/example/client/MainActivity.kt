@@ -151,10 +151,11 @@ class MainActivity : AppCompatActivity() {
     private fun onRequestInterstitialButtonPressed() = lifecycleScope.launch {
         if (!findViewById<CheckBox>(R.id.sdk_activity_launch_checkbox).isChecked) {
             makeToast("SDK tried to launch an activity, but it was denied.")
-        } else if (mediationDropDownMenu.selectedItemId != MediationOption.NONE.ordinal.toLong()) {
-            makeToast("Mediated interstitial ad is not yet implemented!")
         } else {
-            val interstitialAdLoaded = existingSdk.showInterstitialAd(this@MainActivity)
+            val shouldLoadMediatedAd =
+                mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_RUNTIME.ordinal.toLong()
+            val interstitialAdLoaded =
+                existingSdk.showInterstitialAd(this@MainActivity, shouldLoadMediatedAd)
             if (!interstitialAdLoaded) {
                 makeToast("Failed to initialize SDK")
             }
