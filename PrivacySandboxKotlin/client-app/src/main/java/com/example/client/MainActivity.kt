@@ -26,6 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.privacysandbox.client.R
 import com.existing.sdk.BannerAd
 import com.existing.sdk.ExistingSdk
+import com.inappmediatee.sdk.InAppMediateeSdk
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -33,6 +34,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bannerAd: BannerAd
 
     private val existingSdk = ExistingSdk(this)
+
+    private val inAppMediateeSdk = InAppMediateeSdk(this)
 
     /** A spinner for selecting the size of the file created in the sandbox. */
     private lateinit var fileSizeSpinner: Spinner
@@ -66,7 +69,8 @@ class MainActivity : AppCompatActivity() {
     // Mediator.
     enum class MediationOption {
         NONE,
-        RUNTIME_RUNTIME
+        RUNTIME_RUNTIME,
+        RUNTIME_INAPP
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -139,22 +143,38 @@ class MainActivity : AppCompatActivity() {
         // Mediated Ads are enabled when RE-RE Mediation option is chosen.
         val loadMediatedAd =
             mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_RUNTIME.ordinal.toLong()
-        bannerAd.loadAd(
-            this@MainActivity,
-            PACKAGE_NAME,
-            launchSdkActivity,
-            loadWebView,
-            loadMediatedAd
-        )
+        val shouldLoadInAppMediateeAd =
+            mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_INAPP.ordinal.toLong()
+        if (shouldLoadInAppMediateeAd) {
+            makeToast("RE_SDK<>InApp Mediated Banner Ad not yet implemented!")
+        } else {
+            bannerAd.loadAd(
+                this@MainActivity,
+                PACKAGE_NAME,
+                launchSdkActivity,
+                loadWebView,
+                loadMediatedAd
+            )
+        }
     }
 
     private fun onRequestInterstitialButtonPressed() = lifecycleScope.launch {
         if (!findViewById<CheckBox>(R.id.sdk_activity_launch_checkbox).isChecked) {
             makeToast("SDK tried to launch an activity, but it was denied.")
-        } else if (mediationDropDownMenu.selectedItemId != MediationOption.NONE.ordinal.toLong()) {
-            makeToast("Mediated interstitial ad is not yet implemented!")
         } else {
-            val interstitialAdLoaded = existingSdk.showInterstitialAd(this@MainActivity)
+            val shouldLoadMediatedAd =
+                mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_RUNTIME.ordinal.toLong()
+            val shouldLoadInAppMediateeAd =
+                mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_INAPP.ordinal.toLong()
+            if (shouldLoadInAppMediateeAd) {
+                existingSdk.registerInAppMediateeSdk(inAppMediateeSdk)
+            }
+            val interstitialAdLoaded =
+                existingSdk.showInterstitialAd(
+                    this@MainActivity,
+                    shouldLoadMediatedAd,
+                    shouldLoadInAppMediateeAd
+                )
             if (!interstitialAdLoaded) {
                 makeToast("Failed to initialize SDK")
             }
