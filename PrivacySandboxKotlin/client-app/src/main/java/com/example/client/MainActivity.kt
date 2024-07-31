@@ -26,7 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.privacysandbox.client.R
 import com.existing.sdk.BannerAd
 import com.existing.sdk.ExistingSdk
-import com.existing.sdk.FullscreenAd
+import com.inappmediatee.sdk.InAppMediateeSdk
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -34,6 +34,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bannerAd: BannerAd
 
     private val existingSdk = ExistingSdk(this)
+
+    private val inAppMediateeSdk = InAppMediateeSdk(this)
 
     /** A spinner for selecting the size of the file created in the sandbox. */
     private lateinit var fileSizeSpinner: Spinner
@@ -67,7 +69,8 @@ class MainActivity : AppCompatActivity() {
     // Mediator.
     enum class MediationOption {
         NONE,
-        RUNTIME_RUNTIME
+        RUNTIME_RUNTIME,
+        RUNTIME_INAPP
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,8 +88,8 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.request_banner_button).setOnClickListener {
             onRequestBannerButtonPressed()
         }
-        findViewById<Button>(R.id.fullscreen_button).setOnClickListener {
-            showFullscreenView()
+        findViewById<Button>(R.id.request_interstitial_button).setOnClickListener {
+            onRequestInterstitialButtonPressed()
         }
 
         fileSizeSpinner = findViewById<Spinner>(R.id.create_file_size_spinner).apply {
@@ -103,6 +106,7 @@ class MainActivity : AppCompatActivity() {
 
         mediationDropDownMenu = findViewById(R.id.mediation_options_dropdown)
 
+        // Supply the mediation_option array to the mediationDropDownMenu spinner.
         ArrayAdapter.createFromResource(
             this@MainActivity,
             R.array.mediation_dropdown_menu_array,
@@ -127,27 +131,54 @@ class MainActivity : AppCompatActivity() {
         // surfacing a checkbox that controls the launches. In production apps could disable
         // launches whenever they feel SDKs shouldn't be launching activities (in the middle of
         // certain game scenes, video playback, etc).
+        val launchSdkActivity = {
+            if (findViewById<CheckBox>(R.id.sdk_activity_launch_checkbox).isChecked) {
+                true
+            } else {
+                makeToast("SDK tried to launch an activity, but it was denied.")
+                false
+            }
+        }
         val loadWebView = adTypes[adTypeSpinner.selectedItemPosition].contains("WebView")
         // Mediated Ads are enabled when RE-RE Mediation option is chosen.
         val loadMediatedAd =
             mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_RUNTIME.ordinal.toLong()
-        bannerAd.loadAd(
-            this@MainActivity,
-            PACKAGE_NAME,
-            shouldStartActivityPredicate(),
-            loadWebView,
-            loadMediatedAd
-        )
+        val shouldLoadInAppMediateeAd =
+            mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_INAPP.ordinal.toLong()
+        if (shouldLoadInAppMediateeAd) {
+            makeToast("RE_SDK<>InApp Mediated Banner Ad not yet implemented!")
+        } else {
+            bannerAd.loadAd(
+                this@MainActivity,
+                PACKAGE_NAME,
+                launchSdkActivity,
+                loadWebView,
+                loadMediatedAd
+            )
+        }
     }
 
-    private fun showFullscreenView() = lifecycleScope.launch {
-        val mediationType = MediationOption.RUNTIME_RUNTIME.toString()
-        val fullscreenAd = FullscreenAd.create(this@MainActivity, mediationType)
-        fullscreenAd.show(this@MainActivity, shouldStartActivityPredicate(), mediationType)
-    }
-
-    private fun shouldStartActivityPredicate() : () -> Boolean {
-        return { findViewById<CheckBox>(R.id.sdk_activity_launch_checkbox).isChecked }
+    private fun onRequestInterstitialButtonPressed() = lifecycleScope.launch {
+        if (!findViewById<CheckBox>(R.id.sdk_activity_launch_checkbox).isChecked) {
+            makeToast("SDK tried to launch an activity, but it was denied.")
+        } else {
+            val shouldLoadMediatedAd =
+                mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_RUNTIME.ordinal.toLong()
+            val shouldLoadInAppMediateeAd =
+                mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_INAPP.ordinal.toLong()
+            if (shouldLoadInAppMediateeAd) {
+                existingSdk.registerInAppMediateeSdk(inAppMediateeSdk)
+            }
+            val interstitialAdLoaded =
+                existingSdk.showInterstitialAd(
+                    this@MainActivity,
+                    shouldLoadMediatedAd,
+                    shouldLoadInAppMediateeAd
+                )
+            if (!interstitialAdLoaded) {
+                makeToast("Failed to initialize SDK")
+            }
+        }
     }
 
     private fun onCreateFileButtonPressed() {
