@@ -99,7 +99,6 @@ class MainActivity : AppCompatActivity() {
 
         mediationDropDownMenu = findViewById(R.id.mediation_options_dropdown)
 
-        // Supply the mediation_option array to the mediationDropDownMenu spinner.
         ArrayAdapter.createFromResource(
             this@MainActivity,
             R.array.mediation_dropdown_menu_array,
