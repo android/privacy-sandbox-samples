@@ -18,6 +18,7 @@ package com.example.implementation
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import com.example.api.SdkBannerRequest
 import com.example.api.SdkService
 import kotlinx.coroutines.Dispatchers
@@ -83,4 +84,7 @@ class SdkServiceImpl(private val context: Context) : SdkService {
             return null
         }
     }
+
+    override suspend fun getInterstitial(activityLauncher: SdkActivityLauncher) =
+        InterstitialAd(context).showAd(activityLauncher)
 }

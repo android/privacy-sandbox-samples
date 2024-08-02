@@ -15,6 +15,7 @@
  */
 package com.example.api
 
+import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import androidx.privacysandbox.tools.PrivacySandboxService
 
 @PrivacySandboxService
@@ -24,4 +25,6 @@ interface SdkService {
     suspend fun createFile(sizeInMb: Int): String
 
     suspend fun getBanner(request: SdkBannerRequest, requestMediatedAd: Boolean): SdkSandboxedUiAdapter?
+
+    suspend fun getInterstitial(activityLauncher: SdkActivityLauncher)
 }

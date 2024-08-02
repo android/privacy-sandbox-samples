@@ -63,6 +63,14 @@
             android:text="@string/request_banner_view_button_label"
             android:backgroundTint="#FFFFFF"/>
 
+        <Button
+            android:id="@+id/request_interstitial_button"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/request_interstitial_view_button_label"
+            android:backgroundTint="#FFFFFF"/>
+
         <CheckBox android:id="@+id/sdk_activity_launch_checkbox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -99,9 +107,7 @@
         android:layout_height="500dp"
         android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        >
     <LinearLayout
         android:id="@+id/ad_layout"
         android:layout_width="match_parent"

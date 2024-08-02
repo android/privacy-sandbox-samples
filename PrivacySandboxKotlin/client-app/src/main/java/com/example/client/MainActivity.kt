@@ -84,6 +84,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.request_banner_button).setOnClickListener {
             onRequestBannerButtonPressed()
         }
+        findViewById<Button>(R.id.request_interstitial_button).setOnClickListener {
+            onRequestInterstitialButtonPressed()
+        }
 
         fileSizeSpinner = findViewById<Spinner>(R.id.create_file_size_spinner).apply {
             adapter = ArrayAdapter(this@MainActivity,
@@ -142,6 +145,19 @@ class MainActivity : AppCompatActivity() {
             loadWebView,
             loadMediatedAd
         )
+    }
+
+    private fun onRequestInterstitialButtonPressed() = lifecycleScope.launch {
+        if (!findViewById<CheckBox>(R.id.sdk_activity_launch_checkbox).isChecked) {
+            makeToast("SDK tried to launch an activity, but it was denied.")
+        } else if (mediationDropDownMenu.selectedItemId != MediationOption.NONE.ordinal.toLong()) {
+            makeToast("Mediated interstitial ad is not yet implemented!")
+        } else {
+            val interstitialAdLoaded = existingSdk.showInterstitialAd(this@MainActivity)
+            if (!interstitialAdLoaded) {
+                makeToast("Failed to initialize SDK")
+            }
+        }
     }
 
     private fun onCreateFileButtonPressed() {
