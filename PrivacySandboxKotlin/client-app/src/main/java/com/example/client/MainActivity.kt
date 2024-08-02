@@ -26,6 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.privacysandbox.client.R
 import com.existing.sdk.BannerAd
 import com.existing.sdk.ExistingSdk
+import com.existing.sdk.FullscreenAd
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -84,6 +85,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.request_banner_button).setOnClickListener {
             onRequestBannerButtonPressed()
         }
+        findViewById<Button>(R.id.fullscreen_button).setOnClickListener {
+            showFullscreenView()
+        }
 
         fileSizeSpinner = findViewById<Spinner>(R.id.create_file_size_spinner).apply {
             adapter = ArrayAdapter(this@MainActivity,
@@ -123,14 +127,6 @@ class MainActivity : AppCompatActivity() {
         // surfacing a checkbox that controls the launches. In production apps could disable
         // launches whenever they feel SDKs shouldn't be launching activities (in the middle of
         // certain game scenes, video playback, etc).
-        val launchSdkActivity = {
-            if (findViewById<CheckBox>(R.id.sdk_activity_launch_checkbox).isChecked) {
-                true
-            } else {
-                makeToast("SDK tried to launch an activity, but it was denied.")
-                false
-            }
-        }
         val loadWebView = adTypes[adTypeSpinner.selectedItemPosition].contains("WebView")
         // Mediated Ads are enabled when RE-RE Mediation option is chosen.
         val loadMediatedAd =
@@ -138,10 +134,19 @@ class MainActivity : AppCompatActivity() {
         bannerAd.loadAd(
             this@MainActivity,
             PACKAGE_NAME,
-            launchSdkActivity,
+            shouldStartActivityPredicate(),
             loadWebView,
             loadMediatedAd
         )
+    }
+
+    private fun showFullscreenView() = lifecycleScope.launch {
+        val fullscreenAd = FullscreenAd.create(this@MainActivity)
+        fullscreenAd.show(this@MainActivity, shouldStartActivityPredicate())
+    }
+
+    private fun shouldStartActivityPredicate() : () -> Boolean {
+        return { findViewById<CheckBox>(R.id.sdk_activity_launch_checkbox).isChecked }
     }
 
     private fun onCreateFileButtonPressed() {

@@ -18,6 +18,7 @@ package com.example.implementation
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import com.example.api.FullscreenAd
 import com.example.api.SdkBannerRequest
 import com.example.api.SdkService
 import kotlinx.coroutines.Dispatchers
@@ -82,5 +83,9 @@ class SdkServiceImpl(private val context: Context) : SdkService {
             Log.e(tag, "Failed to load SDK, error code: $e", e)
             return null
         }
+    }
+
+    override suspend fun getFullscreenAd() : FullscreenAd {
+        return FullscreenAdImpl(context)
     }
 }
