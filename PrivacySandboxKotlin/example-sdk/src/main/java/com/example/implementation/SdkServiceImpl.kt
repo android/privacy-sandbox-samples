@@ -19,6 +19,7 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.privacysandbox.activity.core.SdkActivityLauncher
+import com.example.api.FullscreenAd
 import com.example.api.SdkBannerRequest
 import com.example.api.SdkService
 import kotlinx.coroutines.Dispatchers
@@ -85,27 +86,7 @@ class SdkServiceImpl(private val context: Context) : SdkService {
         }
     }
 
-    override suspend fun getInterstitial(
-        activityLauncher: SdkActivityLauncher,
-        requestMediatedAd: Boolean
-    ) {
-        if (!requestMediatedAd) {
-            InterstitialAd(context).showAd(activityLauncher)
-        } else {
-            try {
-                if (remoteInstance == null) {
-                    val controller = SdkSandboxControllerCompat.from(context)
-                    val sandboxedSdk = controller.loadSdk(mediateeSdkName, Bundle.EMPTY)
-                    remoteInstance =
-                        SdkServiceFactory.wrapToSdkService(sandboxedSdk.getInterface()!!)
-                }
-
-                // Activity Launcher to be used to load interstitial ad will be passed from
-                // mediator to mediatee SDK.
-                remoteInstance!!.getInterstitial(activityLauncher)
-            } catch (e: Exception) {
-                Log.e(tag, "Failed to load SDK, error code: $e", e)
-            }
-        }
+    override suspend fun getFullscreenAd() : FullscreenAd {
+        return FullscreenAdImpl(context)
     }
 }
