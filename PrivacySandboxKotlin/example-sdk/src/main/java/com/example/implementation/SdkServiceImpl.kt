@@ -18,7 +18,6 @@ package com.example.implementation
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import com.example.api.FullscreenAd
 import com.example.api.SdkBannerRequest
 import com.example.api.SdkService
@@ -86,7 +85,19 @@ class SdkServiceImpl(private val context: Context) : SdkService {
         }
     }
 
-    override suspend fun getFullscreenAd() : FullscreenAd {
-        return FullscreenAdImpl(context)
+    override suspend fun getFullscreenAd(requestMediatedAd: Boolean): FullscreenAd {
+        if (requestMediatedAd) {
+            try {
+                if (remoteInstance == null) {
+                    val controller = SdkSandboxControllerCompat.from(context)
+                    val sandboxedSdk = controller.loadSdk(mediateeSdkName, Bundle.EMPTY)
+                    remoteInstance =
+                        SdkServiceFactory.wrapToSdkService(sandboxedSdk.getInterface()!!)
+                }
+            } catch (e: Exception) {
+                Log.e(tag, "Failed to load SDK, error code: $e", e)
+            }
+        }
+        return FullscreenAdImpl(context, remoteInstance)
     }
 }

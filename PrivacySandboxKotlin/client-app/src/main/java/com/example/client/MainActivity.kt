@@ -135,15 +135,17 @@ class MainActivity : AppCompatActivity() {
         bannerAd.loadAd(
             this@MainActivity,
             PACKAGE_NAME,
-            launchSdkActivity,
+            shouldStartActivityPredicate(),
             loadWebView,
             loadMediatedAd
         )
     }
 
     private fun showFullscreenView() = lifecycleScope.launch {
-        val fullscreenAd = FullscreenAd.create(this@MainActivity)
-        fullscreenAd.show(this@MainActivity, shouldStartActivityPredicate())
+        val loadMediatedAd =
+            mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_RUNTIME.ordinal.toLong()
+        val fullscreenAd = FullscreenAd.create(this@MainActivity, loadMediatedAd)
+        fullscreenAd.show(this@MainActivity, shouldStartActivityPredicate(), loadMediatedAd)
     }
 
     private fun shouldStartActivityPredicate() : () -> Boolean {

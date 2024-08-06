@@ -15,12 +15,11 @@
  */
 package com.mediatee.api
 
-import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import androidx.privacysandbox.tools.PrivacySandboxService
 
 @PrivacySandboxService
 interface SdkService {
     suspend fun getBanner(request: SdkBannerRequest): SdkSandboxedUiAdapter
 
-    suspend fun getInterstitial(activityLauncher: SdkActivityLauncher)
+    suspend fun getFullscreenAd(): FullscreenAd
 }

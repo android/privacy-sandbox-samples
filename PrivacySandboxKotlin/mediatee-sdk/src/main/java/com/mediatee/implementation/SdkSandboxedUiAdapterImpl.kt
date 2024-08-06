@@ -17,11 +17,13 @@ package com.mediatee.implementation
 
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Bundle
 import android.os.IBinder
 import android.view.View
 import android.webkit.WebView
 import android.widget.TextView
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
+import androidx.privacysandbox.ui.core.SessionObserverFactory
 import com.mediatee.api.SdkBannerRequest
 import com.mediatee.api.SdkSandboxedUiAdapter
 import kotlinx.coroutines.CoroutineScope
@@ -49,6 +51,16 @@ class SdkSandboxedUiAdapterImpl(
             client.onSessionOpened(session)
         }
     }
+
+    override fun addObserverFactory(sessionObserverFactory: SessionObserverFactory) {
+        // Adds a SessionObserverFactory with a SandboxedUiAdapter for tracking UI presentation
+        // state across UI sessions. This has no effect on already open sessions.
+    }
+
+    override fun removeObserverFactory(sessionObserverFactory: SessionObserverFactory) {
+        // Removes a SessionObserverFactory from a SandboxedUiAdapter, if it has been
+        // previously added with addObserverFactory.
+    }
 }
 
 private class SdkUiSession(
@@ -65,6 +77,8 @@ private class SdkUiSession(
     )
 
     private val bannerAdMsg = "Rendered from Runtime Enabled Mediatee SDK"
+
+    override val signalOptions: Set<String> = setOf()
 
     override val view: View = getAdView()
 
@@ -91,6 +105,10 @@ private class SdkUiSession(
 
     override fun notifyResized(width: Int, height: Int) {
         // Notifies that the size of the presentation area in the app has changed.
+    }
+
+    override fun notifyUiChanged(uiContainerInfo: Bundle) {
+        // Notify the session when the presentation state of its UI container has changed.
     }
 
     override fun notifyZOrderChanged(isZOrderOnTop: Boolean) {
