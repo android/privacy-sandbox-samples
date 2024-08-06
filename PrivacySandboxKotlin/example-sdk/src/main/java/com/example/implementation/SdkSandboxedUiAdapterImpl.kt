@@ -17,6 +17,7 @@ package com.example.implementation
 
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Bundle
 import android.os.IBinder
 import android.view.View
 import android.webkit.WebSettings
@@ -28,6 +29,7 @@ import androidx.privacysandbox.sdkruntime.core.activity.SdkSandboxActivityHandle
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import androidx.privacysandbox.ui.client.view.SandboxedSdkView
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
+import androidx.privacysandbox.ui.core.SessionObserverFactory
 import com.example.R
 import com.example.api.SdkBannerRequest
 import com.example.api.SdkSandboxedUiAdapter
@@ -58,6 +60,16 @@ class SdkSandboxedUiAdapterImpl(
             client.onSessionOpened(session)
         }
     }
+
+    override fun addObserverFactory(sessionObserverFactory: SessionObserverFactory) {
+        // Adds a [SessionObserverFactory] with a [SandboxedUiAdapter] for tracking UI presentation
+        // state across UI sessions. This has no effect on already open sessions.
+    }
+
+    override fun removeObserverFactory(sessionObserverFactory: SessionObserverFactory) {
+        // Removes a [SessionObserverFactory] from a [SandboxedUiAdapter], if it has been
+        // previously added with [addObserverFactory].
+    }
 }
 
 private class SdkUiSession(
@@ -75,6 +87,8 @@ private class SdkUiSession(
     private val urls = listOf(
         "https://github.com", "https://developer.android.com/"
     )
+
+    override val signalOptions: Set<String> = setOf()
 
     override val view: View = getAdView()
 
@@ -122,6 +136,10 @@ private class SdkUiSession(
 
     override fun notifyResized(width: Int, height: Int) {
         // Notifies that the size of the presentation area in the app has changed.
+    }
+
+    override fun notifyUiChanged(uiContainerInfo: Bundle) {
+        // Notify the session when the presentation state of its UI container has changed.
     }
 
     override fun notifyZOrderChanged(isZOrderOnTop: Boolean) {

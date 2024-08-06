@@ -31,19 +31,6 @@ android {
         consumerProguardFiles "consumer-rules.pro"
     }
 
-    experimentalProperties["android.privacySandboxSdk.apiGenerator"] =
-            project.dependencies.create(
-                    "androidx.privacysandbox.tools:tools-apigenerator:$privacy_sandbox_tools_version")
-
-    experimentalProperties["android.privacySandboxSdk.apiGenerator.generatedRuntimeDependencies"] = [
-            project.dependencies.create("org.jetbrains.kotlin:kotlin-stdlib:1.7.20-RC"),
-            project.dependencies.create("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.0.1"),
-            project.dependencies.create("androidx.privacysandbox.activity:activity-core:$privacy_sandbox_activity_version"),
-            project.dependencies.create("androidx.privacysandbox.activity:activity-client:$privacy_sandbox_activity_version"),
-            project.dependencies.create("androidx.privacysandbox.ui:ui-core:$privacy_sandbox_ui_version"),
-            project.dependencies.create("androidx.privacysandbox.ui:ui-client:$privacy_sandbox_ui_version"),
-    ]
-
     buildTypes {
         release {
             minifyEnabled false
@@ -54,12 +41,15 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
 }
 
 dependencies {
     ksp "androidx.privacysandbox.tools:tools-apicompiler:$privacy_sandbox_tools_version"
     ksp 'androidx.annotation:annotation:1.6.0'
-    implementation 'androidx.privacysandbox.ui:ui-client:1.0.0-alpha07'
+    implementation "androidx.privacysandbox.ui:ui-client:$privacy_sandbox_ui_version"
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10'
     implementation "androidx.privacysandbox.tools:tools:$privacy_sandbox_tools_version"
     implementation "androidx.lifecycle:lifecycle-common:2.7.0"
