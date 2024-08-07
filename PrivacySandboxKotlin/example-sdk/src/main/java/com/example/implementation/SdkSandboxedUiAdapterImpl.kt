@@ -104,8 +104,9 @@ private class SdkUiSession(
                 val textView = findViewById<TextView>(R.id.banner_header_view)
                 textView.text =
                     context.getString(R.string.banner_ad_label, request.appPackageName)
-                val ssv = findViewById<SandboxedSdkView>(R.id.sandboxed_sdk_view)
+                val ssv = SandboxedSdkView(context)
                 ssv.setAdapter(mediateeAdapter)
+                adLayout.addView(ssv)
             }
         }
         if (request.isWebViewBannerAd) {
