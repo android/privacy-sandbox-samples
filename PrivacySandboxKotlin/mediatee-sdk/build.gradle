@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ plugins {
 }
 
 android {
-    namespace "com.example"
+    namespace "com.mediatee"
 
     defaultConfig {
         minSdk 21
@@ -47,9 +47,6 @@ android {
 }
 
 dependencies {
-    debugImplementation project(":mediatee-sdk-bundle")
-
-    implementation 'androidx.activity:activity-ktx:1.9.0'
     ksp "androidx.privacysandbox.tools:tools-apicompiler:$privacy_sandbox_tools_version"
     ksp 'androidx.annotation:annotation:1.6.0'
     implementation "androidx.privacysandbox.ui:ui-client:$privacy_sandbox_ui_version"
