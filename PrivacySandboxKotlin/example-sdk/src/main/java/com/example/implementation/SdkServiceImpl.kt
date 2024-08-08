@@ -27,6 +27,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
+import com.example.R
 import com.mediatee.api.SdkServiceFactory
 import com.example.api.SdkSandboxedUiAdapter
 
@@ -85,8 +86,8 @@ class SdkServiceImpl(private val context: Context) : SdkService {
         }
     }
 
-    override suspend fun getFullscreenAd(requestMediatedAd: Boolean): FullscreenAd {
-        if (requestMediatedAd) {
+    override suspend fun getFullscreenAd(mediationType: String): FullscreenAd {
+        if (mediationType == context.getString(R.string.mediation_option_re_re)) {
             try {
                 if (remoteInstance == null) {
                     val controller = SdkSandboxControllerCompat.from(context)

@@ -15,6 +15,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.privacysandbox.sdkruntime.core.activity.ActivityHolder
 
+/* This class creates the layout of the activity that shows the ad. */
 class ActivityHandler(
     private val activityHolder: ActivityHolder,
     private val adView: View,

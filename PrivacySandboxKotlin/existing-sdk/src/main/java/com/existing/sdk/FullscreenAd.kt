@@ -11,10 +11,10 @@ class FullscreenAd(private val sdkFullscreenAd: FullscreenAd) {
     suspend fun show(
         baseActivity: AppCompatActivity,
         allowSdkActivityLaunch: () -> Boolean,
-        requestMediatedAd: Boolean
+        mediationType: String
     ) {
         val activityLauncher = baseActivity.createSdkActivityLauncher(allowSdkActivityLaunch)
-        sdkFullscreenAd.show(activityLauncher, requestMediatedAd)
+        sdkFullscreenAd.show(activityLauncher, mediationType)
     }
 
     companion object {
@@ -23,11 +23,11 @@ class FullscreenAd(private val sdkFullscreenAd: FullscreenAd) {
         // it exists.
         suspend fun create(
             context: Context,
-            shouldLoadMediatedAd: Boolean
+            mediationType: String
         ): com.existing.sdk.FullscreenAd {
             if (ExistingSdk.isSdkLoaded()) {
                 val remoteFullscreenAd =
-                    ExistingSdk.loadSdkIfNeeded(context)?.getFullscreenAd(shouldLoadMediatedAd)
+                    ExistingSdk.loadSdkIfNeeded(context)?.getFullscreenAd(mediationType)
                 if (remoteFullscreenAd != null)
                     return FullscreenAd(remoteFullscreenAd)
             }
@@ -38,7 +38,7 @@ class FullscreenAd(private val sdkFullscreenAd: FullscreenAd) {
     internal class LocalFullscreenAdImpl(private val context: Context) : FullscreenAd {
         override suspend fun show(
             activityLauncher: SdkActivityLauncher,
-            requestMediatedAd: Boolean
+            mediationType: String
         ) {
             val intent = Intent(context, LocalActivity::class.java)
             context.startActivity(intent)

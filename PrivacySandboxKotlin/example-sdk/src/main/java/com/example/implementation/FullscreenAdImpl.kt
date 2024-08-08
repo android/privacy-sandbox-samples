@@ -15,6 +15,7 @@ import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import androidx.privacysandbox.sdkruntime.core.activity.ActivityHolder
 import androidx.privacysandbox.sdkruntime.core.activity.SdkSandboxActivityHandlerCompat
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
+import com.example.R
 import com.example.api.FullscreenAd
 
 
@@ -37,8 +38,8 @@ class FullscreenAdImpl(private val sdkContext: Context,
         webView.loadUrl(WEB_VIEW_LINK)
     }
 
-    override suspend fun show(activityLauncher: SdkActivityLauncher, requestMediatedAd: Boolean) {
-        if (requestMediatedAd) {
+    override suspend fun show(activityLauncher: SdkActivityLauncher, mediationType: String) {
+        if (mediationType == sdkContext.getString(R.string.mediation_option_re_re)) {
             if (mediateeSdk == null) {
                 throw RemoteException("Mediatee SDK not loaded!")
             }
