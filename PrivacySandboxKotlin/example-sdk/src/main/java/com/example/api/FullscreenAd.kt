@@ -16,20 +16,9 @@
 package com.example.api
 
 import androidx.privacysandbox.activity.core.SdkActivityLauncher
-import androidx.privacysandbox.tools.PrivacySandboxService
+import androidx.privacysandbox.tools.PrivacySandboxInterface
 
-@PrivacySandboxService
-interface SdkService {
-    suspend fun getMessage(): String
-
-    suspend fun createFile(sizeInMb: Int): String
-
-    suspend fun getBanner(request: SdkBannerRequest, requestMediatedAd: Boolean): SdkSandboxedUiAdapter?
-    suspend fun getInterstitial(
-        activityLauncher: SdkActivityLauncher,
-        requestMediatedAd: Boolean,
-        requestInAppMediatedAd: Boolean
-    )
-
-    suspend fun registerInAppMediatee(inAppMediateeSdkInterface: InAppMediateeSdkInterface)
+@PrivacySandboxInterface
+interface FullscreenAd {
+    suspend fun show(activityLauncher: SdkActivityLauncher)
 }
