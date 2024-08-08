@@ -20,7 +20,8 @@ import com.example.api.FullscreenAd
 
 
 class FullscreenAdImpl(private val sdkContext: Context,
-                       private val mediateeSdk: com.mediatee.api.SdkService?
+                       private val mediateeSdk: com.mediatee.api.SdkService?,
+                       private val inAppMediatee: com.example.api.InAppMediateeSdkInterface?
 ) : FullscreenAd {
 
     private val webView = WebView(sdkContext)
@@ -46,8 +47,14 @@ class FullscreenAdImpl(private val sdkContext: Context,
             // Activity Launcher to be used to load interstitial ad will be passed from
             // mediator to mediatee SDK.
             mediateeSdk.getFullscreenAd().show(activityLauncher)
-        }
-        else {
+        } else if (mediationType == sdkContext.getString(R.string.mediation_option_re_inapp)) {
+            if (inAppMediatee == null) {
+                throw RemoteException("In App Mediatee SDK not registered with mediator SDK!")
+            }
+            // In App mediatee declares its own activity in its manifest (statically linked to the
+            // app), which opens in the app process. ActivityLauncher is not passed from mediator.
+            inAppMediatee.show()
+        } else {
             val handler = object : SdkSandboxActivityHandlerCompat {
                 @RequiresApi(Build.VERSION_CODES.R)
                 override fun onActivityCreated(activityHolder: ActivityHolder) {

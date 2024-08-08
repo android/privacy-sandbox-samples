@@ -4,5 +4,5 @@ import androidx.privacysandbox.tools.PrivacySandboxCallback
 
 @PrivacySandboxCallback
 interface InAppMediateeSdkInterface {
-    suspend fun getInterstitial()
+    suspend fun show()
 }

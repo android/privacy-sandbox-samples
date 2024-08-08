@@ -28,6 +28,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import com.example.R
+import com.example.api.InAppMediateeSdkInterface
 import com.mediatee.api.SdkServiceFactory
 import com.example.api.SdkSandboxedUiAdapter
 
@@ -37,6 +38,8 @@ class SdkServiceImpl(private val context: Context) : SdkService {
     private val tag = "ExampleSdk"
 
     private var remoteInstance: com.mediatee.api.SdkService? = null
+
+    private var inAppMediateeSdkInterface: InAppMediateeSdkInterface? = null
 
     /** Name of the SDK to be loaded. */
     private val mediateeSdkName = "com.mediatee.sdk"
@@ -99,6 +102,10 @@ class SdkServiceImpl(private val context: Context) : SdkService {
                 Log.e(tag, "Failed to load SDK, error code: $e", e)
             }
         }
-        return FullscreenAdImpl(context, remoteInstance)
+        return FullscreenAdImpl(context, remoteInstance, inAppMediateeSdkInterface)
+    }
+
+    override suspend fun registerInAppMediatee(inAppMediatee: InAppMediateeSdkInterface) {
+        inAppMediateeSdkInterface = inAppMediatee
     }
 }

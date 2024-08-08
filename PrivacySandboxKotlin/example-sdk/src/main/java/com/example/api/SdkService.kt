@@ -26,4 +26,6 @@ interface SdkService {
     suspend fun getBanner(request: SdkBannerRequest, requestMediatedAd: Boolean): SdkSandboxedUiAdapter?
 
     suspend fun getFullscreenAd(mediationType: String): FullscreenAd
+
+    suspend fun registerInAppMediatee(inAppMediatee: InAppMediateeSdkInterface)
 }
