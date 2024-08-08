@@ -53,13 +53,13 @@ class SdkSandboxedUiAdapterImpl(
     }
 
     override fun addObserverFactory(sessionObserverFactory: SessionObserverFactory) {
-        // Adds a SessionObserverFactory with a SandboxedUiAdapter for tracking UI presentation
+        // Adds a [SessionObserverFactory] with a [SandboxedUiAdapter] for tracking UI presentation
         // state across UI sessions. This has no effect on already open sessions.
     }
 
     override fun removeObserverFactory(sessionObserverFactory: SessionObserverFactory) {
-        // Removes a SessionObserverFactory from a SandboxedUiAdapter, if it has been
-        // previously added with addObserverFactory.
+        // Removes a [SessionObserverFactory] from a [SandboxedUiAdapter], if it has been
+        // previously added with [addObserverFactory].
     }
 }
 

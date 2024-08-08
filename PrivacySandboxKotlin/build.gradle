@@ -17,8 +17,8 @@ buildscript {
     }
 }
 plugins {
-    id 'com.android.application' version '8.7.0-alpha03' apply false
-    id 'com.android.library' version '8.7.0-alpha03' apply false
+    id 'com.android.application' version '8.7.0-alpha04' apply false
+    id 'com.android.library' version '8.7.0-alpha04' apply false
 
     // These two plugins do annotation processing and code generation for the sdk-implementation.
     id 'androidx.privacysandbox.library' version '1.0.0-alpha02' apply false
