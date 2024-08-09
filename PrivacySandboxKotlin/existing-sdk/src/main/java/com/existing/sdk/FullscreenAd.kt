@@ -8,18 +8,26 @@ import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import com.example.api.FullscreenAd
 
 class FullscreenAd(private val sdkFullscreenAd: FullscreenAd) {
-    suspend fun show(baseActivity: AppCompatActivity, allowSdkActivityLaunch: () -> Boolean) {
+    suspend fun show(
+        baseActivity: AppCompatActivity,
+        allowSdkActivityLaunch: () -> Boolean,
+        mediationType: String
+    ) {
         val activityLauncher = baseActivity.createSdkActivityLauncher(allowSdkActivityLaunch)
-        sdkFullscreenAd.show(activityLauncher)
+        sdkFullscreenAd.show(activityLauncher, mediationType)
     }
 
     companion object {
         // This method could divert a percentage of requests to a sandboxed SDK and fallback to
         // existing ad logic. For this example, we send all requests to the sandboxed SDK as long as
         // it exists.
-        suspend fun create(context: Context): com.existing.sdk.FullscreenAd {
+        suspend fun create(
+            context: Context,
+            mediationType: String
+        ): com.existing.sdk.FullscreenAd {
             if (ExistingSdk.isSdkLoaded()) {
-                val remoteFullscreenAd = ExistingSdk.loadSdkIfNeeded(context)?.getFullscreenAd()
+                val remoteFullscreenAd =
+                    ExistingSdk.loadSdkIfNeeded(context)?.getFullscreenAd(mediationType)
                 if (remoteFullscreenAd != null)
                     return FullscreenAd(remoteFullscreenAd)
             }
@@ -28,7 +36,10 @@ class FullscreenAd(private val sdkFullscreenAd: FullscreenAd) {
     }
 
     internal class LocalFullscreenAdImpl(private val context: Context) : FullscreenAd {
-        override suspend fun show(activityLauncher: SdkActivityLauncher) {
+        override suspend fun show(
+            activityLauncher: SdkActivityLauncher,
+            mediationType: String
+        ) {
             val intent = Intent(context, LocalActivity::class.java)
             context.startActivity(intent)
         }

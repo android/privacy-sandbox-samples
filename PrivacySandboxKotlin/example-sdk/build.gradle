@@ -59,6 +59,7 @@ dependencies {
     implementation "androidx.privacysandbox.sdkruntime:sdkruntime-provider:$privacy_sandbox_sdk_runtime_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
+    implementation "androidx.privacysandbox.activity:activity-client:$privacy_sandbox_activity_version"
     implementation "androidx.privacysandbox.activity:activity-core:$privacy_sandbox_activity_version"
     implementation "androidx.privacysandbox.activity:activity-provider:$privacy_sandbox_activity_version"
     implementation "androidx.privacysandbox.ui:ui-core:$privacy_sandbox_ui_version"

@@ -20,4 +20,6 @@ import androidx.privacysandbox.tools.PrivacySandboxService
 @PrivacySandboxService
 interface SdkService {
     suspend fun getBanner(request: SdkBannerRequest): SdkSandboxedUiAdapter
+
+    suspend fun getFullscreenAd(): FullscreenAd
 }
