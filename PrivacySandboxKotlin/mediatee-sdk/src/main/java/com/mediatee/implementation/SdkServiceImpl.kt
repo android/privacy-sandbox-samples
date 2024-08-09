@@ -16,10 +16,13 @@
 package com.mediatee.implementation
 
 import android.content.Context
+import com.mediatee.api.FullscreenAd
 import com.mediatee.api.SdkBannerRequest
 import com.mediatee.api.SdkService
 
 class SdkServiceImpl(private val context: Context) : SdkService {
     override suspend fun getBanner(request: SdkBannerRequest) =
         SdkSandboxedUiAdapterImpl(context, request)
+
+    override suspend fun getFullscreenAd() : FullscreenAd = FullscreenAdImpl(context)
 }

@@ -16,9 +16,7 @@
   -->
 
 <resources>
-    <string-array name="mediation_dropdown_menu_array">
-        <item>No Mediation</item>
-        <item>Runtime-Runtime Mediation</item>
-        <item>Runtime-InApp Mediation</item>
-    </string-array>
+    <string name="mediation_option_none">NONE</string>
+    <string name="mediation_option_re_re">RUNTIME_RUNTIME</string>
+    <string name="mediation_option_re_inapp">RUNTIME_INAPP</string>
 </resources>

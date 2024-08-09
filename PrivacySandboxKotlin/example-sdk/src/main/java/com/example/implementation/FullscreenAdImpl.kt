@@ -2,6 +2,7 @@ package com.example.implementation
 
 import android.content.Context
 import android.os.Build
+import android.os.RemoteException
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -14,10 +15,14 @@ import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import androidx.privacysandbox.sdkruntime.core.activity.ActivityHolder
 import androidx.privacysandbox.sdkruntime.core.activity.SdkSandboxActivityHandlerCompat
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
+import com.example.R
 import com.example.api.FullscreenAd
 
 
-class FullscreenAdImpl(private val sdkContext: Context) : FullscreenAd {
+class FullscreenAdImpl(private val sdkContext: Context,
+                       private val mediateeSdk: com.mediatee.api.SdkService?,
+                       private val inAppMediatee: com.example.api.InAppMediateeSdkInterface?
+) : FullscreenAd {
 
     private val webView = WebView(sdkContext)
     private val controller = SdkSandboxControllerCompat.from(sdkContext)
@@ -34,24 +39,40 @@ class FullscreenAdImpl(private val sdkContext: Context) : FullscreenAd {
         webView.loadUrl(WEB_VIEW_LINK)
     }
 
-    override suspend fun show(activityLauncher: SdkActivityLauncher) {
-        val handler = object : SdkSandboxActivityHandlerCompat {
-            @RequiresApi(Build.VERSION_CODES.R)
-            override fun onActivityCreated(activityHolder: ActivityHolder) {
-                val activityHandler = ActivityHandler(activityHolder, webView)
-                activityHandler.buildLayout()
+    override suspend fun show(activityLauncher: SdkActivityLauncher, mediationType: String) {
+        if (mediationType == sdkContext.getString(R.string.mediation_option_re_re)) {
+            if (mediateeSdk == null) {
+                throw RemoteException("Mediatee SDK not loaded!")
+            }
+            // Activity Launcher to be used to load interstitial ad will be passed from
+            // mediator to mediatee SDK.
+            mediateeSdk.getFullscreenAd().show(activityLauncher)
+        } else if (mediationType == sdkContext.getString(R.string.mediation_option_re_inapp)) {
+            if (inAppMediatee == null) {
+                throw RemoteException("In App Mediatee SDK not registered with mediator SDK!")
+            }
+            // In App mediatee declares its own activity in its manifest (statically linked to the
+            // app), which opens in the app process. ActivityLauncher is not passed from mediator.
+            inAppMediatee.show()
+        } else {
+            val handler = object : SdkSandboxActivityHandlerCompat {
+                @RequiresApi(Build.VERSION_CODES.R)
+                override fun onActivityCreated(activityHolder: ActivityHolder) {
+                    val activityHandler = ActivityHandler(activityHolder, webView)
+                    activityHandler.buildLayout()
 
-                ViewCompat.setOnApplyWindowInsetsListener(activityHolder.getActivity().window.decorView) { view, windowInsets ->
-                    val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-                    view.updatePadding(top = insets.top)
-                    WindowInsetsCompat.CONSUMED
+                    ViewCompat.setOnApplyWindowInsetsListener(activityHolder.getActivity().window.decorView) { view, windowInsets ->
+                        val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+                        view.updatePadding(top = insets.top)
+                        WindowInsetsCompat.CONSUMED
+                    }
                 }
             }
-        }
 
-        val token = controller.registerSdkSandboxActivityHandler(handler)
-        val launched = activityLauncher.launchSdkActivity(token)
-        if (!launched) controller.unregisterSdkSandboxActivityHandler(handler)
+            val token = controller.registerSdkSandboxActivityHandler(handler)
+            val launched = activityLauncher.launchSdkActivity(token)
+            if (!launched) controller.unregisterSdkSandboxActivityHandler(handler)
+        }
     }
 
     private fun initializeSettings(settings: WebSettings) {
