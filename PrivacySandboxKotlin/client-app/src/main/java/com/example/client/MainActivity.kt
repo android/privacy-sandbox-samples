@@ -141,12 +141,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showFullscreenView() = lifecycleScope.launch {
-        if (mediationDropDownMenu.selectedItemId != MediationOption.NONE.ordinal.toLong()) {
-            makeToast("Mediated interstitial ad is not yet implemented!")
-        } else {
-            val fullscreenAd = FullscreenAd.create(this@MainActivity)
-            fullscreenAd.show(this@MainActivity, shouldStartActivityPredicate())
-        }
+        val mediationType =
+            MediationOption.entries[mediationDropDownMenu.selectedItemId.toInt()].toString()
+        val fullscreenAd = FullscreenAd.create(this@MainActivity, mediationType)
+        fullscreenAd.show(this@MainActivity, shouldStartActivityPredicate())
     }
 
     private fun shouldStartActivityPredicate() : () -> Boolean {

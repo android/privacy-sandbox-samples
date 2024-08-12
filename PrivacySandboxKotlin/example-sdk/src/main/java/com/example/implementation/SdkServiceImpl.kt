@@ -27,6 +27,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
+import com.example.R
 import com.mediatee.api.SdkServiceFactory
 import com.example.api.SdkSandboxedUiAdapter
 
@@ -85,7 +86,19 @@ class SdkServiceImpl(private val context: Context) : SdkService {
         }
     }
 
-    override suspend fun getFullscreenAd() : FullscreenAd {
-        return FullscreenAdImpl(context)
+    override suspend fun getFullscreenAd(mediationType: String): FullscreenAd {
+        if (mediationType == context.getString(R.string.mediation_option_re_re)) {
+            try {
+                if (remoteInstance == null) {
+                    val controller = SdkSandboxControllerCompat.from(context)
+                    val sandboxedSdk = controller.loadSdk(mediateeSdkName, Bundle.EMPTY)
+                    remoteInstance =
+                        SdkServiceFactory.wrapToSdkService(sandboxedSdk.getInterface()!!)
+                }
+            } catch (e: Exception) {
+                Log.e(tag, "Failed to load SDK, error code: $e", e)
+            }
+        }
+        return FullscreenAdImpl(context, remoteInstance, mediationType)
     }
 }
