@@ -26,7 +26,6 @@ import androidx.lifecycle.lifecycleScope
 import com.example.privacysandbox.client.R
 import com.existing.sdk.BannerAd
 import com.existing.sdk.ExistingSdk
-import com.inappmediatee.sdk.InAppMediateeSdk
 import com.existing.sdk.FullscreenAd
 import kotlinx.coroutines.launch
 
@@ -35,8 +34,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bannerAd: BannerAd
 
     private val existingSdk = ExistingSdk(this)
-
-    private val inAppMediateeSdk = InAppMediateeSdk(this)
 
     /** A spinner for selecting the size of the file created in the sandbox. */
     private lateinit var fileSizeSpinner: Spinner
@@ -69,7 +66,7 @@ class MainActivity : AppCompatActivity() {
     // RE_RE Mediated Ads is the scenario when the winning ad network is Runtime Enabled as is the
     // Mediator.
     // RE_INAPP Mediated Ads is the scenario when the winning ad network is running in the same
-    // process as the app (pre-Runtime world) as is the and the Mediator is Runtime Enabled.
+    // process as the app (pre-Runtime world) and the Mediator is Runtime Enabled.
     enum class MediationOption {
         NONE,
         RUNTIME_RUNTIME,
@@ -156,7 +153,7 @@ class MainActivity : AppCompatActivity() {
         val mediationType =
             MediationOption.entries[mediationDropDownMenu.selectedItemId.toInt()].toString()
         if (mediationType == MediationOption.RUNTIME_INAPP.toString()) {
-            existingSdk.registerInAppMediateeSdk(inAppMediateeSdk)
+            existingSdk.registerInAppMediateeSdk()
         }
         val fullscreenAd = FullscreenAd.create(this@MainActivity, mediationType)
         fullscreenAd.show(this@MainActivity, shouldStartActivityPredicate())
