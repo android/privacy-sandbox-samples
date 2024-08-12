@@ -47,19 +47,23 @@ android {
 }
 
 dependencies {
-    ksp "androidx.privacysandbox.tools:tools-apicompiler:$privacy_sandbox_tools_version"
     ksp 'androidx.annotation:annotation:1.6.0'
     implementation "androidx.privacysandbox.ui:ui-client:$privacy_sandbox_ui_version"
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10'
-    implementation "androidx.privacysandbox.tools:tools:$privacy_sandbox_tools_version"
     implementation "androidx.lifecycle:lifecycle-common:2.7.0"
-    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-provider:$privacy_sandbox_sdk_runtime_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
+
     implementation "androidx.privacysandbox.activity:activity-core:$privacy_sandbox_activity_version"
     implementation "androidx.privacysandbox.activity:activity-provider:$privacy_sandbox_activity_version"
+
     implementation "androidx.privacysandbox.ui:ui-core:$privacy_sandbox_ui_version"
     implementation "androidx.privacysandbox.ui:ui-provider:$privacy_sandbox_ui_version"
-    implementation 'androidx.privacysandbox.sdkruntime:sdkruntime-core:1.0.0-alpha13'
-    implementation 'androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-alpha13'
+
+    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-core:$privacy_sandbox_sdk_runtime_version"
+    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-client:$privacy_sandbox_sdk_runtime_version"
+    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-provider:$privacy_sandbox_sdk_runtime_version"
+
+    implementation "androidx.privacysandbox.tools:tools:$privacy_sandbox_tools_version"
+    ksp "androidx.privacysandbox.tools:tools-apicompiler:$privacy_sandbox_tools_version"
 }
