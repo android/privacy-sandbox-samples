@@ -21,7 +21,8 @@ import com.example.api.FullscreenAd
 
 class FullscreenAdImpl(private val sdkContext: Context,
                        private val mediateeSdk: com.mediatee.api.SdkService?,
-                       private val inAppMediatee: com.example.api.InAppMediateeSdkInterface?
+                       private val inAppMediatee: com.example.api.InAppMediateeSdkInterface?,
+                       private val mediationType: String
 ) : FullscreenAd {
 
     private val webView = WebView(sdkContext)
@@ -39,7 +40,7 @@ class FullscreenAdImpl(private val sdkContext: Context,
         webView.loadUrl(WEB_VIEW_LINK)
     }
 
-    override suspend fun show(activityLauncher: SdkActivityLauncher, mediationType: String) {
+    override suspend fun show(activityLauncher: SdkActivityLauncher) {
         if (mediationType == sdkContext.getString(R.string.mediation_option_re_re)) {
             if (mediateeSdk == null) {
                 throw RemoteException("Mediatee SDK not loaded!")
@@ -54,7 +55,7 @@ class FullscreenAdImpl(private val sdkContext: Context,
             // In App mediatee declares its own activity in its manifest (statically linked to the
             // app), which opens in the app process. ActivityLauncher is not passed from mediator.
             inAppMediatee.show()
-        } else {
+        else {
             val handler = object : SdkSandboxActivityHandlerCompat {
                 @RequiresApi(Build.VERSION_CODES.R)
                 override fun onActivityCreated(activityHolder: ActivityHolder) {

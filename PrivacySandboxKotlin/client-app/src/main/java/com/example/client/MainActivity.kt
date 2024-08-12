@@ -68,6 +68,8 @@ class MainActivity : AppCompatActivity() {
     // while the mediator and other SDKs have moved.
     // RE_RE Mediated Ads is the scenario when the winning ad network is Runtime Enabled as is the
     // Mediator.
+    // RE_INAPP Mediated Ads is the scenario when the winning ad network is running in the same
+    // process as the app (pre-Runtime world) as is the and the Mediator is Runtime Enabled.
     enum class MediationOption {
         NONE,
         RUNTIME_RUNTIME,
@@ -157,7 +159,7 @@ class MainActivity : AppCompatActivity() {
             existingSdk.registerInAppMediateeSdk(inAppMediateeSdk)
         }
         val fullscreenAd = FullscreenAd.create(this@MainActivity, mediationType)
-        fullscreenAd.show(this@MainActivity, shouldStartActivityPredicate(), mediationType)
+        fullscreenAd.show(this@MainActivity, shouldStartActivityPredicate())
     }
 
     private fun shouldStartActivityPredicate() : () -> Boolean {

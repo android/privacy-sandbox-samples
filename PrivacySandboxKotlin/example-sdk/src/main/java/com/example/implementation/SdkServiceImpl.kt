@@ -102,7 +102,7 @@ class SdkServiceImpl(private val context: Context) : SdkService {
                 Log.e(tag, "Failed to load SDK, error code: $e", e)
             }
         }
-        return FullscreenAdImpl(context, remoteInstance, inAppMediateeSdkInterface)
+        return FullscreenAdImpl(context, remoteInstance, inAppMediateeSdkInterface, mediationType)
     }
 
     override suspend fun registerInAppMediatee(inAppMediatee: InAppMediateeSdkInterface) {
