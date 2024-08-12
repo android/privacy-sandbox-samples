@@ -20,7 +20,8 @@ import com.example.api.FullscreenAd
 
 
 class FullscreenAdImpl(private val sdkContext: Context,
-                       private val mediateeSdk: com.mediatee.api.SdkService?
+                       private val mediateeSdk: com.mediatee.api.SdkService?,
+                       private val mediationType: String
 ) : FullscreenAd {
 
     private val webView = WebView(sdkContext)
@@ -38,7 +39,7 @@ class FullscreenAdImpl(private val sdkContext: Context,
         webView.loadUrl(WEB_VIEW_LINK)
     }
 
-    override suspend fun show(activityLauncher: SdkActivityLauncher, mediationType: String) {
+    override suspend fun show(activityLauncher: SdkActivityLauncher) {
         if (mediationType == sdkContext.getString(R.string.mediation_option_re_re)) {
             if (mediateeSdk == null) {
                 throw RemoteException("Mediatee SDK not loaded!")

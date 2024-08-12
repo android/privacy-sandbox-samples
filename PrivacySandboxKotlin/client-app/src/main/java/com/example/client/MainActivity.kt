@@ -144,7 +144,7 @@ class MainActivity : AppCompatActivity() {
         val mediationType =
             MediationOption.entries[mediationDropDownMenu.selectedItemId.toInt()].toString()
         val fullscreenAd = FullscreenAd.create(this@MainActivity, mediationType)
-        fullscreenAd.show(this@MainActivity, shouldStartActivityPredicate(), mediationType)
+        fullscreenAd.show(this@MainActivity, shouldStartActivityPredicate())
     }
 
     private fun shouldStartActivityPredicate() : () -> Boolean {

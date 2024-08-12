@@ -10,11 +10,10 @@ import com.example.api.FullscreenAd
 class FullscreenAd(private val sdkFullscreenAd: FullscreenAd) {
     suspend fun show(
         baseActivity: AppCompatActivity,
-        allowSdkActivityLaunch: () -> Boolean,
-        mediationType: String
+        allowSdkActivityLaunch: () -> Boolean
     ) {
         val activityLauncher = baseActivity.createSdkActivityLauncher(allowSdkActivityLaunch)
-        sdkFullscreenAd.show(activityLauncher, mediationType)
+        sdkFullscreenAd.show(activityLauncher)
     }
 
     companion object {
@@ -36,10 +35,7 @@ class FullscreenAd(private val sdkFullscreenAd: FullscreenAd) {
     }
 
     internal class LocalFullscreenAdImpl(private val context: Context) : FullscreenAd {
-        override suspend fun show(
-            activityLauncher: SdkActivityLauncher,
-            mediationType: String
-        ) {
+        override suspend fun show(activityLauncher: SdkActivityLauncher) {
             val intent = Intent(context, LocalActivity::class.java)
             context.startActivity(intent)
         }
