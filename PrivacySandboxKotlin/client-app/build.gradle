@@ -58,5 +58,5 @@ dependencies {
 
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation "com.google.android.material:material:1.9.0"
-    implementation 'androidx.privacysandbox.sdkruntime:sdkruntime-client:1.0.0-alpha12'
+    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-client:$privacy_sandbox_sdk_runtime_version"
 }

@@ -3,8 +3,8 @@ buildscript {
     ext.kotlin_version = '1.9.10'
     ext.ksp_version = "$kotlin_version-1.0.13"
     ext.privacy_sandbox_activity_version = "1.0.0-alpha01"
-    ext.privacy_sandbox_sdk_runtime_version = "1.0.0-alpha13"
-    ext.privacy_sandbox_tools_version = "1.0.0-alpha08"
+    ext.privacy_sandbox_sdk_runtime_version = "1.0.0-alpha14"
+    ext.privacy_sandbox_tools_version = "1.0.0-alpha09"
     ext.privacy_sandbox_ui_version = "1.0.0-alpha09"
     repositories {
         mavenCentral()
