@@ -69,7 +69,7 @@ class FullscreenAdImpl(private val sdkContext: Context,
             }
             // In App mediatee declares its own activity in its manifest (statically linked to the
             // app), which opens in the app process. ActivityLauncher is not passed from mediator.
-            inAppMediatee.show()
+            inAppMediatee.showFullscreenAd()
         } else {
             val handler = object : SdkSandboxActivityHandlerCompat {
                 @RequiresApi(Build.VERSION_CODES.R)

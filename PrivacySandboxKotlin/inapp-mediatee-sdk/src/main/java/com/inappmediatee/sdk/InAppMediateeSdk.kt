@@ -6,7 +6,7 @@ import com.example.api.InAppMediateeSdkInterface
 
 class InAppMediateeSdk(private val context: Context) : InAppMediateeSdkInterface {
 
-    override suspend fun show() {
+    override suspend fun showFullscreenAd() {
         val intent = Intent(context, LocalActivity::class.java)
         context.startActivity(intent)
     }

@@ -19,5 +19,5 @@ import androidx.privacysandbox.tools.PrivacySandboxCallback
 
 @PrivacySandboxCallback
 interface InAppMediateeSdkInterface {
-    suspend fun show()
+    suspend fun showFullscreenAd()
 }
