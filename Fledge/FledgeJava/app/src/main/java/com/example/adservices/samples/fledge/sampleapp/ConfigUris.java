@@ -50,6 +50,8 @@ public abstract class ConfigUris {
 
     abstract AdTechIdentifier getAuctionServerBuyer();
 
+    abstract Uri getCoordinatorUri();
+
     /**
      * Check if a server auction is likely given input.
      *
@@ -70,6 +72,8 @@ public abstract class ConfigUris {
         abstract Builder setAuctionServerSeller(AdTechIdentifier adTechIdentifier);
 
         abstract Builder setAuctionServerBuyer(AdTechIdentifier adTechIdentifier);
+
+        abstract Builder setCoordinatorUri(Uri uri);
 
         abstract ConfigUris build();
     }

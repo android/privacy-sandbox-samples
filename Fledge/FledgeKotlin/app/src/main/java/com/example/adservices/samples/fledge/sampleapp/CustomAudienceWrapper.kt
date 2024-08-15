@@ -15,29 +15,20 @@
  */
 package com.example.adservices.samples.fledge.sampleapp
 
-import android.adservices.common.AdData
-import android.adservices.common.AdFilters
 import android.adservices.common.AdSelectionSignals
 import android.adservices.common.AdTechIdentifier
-import android.adservices.common.FrequencyCapFilters
-import android.adservices.common.KeyedFrequencyCap
 import android.adservices.customaudience.AddCustomAudienceOverrideRequest
 import android.adservices.customaudience.CustomAudience
-import android.adservices.customaudience.TrustedBiddingData
-import android.annotation.SuppressLint
+import android.adservices.customaudience.FetchAndJoinCustomAudienceRequest
 import android.content.Context
-import android.net.Uri
+import android.os.ext.SdkExtensions
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.adservices.samples.fledge.clients.CustomAudienceClient
 import com.example.adservices.samples.fledge.clients.TestCustomAudienceClient
-import com.example.adservices.samples.fledge.sdkExtensionsHelpers.VersionCompatUtil.isTestableVersion
+import com.example.adservices.samples.fledge.sdkExtensionsHelpers.VersionCompatUtil
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
-import org.json.JSONObject
-import java.time.Duration
-import java.time.Instant
-import java.util.Arrays
 import java.util.concurrent.Executor
 import java.util.function.Consumer
 
@@ -71,161 +62,14 @@ class CustomAudienceWrapper(private val executor: Executor, context: Context) {
      *   indicating the outcome of the call.
      */
     fun joinCa(
-        name: String,
-        owner: String,
-        buyer: AdTechIdentifier,
-        biddingUri: Uri,
-        renderUri: Uri,
-        dailyUpdateUri: Uri,
-        trustedBiddingUri: Uri,
-        statusReceiver: Consumer<String>,
-        expiry: Instant
+      ca: CustomAudience,
+      statusReceiver: Consumer<String>,
     ) {
         try {
-            val adData: AdData = getAdDataBuilder(renderUri).build()
-            joinCustomAudience(
-                getCustomAudienceBuilder(
-                    name, buyer, biddingUri, adData, dailyUpdateUri, trustedBiddingUri,
-                    Arrays.asList(name, buyer.toString(), "key1", "key2"),
-                    expiry
-                )
-                    .build(),
-                statusReceiver
-            )
+            joinCustomAudience(ca, statusReceiver)
         } catch (e: Exception) {
             statusReceiver.accept(
-                "Got the following exception when trying to join " + name + " custom audience: " + e
-            )
-            Log.e(TAG, "Exception calling joinCustomAudience", e)
-        }
-    }
-
-    @SuppressLint("NewApi")
-    fun joinServerAuctionCa(
-        name: String,
-        buyer: AdTechIdentifier,
-        biddingUri: Uri,
-        renderUri: Uri,
-        dailyUpdateUri: Uri,
-        trustedBiddingUri: Uri,
-        statusReceiver: Consumer<String>,
-        expiry: Instant,
-        adRenderId: Int
-    ) {
-        try {
-            val clickFilterMax = 1
-            val oneDayDuration: Duration = Duration.ofDays(1)
-            val clickCap: KeyedFrequencyCap =
-                KeyedFrequencyCap.Builder(adRenderId, clickFilterMax, oneDayDuration).build()
-            val fCapFilters: FrequencyCapFilters =
-                FrequencyCapFilters.Builder()
-                    .setKeyedFrequencyCapsForClickEvents(listOf(clickCap)).build()
-            val adData: AdData = getAdDataBuilder(renderUri)
-                .setAdRenderId(adRenderId.toString())
-                .setAdCounterKeys(setOf(adRenderId))
-                .setAdFilters(AdFilters.Builder().setFrequencyCapFilters(fCapFilters).build())
-                .build()
-            Log.v(
-                TAG,
-                String.format("AdRenderId %s is set for ad render uri %s", adRenderId, renderUri)
-            )
-            joinCustomAudience(
-                getCustomAudienceBuilder(
-                    name, buyer, biddingUri, adData, dailyUpdateUri, trustedBiddingUri,
-                    Arrays.asList(name, buyer.toString(), "key1", "key2"), expiry
-                )
-                    .build(),
-                statusReceiver
-            )
-        } catch (e: java.lang.Exception) {
-            statusReceiver.accept(
-                "Got the following exception when trying to join " + name
-                        + " custom audience: " + e
-            )
-            Log.e(TAG, "Exception calling joinCustomAudience", e)
-        }
-    }
-
-    /**
-     * Joins a CA with ad filters.
-     *
-     * @param name The name of the CA to join.
-     * @param buyer The buyer of ads
-     * @param biddingUri The URL to retrieve the bidding logic
-     * @param renderUri The URL to render the ad
-     * @param dailyUpdateUri The URL for daily updates for the CA
-     * @param trustedBiddingUri The URL to retrieve trusted bidding data
-     * @param statusReceiver A consumer function that is run after the API call and returns a
-     * @param expiry The time when the CA will expire
-     * @param filters [AdFilters] that should be applied to the ad in the CA
-     * @param adCounterKeys set of keys used in counting events string indicating the outcome of the
-     *   call.
-     */
-    @SuppressLint("NewApi")
-    fun joinFilteringCa(
-        name: String,
-        buyer: AdTechIdentifier,
-        biddingUri: Uri,
-        renderUri: Uri,
-        dailyUpdateUri: Uri,
-        trustedBiddingUri: Uri,
-        statusReceiver: Consumer<String>,
-        expiry: Instant,
-        filters: AdFilters,
-        adCounterKeys: Set<Int>,
-    ) {
-        if (isTestableVersion(8, 9)) {
-            statusReceiver.accept("Unsupported SDK Extension: Frequency cap CA requires 8 for T+ or 9 for S-, skipping")
-            Log.w(
-                TAG,
-                "Unsupported SDK Extension: Frequency cap CA requires 8 for T+ or 9 for S-, skipping"
-            )
-            return
-        }
-
-        try {
-            joinCustomAudience(
-                getCustomAudienceBuilder(
-                    name, buyer, biddingUri,
-                    getAdDataBuilder(renderUri).setAdFilters(filters)
-                        .setAdCounterKeys(adCounterKeys).build(),
-                    dailyUpdateUri, trustedBiddingUri, listOf("key"), expiry
-                )
-                    .build(),
-                statusReceiver
-            )
-        } catch (e: java.lang.Exception) {
-            statusReceiver.accept(
-                "Got the following exception when trying to join " + name + " custom audience: " + e
-            )
-            Log.e(TAG, "Exception calling joinCustomAudience", e)
-        }
-    }
-
-    fun joinEmptyFieldCa(
-        name: String,
-        owner: String,
-        buyer: AdTechIdentifier,
-        biddingUri: Uri,
-        dailyUpdateUri: Uri,
-        statusReceiver: Consumer<String>,
-        expiry: Instant
-    ) {
-        try {
-            joinCustomAudience(
-                CustomAudience.Builder()
-                    .setBuyer(buyer)
-                    .setName(name)
-                    .setDailyUpdateUri(dailyUpdateUri)
-                    .setBiddingLogicUri(biddingUri)
-                    .setActivationTime(Instant.now())
-                    .setExpirationTime(expiry)
-                    .build(),
-                statusReceiver
-            )
-        } catch (e: Exception) {
-            statusReceiver.accept(
-                "Got the following exception when trying to join " + name + " custom audience: " + e
+                "Got the following exception when trying to join " + ca.name + " custom audience: " + e
             )
             Log.e(TAG, "Exception calling joinCustomAudience", e)
         }
@@ -242,21 +86,29 @@ class CustomAudienceWrapper(private val executor: Executor, context: Context) {
      * @param statusReceiver A consumer function that is run after the API call and returns a string.
      */
     fun fetchAndJoinCa(
-        fetchUri: Uri,
-        name: String,
-        activationTime: Instant?,
-        expirationTime: Instant?,
-        userBiddingSignals: AdSelectionSignals?,
-        statusReceiver: Consumer<String?>
+      fetchAndJoinCustomAudienceRequest: FetchAndJoinCustomAudienceRequest,
+      statusReceiver: Consumer<String>,
     ) {
+      var name = "";
+      if (!VersionCompatUtil.isTestableVersion(10, 10)) {
+        statusReceiver.accept(
+          "Unsupported SDK Extension: The fetchAndJoinCustomAudience API requires 10,"
+            + " skipping"
+        )
+        Log.w(
+          MainActivity.TAG, (
+            "Unsupported SDK Extension: The fetchAndJoinCustomAudience API requires 10,"
+              + " skipping")
+        )
+        return
+      }
+      if (SdkExtensions.getExtensionVersion(SdkExtensions.AD_SERVICES) >= 10) {
+        name = fetchAndJoinCustomAudienceRequest.name!!
+      }
         try {
             Futures.addCallback(
                 caClient.fetchAndJoinCustomAudience(
-                    fetchUri,
-                    name,
-                    activationTime,
-                    expirationTime,
-                    userBiddingSignals
+                  fetchAndJoinCustomAudienceRequest
                 ),
                 object : FutureCallback<Void?> {
                     override fun onSuccess(unused: Void?) {
@@ -290,14 +142,13 @@ class CustomAudienceWrapper(private val executor: Executor, context: Context) {
      *   indicating the outcome of the call.
      */
     fun leaveCa(
-        name: String,
-        owner: String,
-        buyer: AdTechIdentifier,
-        statusReceiver: Consumer<String>
+      name: String,
+      buyer: AdTechIdentifier,
+      statusReceiver: Consumer<String>,
     ) {
         try {
             Futures.addCallback(
-                caClient.leaveCustomAudience(owner, buyer, name),
+                caClient.leaveCustomAudience(buyer, name),
                 object : FutureCallback<Void?> {
                     override fun onSuccess(unused: Void?) {
                         statusReceiver.accept("Left $name custom audience")
@@ -327,11 +178,11 @@ class CustomAudienceWrapper(private val executor: Executor, context: Context) {
      *   indicating the outcome of the call.
      */
     fun addCAOverride(
-        name: String,
-        buyer: AdTechIdentifier,
-        biddingLogicJs: String?,
-        trustedBiddingSignals: AdSelectionSignals,
-        statusReceiver: Consumer<String?>
+      name: String,
+      buyer: AdTechIdentifier,
+      biddingLogicJs: String?,
+      trustedBiddingSignals: AdSelectionSignals,
+      statusReceiver: Consumer<String?>,
     ) {
         val request =
             AddCustomAudienceOverrideRequest.Builder()
@@ -394,35 +245,6 @@ class CustomAudienceWrapper(private val executor: Executor, context: Context) {
             },
             executor
         )
-    }
-
-
-    private fun getAdDataBuilder(renderUri: Uri): AdData.Builder {
-        return AdData.Builder()
-            .setRenderUri(renderUri)
-            .setMetadata(JSONObject().toString())
-    }
-
-    private fun getCustomAudienceBuilder(
-        name: String, buyer: AdTechIdentifier, biddingUri: Uri,
-        adData: AdData, dailyUpdateUri: Uri, trustedBiddingUri: Uri,
-        trustedBiddingKeys: List<String>,
-        expiry: Instant
-    ): CustomAudience.Builder {
-        return CustomAudience.Builder()
-            .setBuyer(buyer)
-            .setName(name)
-            .setDailyUpdateUri(dailyUpdateUri)
-            .setBiddingLogicUri(biddingUri)
-            .setAds(listOf(adData))
-            .setActivationTime(Instant.now())
-            .setExpirationTime(expiry)
-            .setTrustedBiddingData(
-                TrustedBiddingData.Builder()
-                    .setTrustedBiddingKeys(trustedBiddingKeys)
-                    .setTrustedBiddingUri(trustedBiddingUri).build()
-            )
-            .setUserBiddingSignals(AdSelectionSignals.EMPTY)
     }
 
     /** Initialize the custom audience wrapper and set the owner and buyer. */

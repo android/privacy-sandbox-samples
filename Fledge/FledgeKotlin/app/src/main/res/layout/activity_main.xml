@@ -31,7 +31,6 @@
       android:layout_width="match_parent"
       android:layout_height="0dp"
       android:layout_weight=".30"
-      android:background="@color/event_log_bg"
       android:text="@string/event_log_text"
       android:textIsSelectable="true" />
 
@@ -52,8 +51,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight=".45"
-        android:enabled="false"
         android:checked="false"
+        android:enabled="true"
         android:text="@string/auction_server_text" />
 
     <Button

@@ -19,7 +19,7 @@ plugins {
 apply plugin: 'kotlin-android'
 android {
     compileSdk = 34
-    compileSdkExtension = 10
+    compileSdkExtension = 12
     defaultConfig {
         applicationId "com.example.adservices.samples.fledge.sampleapp"
         targetSdkVersion 34

@@ -26,6 +26,7 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /** Provides all the toggles for Custom audiences. */
 @SuppressLint("NewApi")
@@ -75,16 +76,23 @@ public class ToggleProvider {
                             mContext));
         }
 
-        for (CustomAudience customAudience : data.getCustomAudiences()) {
+        for (Map.Entry<String, CustomAudience> customAudience :
+                data.getCustomAudiences().entrySet()) {
             toggles.add(
                     new CustomAudienceToggle(
-                            customAudience, mCustomAudienceWrapper, mEventLog, mContext));
+                            customAudience.getKey(),
+                            customAudience.getValue(),
+                            mCustomAudienceWrapper,
+                            mEventLog,
+                            mContext));
         }
-        for (FetchAndJoinCustomAudienceRequest fetchAndJoinCustomAudienceRequest :
-                data.getFetchAndJoinCustomAudiences()) {
+        for (Map.Entry<String, FetchAndJoinCustomAudienceRequest>
+                fetchAndJoinCustomAudienceRequest :
+                        data.getFetchAndJoinCustomAudiences().entrySet()) {
             toggles.add(
                     new FetchAndJoinCustomAudienceToggle(
-                            fetchAndJoinCustomAudienceRequest,
+                            fetchAndJoinCustomAudienceRequest.getKey(),
+                            fetchAndJoinCustomAudienceRequest.getValue(),
                             mCustomAudienceWrapper,
                             mEventLog,
                             mContext));

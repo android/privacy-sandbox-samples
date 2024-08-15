@@ -23,16 +23,19 @@ import android.content.Context;
 @SuppressLint("NewApi")
 public class CustomAudienceToggle implements Toggle {
 
+    private final String mLabelName;
     private final CustomAudience mCustomAudience;
     private final CustomAudienceWrapper mCustomAudienceWrapper;
     private final EventLogManager mEventLog;
     private final Context mContext;
 
     CustomAudienceToggle(
+            String labelName,
             CustomAudience customAudience,
             CustomAudienceWrapper customAudienceWrapper,
             EventLogManager eventLog,
             Context context) {
+        this.mLabelName = labelName;
         this.mCustomAudience = customAudience;
         this.mCustomAudienceWrapper = customAudienceWrapper;
         this.mEventLog = eventLog;
@@ -41,7 +44,7 @@ public class CustomAudienceToggle implements Toggle {
 
     @Override
     public String getLabel() {
-        return mContext.getString(R.string.ca_toggle, mCustomAudience.getName());
+        return mContext.getString(R.string.ca_toggle, mLabelName);
     }
 
     @Override

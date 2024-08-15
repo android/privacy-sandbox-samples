@@ -16,10 +16,8 @@
 package com.example.adservices.samples.fledge.sampleapp
 
 import android.adservices.adselection.ReportEventRequest
-import android.adservices.common.AdSelectionSignals
 import android.adservices.common.AdTechIdentifier
 import android.adservices.common.FrequencyCapFilters
-import android.adservices.customaudience.CustomAudienceManager
 import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
@@ -31,33 +29,11 @@ import androidx.core.util.Consumer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.adservices.samples.fledge.sampleapp.databinding.ActivityMainBinding
 import com.example.adservices.samples.fledge.sdkExtensionsHelpers.VersionCompatUtil.isTestableVersion
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStreamReader
-import java.time.Duration
-import java.time.Instant
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
-import java.util.stream.Collectors
 
 // Log tag
 const val TAG = "FledgeSample"
-
-// The names for the shirts and shoes custom audience
-private const val SHOES_CA_NAME = "shoes"
-private const val SHIRTS_CA_NAME = "shirts"
-private const val HATS_CA_NAME = "hats"
-private const val SHORT_EXPIRING_CA_NAME = "short_expiring"
-private const val INVALID_FIELD_CA_NAME = "invalid_fields"
-private const val FREQ_CAP_CA_NAME = "freq_cap"
-
-// Expiry durations
-private val ONE_DAY_EXPIRY: Duration = Duration.ofDays(1)
-private val THIRTY_SECONDS_EXPIRY: Duration = Duration.ofSeconds(30)
-
-// JS files
-private const val BIDDING_LOGIC_FILE = "BiddingLogic.js"
-private const val DECISION_LOGIC_FILE = "DecisionLogic.js"
 
 // Executor to be used for API calls
 private val EXECUTOR: Executor = Executors.newCachedThreadPool()
@@ -77,6 +53,7 @@ class MainActivity : AppCompatActivity() {
     private val AUCTION_SERVER_SELLER_SFE_URL_INTENT = "auctionServerSellerSfeUrl"
     private val AUCTION_SERVER_SELLER_INTENT = "auctionServerSeller"
     private val AUCTION_SERVER_BUYER_INTENT = "auctionServerBuyer"
+    private val AUCTION_SERVER_COORDINATOR_URL_INTENT = "auctionServerCoordinatorUrl"
 
     private var adWrapper: AdSelectionWrapper? = null
     private var caWrapper: CustomAudienceWrapper? = null
@@ -107,7 +84,8 @@ class MainActivity : AppCompatActivity() {
             ),
             auctionServerSellerSfeUriOrEmpty(),
             auctionServerSellerOrEmpty(),
-            auctionServerBuyerOrEmpty()
+            auctionServerBuyerOrEmpty(),
+            auctionServerCoordinatorUriOrEmpty()
         )
 
         try {
@@ -155,36 +133,74 @@ class MainActivity : AppCompatActivity() {
             buyers,
             mConfig!!.seller,
             Uri.parse(mConfig!!.baseUri.toString() + "/scoring"),
-            Uri.parse(mConfig!!.baseUri.toString() + "/bidding/trusted"),
+            Uri.parse(mConfig!!.baseUri.toString() + "/scoring/trusted"),
             context!!,
             EXECUTOR
         )
         binding!!.auctionServer.isChecked = mConfig!!.isMaybeServerAuction
-        if (binding!!.auctionServer.isChecked) {
-            binding!!.runAdsButton.setOnClickListener {
-                eventLog!!.flush()
+        setupRunAdSelectionButton(binding!!, mConfig!!.isMaybeServerAuction)
+        binding!!.auctionServer.setOnCheckedChangeListener { _, isAuctionServerEnabled ->
+            setupRunAdSelectionButton(
+                binding!!,
+                isAuctionServerEnabled)
+        }
+    }
+
+    private fun setupRunAdSelectionButton(binding: ActivityMainBinding, isAuctionServerEnabled: Boolean) {
+        if(isAuctionServerEnabled && !mConfig!!.isMaybeServerAuction) {
+            Log.e(TAG, "Cannot enable auction on server without all server auction configurations")
+            binding.eventLog.append("Cannot enable auction on server without all server auction configurations")
+            binding.auctionServer.isChecked = false
+        }
+        if (isAuctionServerEnabled) {
+            binding.runAdsButton.setOnClickListener {
                 adWrapper!!.runAdSelectionOnAuctionServer(
                     mConfig!!.auctionServerSellerSfeUri,
                     mConfig!!.auctionServerSeller,
                     mConfig!!.auctionServerBuyer,
+                    mConfig!!.coordinatorUri,
                     { event: String? -> eventLog!!.writeEvent(event!!) },
-                    binding!!.adSpace::setText
-                )
-            }
-        } else {
-            binding!!.runAdsButton.setOnClickListener {
-                eventLog!!.flush()
-                adWrapper!!.runAdSelection(
-                    { event: String? -> eventLog!!.writeEvent(event!!) },
-                    binding!!.adSpace::setText,
-                    { adSelectionId: String ->
-                        binding!!.adSelectionIdClickInput.setText(adSelectionId)
-                        binding!!.adSelectionIdImpressionInput.setText(adSelectionId)
-                        binding!!.adSelectionIdHistogramInput.setText(adSelectionId)
+                    binding.adSpace::setText,
+                    Consumer { adSelectionId: String? ->
+                        runOnUiThread {
+                            binding.adSelectionIdClickInput.setText(adSelectionId)
+                            binding.adSelectionIdImpressionInput.setText(adSelectionId)
+                            binding.adSelectionIdHistogramInput.setText(adSelectionId)
+                        }
                     })
             }
+            Log.d(
+                TAG,
+                String.format(
+                    "Run Ad Selection On Auction Server URL: %s",
+                    mConfig!!.auctionServerSellerSfeUri
+                )
+            )
+            binding.eventLog.append(
+                String.format(
+                    "Run Ad Selection On Auction Server URL: %s",
+                    mConfig!!.auctionServerSellerSfeUri
+                )
+            )
+
+        } else {
+            binding.runAdsButton.setOnClickListener {
+                adWrapper!!.runAdSelection(
+                    { event: String? -> eventLog!!.writeEvent(event!!) },
+                    binding.adSpace::setText,
+                    { adSelectionId: String? ->
+                        runOnUiThread {
+                            binding.adSelectionIdClickInput.setText(adSelectionId)
+                            binding.adSelectionIdImpressionInput.setText(adSelectionId)
+                            binding.adSelectionIdHistogramInput.setText(adSelectionId)
+                        }
+                    })
+            }
+            Log.d(TAG, "Run Ad Selection On Device")
+            binding.eventLog.append("Run Ad Selection On Device")
         }
     }
+
 
     private fun auctionServerSellerSfeUriOrEmpty(): Uri {
         val sfeUriString = getIntentOrNull(AUCTION_SERVER_SELLER_SFE_URL_INTENT)
@@ -210,6 +226,25 @@ class MainActivity : AppCompatActivity() {
             AdTechIdentifier.fromString(auctionServerBuyer)
         } else {
             AdTechIdentifier.fromString("")
+        }
+    }
+
+    private fun auctionServerCoordinatorUriOrEmpty(): Uri {
+        if (!isTestableVersion(12, 12)) {
+            eventLog!!.writeEvent(
+                "Unsupported SDK Extension: Setting up coordinator URI requires SDK Extension 12, using default coordinator"
+            )
+            Log.w(
+                TAG,
+                "Unsupported SDK Extension: Setting up coordinator URI requires SDK Extension 12, using default coordinator"
+            )
+            return Uri.EMPTY
+        }
+        val sfeUriString = getIntentOrNull(AUCTION_SERVER_COORDINATOR_URL_INTENT)
+        return if (sfeUriString != null) {
+            Uri.parse(sfeUriString)
+        } else {
+            Uri.EMPTY
         }
     }
 
@@ -263,17 +298,19 @@ class MainActivity : AppCompatActivity() {
         binding: ActivityMainBinding,
         context: Context,
     ) {
+        caWrapper = CustomAudienceWrapper(EXECUTOR, context)
         val toggleProvider =
             ToggleProvider(
                 context,
                 eventLog,
-                CustomAudienceManager.get(context),
+                caWrapper!!,
                 adWrapper!!,
                 ConfigUris(
                     mConfig!!.baseUri,
                     mConfig!!.auctionServerSellerSfeUri,
                     mConfig!!.auctionServerSeller,
-                    mConfig!!.auctionServerBuyer
+                    mConfig!!.auctionServerBuyer,
+                    mConfig!!.coordinatorUri
                 ),
                 EXECUTOR
             )
@@ -350,116 +387,6 @@ class MainActivity : AppCompatActivity() {
                 eventLog.writeEvent("Invalid AdSelectionId. Cannot run update ad counter histogram!")
             }
         }
-    }
-
-    private fun useOverrides(
-        eventLog: EventLogManager,
-        adSelectionWrapper: AdSelectionWrapper,
-        customAudienceWrapper: CustomAudienceWrapper,
-        decisionLogicJs: String,
-        biddingLogicJs: String,
-        trustedScoringSignals: AdSelectionSignals,
-        trustedBiddingSignals: AdSelectionSignals,
-        biddingUri: Uri,
-        context: Context,
-    ) {
-        adSelectionWrapper.overrideAdSelection(
-            { event: String? -> eventLog.writeEvent(event!!) },
-            decisionLogicJs,
-            trustedScoringSignals
-        )
-        customAudienceWrapper.addCAOverride(
-            SHOES_CA_NAME,
-            AdTechIdentifier.fromString(biddingUri.host!!),
-            biddingLogicJs,
-            trustedScoringSignals
-        ) { event: String? ->
-            eventLog.writeEvent(event!!)
-        }
-        customAudienceWrapper.addCAOverride(
-            SHIRTS_CA_NAME,
-            AdTechIdentifier.fromString(biddingUri.host!!),
-            biddingLogicJs,
-            trustedBiddingSignals
-        ) { event: String? ->
-            eventLog.writeEvent(event!!)
-        }
-        customAudienceWrapper.addCAOverride(
-            SHORT_EXPIRING_CA_NAME,
-            AdTechIdentifier.fromString(biddingUri.host!!),
-            biddingLogicJs,
-            trustedBiddingSignals
-        ) { event: String? ->
-            eventLog.writeEvent(event!!)
-        }
-        customAudienceWrapper.addCAOverride(
-            INVALID_FIELD_CA_NAME,
-            AdTechIdentifier.fromString(biddingUri.host!!),
-            biddingLogicJs,
-            trustedBiddingSignals
-        ) { event: String? ->
-            eventLog.writeEvent(event!!)
-        }
-        customAudienceWrapper.addCAOverride(
-            FREQ_CAP_CA_NAME,
-            AdTechIdentifier.fromString(biddingUri.host!!),
-            biddingLogicJs,
-            trustedBiddingSignals
-        ) { event: String? ->
-            eventLog.writeEvent(event!!)
-        }
-    }
-
-    private fun resetOverrides(
-        eventLog: EventLogManager,
-        adSelectionWrapper: AdSelectionWrapper,
-        customAudienceWrapper: CustomAudienceWrapper,
-    ) {
-        adSelectionWrapper.resetAdSelectionOverrides { event: String? -> eventLog.writeEvent(event!!) }
-        customAudienceWrapper.resetCAOverrides { event: String? -> eventLog.writeEvent(event!!) }
-    }
-
-    /**
-     * Gets a given intent extra or returns the given default value
-     *
-     * @param intent The intent to get
-     * @param defaultValue The default value to return if intent doesn't exist
-     */
-    private fun getIntentOrDefault(intent: String, defaultValue: String): String {
-        var toReturn = getIntent().getStringExtra(intent)
-        if (toReturn == null) {
-            val message = String.format("No value for %s, defaulting to %s", intent, defaultValue)
-            Log.w(TAG, message)
-            toReturn = defaultValue
-        }
-
-        return toReturn
-    }
-
-    /**
-     * Resolve the host of the given URI and returns an {@code AdTechIdentifier} object
-     *
-     * @param uri Uri to resolve
-     */
-    private fun resolveAdTechIdentifier(uri: Uri): AdTechIdentifier {
-        return AdTechIdentifier.fromString(uri.host!!)
-    }
-
-    /** Reads a file into a string, to be used to read the .js files into a string. */
-    @Throws(IOException::class)
-    private fun assetFileToString(location: String): String {
-        return BufferedReader(InputStreamReader(applicationContext.assets.open(location)))
-            .lines()
-            .collect(Collectors.joining("\n"))
-    }
-
-    /** Replaces the override URI in the .js files with an actual reporting URI */
-    private fun replaceReportingURI(js: String, reportingUri: String): String {
-        return js.replace("https://reporting.example.com", reportingUri)
-    }
-
-    private fun calcExpiry(duration: Duration): Instant {
-        return Instant.now().plus(duration)
     }
 
     private fun checkAdServicesEnabledForSdkExtension() {
