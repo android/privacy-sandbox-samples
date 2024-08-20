@@ -109,28 +109,44 @@ class SdkServiceImpl(private val context: Context) : SdkService {
     }
 }
 
+/**
+ * A factory for creating [SessionObserver] instances.
+ *
+ * This class provides a way to create observers that can monitor the lifecycle of UI sessions
+ * and receive updates about UI container changes.
+ */
 private class SessionObserverFactoryImpl : SessionObserverFactory {
     override fun create(): SessionObserver {
         return SessionObserverImpl()
     }
 
+    /**
+     * An implementation of [SessionObserver] that logs session lifecycle events and UI container
+     * information.
+     */
     private inner class SessionObserverImpl : SessionObserver {
         override fun onSessionOpened(sessionObserverContext: SessionObserverContext) {
-            Log.i("Test", "onSessionOpened $sessionObserverContext")
+            Log.i("SessionObserver", "onSessionOpened $sessionObserverContext")
         }
 
+        /**
+         * Called when the UI container associated with a session changes.
+         *
+         * @param uiContainerInfo A Bundle containing information about the UI container,
+         * including on-screen geometry, width, height, and opacity.
+         */
         override fun onUiContainerChanged(uiContainerInfo: Bundle) {
             val sandboxedSdkViewUiInfo = SandboxedSdkViewUiInfo.fromBundle(uiContainerInfo)
             val onScreen = sandboxedSdkViewUiInfo.onScreenGeometry
             val width = sandboxedSdkViewUiInfo.uiContainerWidth
             val height = sandboxedSdkViewUiInfo.uiContainerHeight
             val opacity = sandboxedSdkViewUiInfo.uiContainerOpacityHint
-            Log.i("Test", "UI info" +
+            Log.i("SessionObserver", "UI info" +
                     "on-screen $onScreen, width $width, height $height, opacity $opacity")
         }
 
         override fun onSessionClosed() {
-            Log.i("Test", "onSessionClosed")
+            Log.i("SessionObserver", "onSessionClosed")
         }
     }
 }

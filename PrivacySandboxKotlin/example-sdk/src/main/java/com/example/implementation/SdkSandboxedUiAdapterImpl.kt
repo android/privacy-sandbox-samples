@@ -40,11 +40,33 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 import kotlin.random.Random
 
+/**
+ * Implementation of [SdkSandboxedUiAdapter] that handles banner ad requests.
+ *
+ * This class extends [AbstractSandboxedUiAdapter] and provides the functionality to open
+ * UI sessions. The usage of [AbstractSandboxedUiAdapter] simplifies the implementation.
+ *
+ * @param sdkContext The context of the SDK.
+ * @param request The banner ad request.
+ * @param mediateeAdapter The UI adapter for a mediatee SDK, if applicable.
+ */
 class SdkSandboxedUiAdapterImpl(
     private val sdkContext: Context,
     private val request: SdkBannerRequest,
     private val mediateeAdapter: SandboxedUiAdapter?
 ) : AbstractSandboxedUiAdapter(), SdkSandboxedUiAdapter {
+
+    /**
+     * Opens a new UI session to handle notifications from and to the client.
+     *
+     * @param context The context of the client.
+     * @param windowInputToken The input token of the window.
+     * @param initialWidth The initial width of the ad view.
+     * @param initialHeight The initial height of the ad view.
+     * @param isZOrderOnTop Whether the ad view should be on top of other content.
+     * @param clientExecutor The executor to use for client callbacks.
+     * @param client A UI adapter for the client of this single session.
+     */
     override fun openSession(
         context: Context,
         windowInputToken: IBinder,
@@ -61,6 +83,16 @@ class SdkSandboxedUiAdapterImpl(
     }
 }
 
+/**
+ * Implementation of [SandboxedUiAdapter.Session], used for banner ad requests.
+ * This class extends [AbstractSandboxedUiAdapter.AbstractSession] to provide the functionality in
+ * cohesion with [AbstractSandboxedUiAdapter]
+ *
+ * @param clientExecutor The executor to use for client callbacks.
+ * @param sdkContext The context of the SDK.
+ * @param request The banner ad request.
+ * @param mediateeAdapter The UI adapter for a mediatee SDK, if applicable.
+ */
 private class SdkUiSession(
     clientExecutor: Executor,
     private val sdkContext: Context,
