@@ -141,8 +141,9 @@ private class SessionObserverFactoryImpl : SessionObserverFactory {
             val width = sandboxedSdkViewUiInfo.uiContainerWidth
             val height = sandboxedSdkViewUiInfo.uiContainerHeight
             val opacity = sandboxedSdkViewUiInfo.uiContainerOpacityHint
-            Log.i("SessionObserver", "UI info" +
-                    "on-screen $onScreen, width $width, height $height, opacity $opacity")
+            Log.i("SessionObserver", "UI info: " +
+                    "On-screen geometry: $onScreen, width: $width, height: $height," +
+                    " opacity: $opacity")
         }
 
         override fun onSessionClosed() {
