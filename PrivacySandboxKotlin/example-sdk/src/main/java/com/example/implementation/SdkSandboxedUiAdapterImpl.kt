@@ -20,7 +20,6 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.os.IBinder
 import android.view.View
-import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -29,7 +28,7 @@ import androidx.privacysandbox.sdkruntime.core.activity.SdkSandboxActivityHandle
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import androidx.privacysandbox.ui.client.view.SandboxedSdkView
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
-import androidx.privacysandbox.ui.core.SessionObserverFactory
+import androidx.privacysandbox.ui.provider.AbstractSandboxedUiAdapter
 import com.example.R
 import com.example.api.SdkBannerRequest
 import com.example.api.SdkSandboxedUiAdapter
@@ -45,7 +44,7 @@ class SdkSandboxedUiAdapterImpl(
     private val sdkContext: Context,
     private val request: SdkBannerRequest,
     private val mediateeAdapter: SandboxedUiAdapter?
-) : SdkSandboxedUiAdapter {
+) : AbstractSandboxedUiAdapter(), SdkSandboxedUiAdapter {
     override fun openSession(
         context: Context,
         windowInputToken: IBinder,
@@ -60,16 +59,6 @@ class SdkSandboxedUiAdapterImpl(
             client.onSessionOpened(session)
         }
     }
-
-    override fun addObserverFactory(sessionObserverFactory: SessionObserverFactory) {
-        // Adds a [SessionObserverFactory] with a [SandboxedUiAdapter] for tracking UI presentation
-        // state across UI sessions. This has no effect on already open sessions.
-    }
-
-    override fun removeObserverFactory(sessionObserverFactory: SessionObserverFactory) {
-        // Removes a [SessionObserverFactory] from a [SandboxedUiAdapter], if it has been
-        // previously added with [addObserverFactory].
-    }
 }
 
 private class SdkUiSession(
@@ -77,7 +66,7 @@ private class SdkUiSession(
     private val sdkContext: Context,
     private val request: SdkBannerRequest,
     private val mediateeAdapter: SandboxedUiAdapter?
-) : SandboxedUiAdapter.Session {
+) : AbstractSandboxedUiAdapter.AbstractSession() {
 
     private val controller = SdkSandboxControllerCompat.from(sdkContext)
 
@@ -87,8 +76,6 @@ private class SdkUiSession(
     private val urls = listOf(
         "https://github.com", "https://developer.android.com/"
     )
-
-    override val signalOptions: Set<String> = setOf()
 
     override val view: View = getAdView()
 
