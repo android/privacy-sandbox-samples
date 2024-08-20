@@ -39,7 +39,6 @@ class BannerAd(context: Context, attrs: AttributeSet) : LinearLayout(context, at
             val sandboxedSdkView = SandboxedSdkView(context)
             addViewToLayout(sandboxedSdkView)
             sandboxedSdkView.setAdapter(bannerAd)
-            bannerAd.addObserverFactory(SessionObserverFactoryImpl())
             return
         }
 
@@ -71,28 +70,4 @@ class BannerAd(context: Context, attrs: AttributeSet) : LinearLayout(context, at
     }
 }
 
-private class SessionObserverFactoryImpl : SessionObserverFactory {
-    override fun create(): SessionObserver {
-        return SessionObserverImpl()
-    }
 
-    private inner class SessionObserverImpl : SessionObserver {
-        override fun onSessionOpened(sessionObserverContext: SessionObserverContext) {
-            Log.i("Test", "onSessionOpened $sessionObserverContext")
-        }
-
-        override fun onUiContainerChanged(uiContainerInfo: Bundle) {
-            val sandboxedSdkViewUiInfo = SandboxedSdkViewUiInfo.fromBundle(uiContainerInfo)
-            val onScreen = sandboxedSdkViewUiInfo.onScreenGeometry
-            val width = sandboxedSdkViewUiInfo.uiContainerWidth
-            val height = sandboxedSdkViewUiInfo.uiContainerHeight
-            val opacity = sandboxedSdkViewUiInfo.uiContainerOpacityHint
-            Log.i("Test", "UI info" +
-                    "on-screen $onScreen, width $width, height $height, opacity $opacity")
-        }
-
-        override fun onSessionClosed() {
-            Log.i("Test", "onSessionClosed")
-        }
-    }
-}

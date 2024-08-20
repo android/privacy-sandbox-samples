@@ -27,6 +27,10 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
+import androidx.privacysandbox.ui.core.SandboxedSdkViewUiInfo
+import androidx.privacysandbox.ui.core.SessionObserver
+import androidx.privacysandbox.ui.core.SessionObserverContext
+import androidx.privacysandbox.ui.core.SessionObserverFactory
 import com.example.R
 import com.mediatee.api.SdkServiceFactory
 import com.example.api.SdkSandboxedUiAdapter
@@ -62,7 +66,9 @@ class SdkServiceImpl(private val context: Context) : SdkService {
         shouldLoadMediatedAd: Boolean
     ): SdkSandboxedUiAdapter? {
         if (!shouldLoadMediatedAd) {
-            return SdkSandboxedUiAdapterImpl(context, request, null)
+            val bannerAdAdapter = SdkSandboxedUiAdapterImpl(context, request, null)
+            bannerAdAdapter.addObserverFactory(SessionObserverFactoryImpl())
+            return bannerAdAdapter
         }
         try {
             if (remoteInstance == null) {
@@ -100,5 +106,31 @@ class SdkServiceImpl(private val context: Context) : SdkService {
             }
         }
         return FullscreenAdImpl(context, remoteInstance, mediationType)
+    }
+}
+
+private class SessionObserverFactoryImpl : SessionObserverFactory {
+    override fun create(): SessionObserver {
+        return SessionObserverImpl()
+    }
+
+    private inner class SessionObserverImpl : SessionObserver {
+        override fun onSessionOpened(sessionObserverContext: SessionObserverContext) {
+            Log.i("Test", "onSessionOpened $sessionObserverContext")
+        }
+
+        override fun onUiContainerChanged(uiContainerInfo: Bundle) {
+            val sandboxedSdkViewUiInfo = SandboxedSdkViewUiInfo.fromBundle(uiContainerInfo)
+            val onScreen = sandboxedSdkViewUiInfo.onScreenGeometry
+            val width = sandboxedSdkViewUiInfo.uiContainerWidth
+            val height = sandboxedSdkViewUiInfo.uiContainerHeight
+            val opacity = sandboxedSdkViewUiInfo.uiContainerOpacityHint
+            Log.i("Test", "UI info" +
+                    "on-screen $onScreen, width $width, height $height, opacity $opacity")
+        }
+
+        override fun onSessionClosed() {
+            Log.i("Test", "onSessionClosed")
+        }
     }
 }
