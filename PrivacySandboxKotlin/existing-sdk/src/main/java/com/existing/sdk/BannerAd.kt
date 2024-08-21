@@ -63,5 +63,3 @@ class BannerAd(context: Context, attrs: AttributeSet) : LinearLayout(context, at
         super.addView(view)
     }
 }
-
-
