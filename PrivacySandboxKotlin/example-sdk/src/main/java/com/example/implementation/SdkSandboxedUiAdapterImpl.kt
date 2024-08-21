@@ -20,7 +20,6 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.os.IBinder
 import android.view.View
-import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -29,7 +28,7 @@ import androidx.privacysandbox.sdkruntime.core.activity.SdkSandboxActivityHandle
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import androidx.privacysandbox.ui.client.view.SandboxedSdkView
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
-import androidx.privacysandbox.ui.core.SessionObserverFactory
+import androidx.privacysandbox.ui.provider.AbstractSandboxedUiAdapter
 import com.example.R
 import com.example.api.SdkBannerRequest
 import com.example.api.SdkSandboxedUiAdapter
@@ -41,11 +40,33 @@ import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
 import kotlin.random.Random
 
+/**
+ * Implementation of [SdkSandboxedUiAdapter] that handles banner ad requests.
+ *
+ * This class extends [AbstractSandboxedUiAdapter] and provides the functionality to open
+ * UI sessions. The usage of [AbstractSandboxedUiAdapter] simplifies the implementation.
+ *
+ * @param sdkContext The context of the SDK.
+ * @param request The banner ad request.
+ * @param mediateeAdapter The UI adapter for a mediatee SDK, if applicable.
+ */
 class SdkSandboxedUiAdapterImpl(
     private val sdkContext: Context,
     private val request: SdkBannerRequest,
     private val mediateeAdapter: SandboxedUiAdapter?
-) : SdkSandboxedUiAdapter {
+) : AbstractSandboxedUiAdapter(), SdkSandboxedUiAdapter {
+
+    /**
+     * Opens a new UI session to handle notifications from and to the client.
+     *
+     * @param context The context of the client.
+     * @param windowInputToken The input token of the window.
+     * @param initialWidth The initial width of the ad view.
+     * @param initialHeight The initial height of the ad view.
+     * @param isZOrderOnTop Whether the ad view should be on top of other content.
+     * @param clientExecutor The executor to use for client callbacks.
+     * @param client A UI adapter for the client of this single session.
+     */
     override fun openSession(
         context: Context,
         windowInputToken: IBinder,
@@ -60,24 +81,24 @@ class SdkSandboxedUiAdapterImpl(
             client.onSessionOpened(session)
         }
     }
-
-    override fun addObserverFactory(sessionObserverFactory: SessionObserverFactory) {
-        // Adds a [SessionObserverFactory] with a [SandboxedUiAdapter] for tracking UI presentation
-        // state across UI sessions. This has no effect on already open sessions.
-    }
-
-    override fun removeObserverFactory(sessionObserverFactory: SessionObserverFactory) {
-        // Removes a [SessionObserverFactory] from a [SandboxedUiAdapter], if it has been
-        // previously added with [addObserverFactory].
-    }
 }
 
+/**
+ * Implementation of [SandboxedUiAdapter.Session], used for banner ad requests.
+ * This class extends [AbstractSandboxedUiAdapter.AbstractSession] to provide the functionality in
+ * cohesion with [AbstractSandboxedUiAdapter]
+ *
+ * @param clientExecutor The executor to use for client callbacks.
+ * @param sdkContext The context of the SDK.
+ * @param request The banner ad request.
+ * @param mediateeAdapter The UI adapter for a mediatee SDK, if applicable.
+ */
 private class SdkUiSession(
     clientExecutor: Executor,
     private val sdkContext: Context,
     private val request: SdkBannerRequest,
     private val mediateeAdapter: SandboxedUiAdapter?
-) : SandboxedUiAdapter.Session {
+) : AbstractSandboxedUiAdapter.AbstractSession() {
 
     private val controller = SdkSandboxControllerCompat.from(sdkContext)
 
@@ -87,8 +108,6 @@ private class SdkUiSession(
     private val urls = listOf(
         "https://github.com", "https://developer.android.com/"
     )
-
-    override val signalOptions: Set<String> = setOf()
 
     override val view: View = getAdView()
 
