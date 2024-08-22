@@ -42,7 +42,7 @@ to enable the Topics API, you’ll need to declare and configure ad services
 permissions, and you'll need to run the following commands:
 
 ```shell
-adb shell device_config put adservices ppapi_app_allow_list \"*\"
+adb shell device_config put adservices ppapi_app_signature_allow_list \"\*\"
 
 adb shell setprop debug.adservices.disable_topics_enrollment_check true
 ```
