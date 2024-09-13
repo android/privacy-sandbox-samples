@@ -1,39 +1,18 @@
 {
   "customAudiences": [
-      {
-      "name": "shirts",
-      "buyer": "{buyer}",
-      "bidding_logic_uri": "https://{buyer}/bidding",
-      "user_bidding_signals": {},
-      "ads": [
-        {
-          "render_uri": "https://{buyer}/bidding/render_shirts",
-          "metadata": {}
-        }
-      ],
-      "daily_update_uri": "https://{buyer}/bidding/daily",
-      "trusted_bidding_data": {
-        "keys": [
-          "shoes",
-          "{buyer}",
-          "key1",
-          "key2"
-        ],
-        "uri": "https://{buyer}/bidding/trusted"
-      }
-    },
     {
+      "label_name": "Shoes",
       "name": "shoes",
       "buyer": "{buyer}",
-      "bidding_logic_uri": "https://{buyer}/bidding",
+      "bidding_logic_uri": "{base_uri}/bidding",
       "user_bidding_signals": {},
       "ads": [
         {
-          "render_uri": "https://{buyer}/bidding/render_shoes",
+          "render_uri": "{base_uri}/bidding/render_shoes",
           "metadata": {}
         }
       ],
-      "daily_update_uri": "https://{buyer}/bidding/daily",
+      "daily_update_uri": "{base_uri}/bidding/daily",
       "trusted_bidding_data": {
         "keys": [
           "shoes",
@@ -41,18 +20,42 @@
           "key1",
           "key2"
         ],
-        "uri": "https://{buyer}/bidding/trusted"
+        "uri": "{base_uri}/bidding/trusted"
       }
     },
     {
+      "label_name": "Shirts",
+      "name": "shirts",
+      "buyer": "{buyer}",
+      "bidding_logic_uri": "{base_uri}/bidding",
+      "user_bidding_signals": {},
+      "ads": [
+        {
+          "render_uri": "{base_uri}/bidding/render_shirts",
+          "metadata": {}
+        }
+      ],
+      "daily_update_uri": "{base_uri}/bidding/daily",
+      "trusted_bidding_data": {
+        "keys": [
+          "shoes",
+          "{buyer}",
+          "key1",
+          "key2"
+        ],
+        "uri": "{base_uri}/bidding/trusted"
+      }
+    },
+    {
+      "label_name": "Auction server Shoes",
       "name": "winningCA",
       "buyer": "{server_auction_buyer}",
-      "bidding_logic_uri": "https://{server_auction_buyer}/bidding",
+      "bidding_logic_uri": "{server_auction_buyer_base_uri}/bidding",
       "expiration_time_from_now_in_sec": 86400,
       "user_bidding_signals": {},
       "ads": [
         {
-          "render_uri": "https://{server_auction_buyer}/bidding/render_short_expiring",
+          "render_uri": "{server_auction_buyer_base_uri}/1",
           "ad_render_id": 1,
           "ad_counter_keys": [
             1
@@ -71,7 +74,7 @@
           "metadata": {}
         }
       ],
-      "daily_update_uri": "https://{server_auction_buyer}/bidding/daily",
+      "daily_update_uri": "{server_auction_buyer_base_uri}/bidding/daily",
       "trusted_bidding_data": {
         "keys": [
           "shoes",
@@ -79,18 +82,19 @@
           "key1",
           "key2"
         ],
-        "uri": "https://{server_auction_buyer}/bidding/trusted"
+        "uri": "{server_auction_buyer_base_uri}/bidding/trusted"
       }
     },
     {
+      "label_name": "Auction server Shirts",
       "name": "shirts_server",
       "buyer": "{server_auction_buyer}",
-      "bidding_logic_uri": "https://{server_auction_buyer}/bidding",
+      "bidding_logic_uri": "{server_auction_buyer_base_uri}/bidding",
       "expiration_time_from_now_in_sec": 86400,
       "user_bidding_signals": {},
       "ads": [
         {
-          "render_uri": "https://{server_auction_buyer}/2",
+          "render_uri": "{server_auction_buyer_base_uri}/2",
           "ad_render_id": 2,
           "ad_counter_keys": [
             2
@@ -109,7 +113,7 @@
           "metadata": {}
         }
       ],
-      "daily_update_uri": "https://{server_auction_buyer}/bidding/daily",
+      "daily_update_uri": "{server_auction_buyer_base_uri}/bidding/daily",
       "trusted_bidding_data": {
         "keys": [
           "shoes",
@@ -117,22 +121,23 @@
           "key1",
           "key2"
         ],
-        "uri": "https://{server_auction_buyer}/bidding/trusted"
+        "uri": "{server_auction_buyer_base_uri}/bidding/trusted"
       }
     },
     {
+      "label_name": "Short expiry",
       "name": "short_expiring",
       "buyer": "{buyer}",
-      "bidding_logic_uri": "https://{buyer}/bidding",
+      "bidding_logic_uri": "{base_uri}/bidding",
       "expiration_time_from_now_in_sec": 30,
       "user_bidding_signals": {},
       "ads": [
         {
-          "render_uri": "https://{buyer}/bidding/render_short_expiring",
+          "render_uri": "{base_uri}/bidding/render_short_expiring",
           "metadata": {}
         }
       ],
-      "daily_update_uri": "https://{buyer}/bidding/daily",
+      "daily_update_uri": "{base_uri}/bidding/daily",
       "trusted_bidding_data": {
         "keys": [
           "shoes",
@@ -140,24 +145,26 @@
           "key1",
           "key2"
         ],
-        "uri": "https://{buyer}/bidding/trusted"
+        "uri": "{base_uri}/bidding/trusted"
       }
     },
     {
+      "label_name": "Invalid fields",
       "name": "invalid_fields",
       "buyer": "{buyer}",
-      "bidding_logic_uri": "https://{buyer}/bidding",
-      "daily_update_uri": "https://{buyer}/bidding/daily"
+      "bidding_logic_uri": "{base_uri}/bidding",
+      "daily_update_uri": "{base_uri}/bidding/daily"
     },
     {
+      "label_name": "Frequency capping",
       "name": "freq_cap",
       "buyer": "{buyer}",
-      "bidding_logic_uri": "https://{buyer}/bidding",
+      "bidding_logic_uri": "{base_uri}/bidding",
       "expiration_time_from_now_in_sec": 86400,
       "user_bidding_signals": {},
       "ads": [
         {
-          "render_uri": "https://{buyer}/render/freq_cap",
+          "render_uri": "{base_uri}/render/freq_cap",
           "ad_render_id": 1,
           "ad_counter_keys": [
             1,
@@ -184,7 +191,7 @@
           "metadata": {}
         }
       ],
-      "daily_update_uri": "https://{buyer}/bidding/daily",
+      "daily_update_uri": "{base_uri}/bidding/daily",
       "trusted_bidding_data": {
         "keys": [
           "shoes",
@@ -192,16 +199,18 @@
           "key1",
           "key2"
         ],
-        "uri": "https://{buyer}/bidding/trusted"
+        "uri": "{base_uri}/bidding/trusted"
       }
     }
   ],
   "fetchAndJoinCustomAudiences": [
     {
+      "label_name": "Hats",
       "name": "hats",
       "buyer": "{buyer}",
-      "fetch_uri": "https://{buyer}/fetch/ca",
-      "activation_time_in_sec_from_now": 0,
+      "fetch_uri": "{base_uri}/fetch/ca",
+      "activation_time_from_now_in_sec": 0,
+      "expiration_time_from_now_in_sec": 86400,
       "user_bidding_signals": {}
     }
   ]

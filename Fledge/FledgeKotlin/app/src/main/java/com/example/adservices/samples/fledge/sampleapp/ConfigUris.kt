@@ -10,7 +10,8 @@ class ConfigUris(
     val baseUri: Uri,
     val auctionServerSellerSfeUri: Uri,
     val auctionServerSeller: AdTechIdentifier,
-    val auctionServerBuyer: AdTechIdentifier
+    val auctionServerBuyer: AdTechIdentifier,
+    val coordinatorUri: Uri
 ) {
     val buyer: AdTechIdentifier
         get() = AdTechIdentifier.fromString(Objects.requireNonNull(baseUri.host).toString())

@@ -11,7 +11,7 @@ import java.util.concurrent.Executor
 class ToggleProvider(
     private val mContext: Context,
     private val mEventLog: EventLogManager,
-    private val mCustomAudienceManager: CustomAudienceManager,
+    private val mCustomAudienceWrapper: CustomAudienceWrapper,
     private val mAdSelectionWrapper: AdSelectionWrapper,
     config: ConfigUris,
     executor: Executor
@@ -44,9 +44,9 @@ class ToggleProvider(
             for (customAudience in data.customAudiences) {
                 toggles.add(
                     CustomAudienceToggle(
-                        customAudience,
-                        mCustomAudienceManager,
-                        mExecutor,
+                        customAudience.key,
+                        customAudience.value,
+                        mCustomAudienceWrapper,
                         mEventLog,
                         mContext
                     )
@@ -55,9 +55,9 @@ class ToggleProvider(
             for (fetchAndJoinCustomAudienceRequest in data.fetchAndJoinCustomAudiences) {
                 toggles.add(
                     FetchAndJoinCustomAudienceToggle(
-                        fetchAndJoinCustomAudienceRequest,
-                        mCustomAudienceManager,
-                        mExecutor,
+                        fetchAndJoinCustomAudienceRequest.key,
+                        fetchAndJoinCustomAudienceRequest.value,
+                        mCustomAudienceWrapper,
                         mEventLog,
                         mContext
                     )

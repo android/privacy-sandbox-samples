@@ -19,12 +19,15 @@ package com.example.adservices.samples.fledge.sampleapp;
 import android.adservices.customaudience.CustomAudience;
 import android.adservices.customaudience.FetchAndJoinCustomAudienceRequest;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+
+import java.util.Map;
 
 /** POJO to capture the parsed custom audiences from config file. */
 public class CustomAudienceConfigFile {
-    private final ImmutableList<CustomAudience> mCustomAudiences;
-    private final ImmutableList<FetchAndJoinCustomAudienceRequest> mFetchAndJoinCustomAudiences;
+    private final ImmutableMap<String, CustomAudience> mCustomAudiences;
+    private final ImmutableMap<String, FetchAndJoinCustomAudienceRequest>
+            mFetchAndJoinCustomAudiences;
 
     /**
      * Default constructor
@@ -33,23 +36,24 @@ public class CustomAudienceConfigFile {
      * @param fetchAndJoinCustomAudiences immutable list of fetch and join custom audiences.
      */
     public CustomAudienceConfigFile(
-            ImmutableList<CustomAudience> customAudiences,
-            ImmutableList<FetchAndJoinCustomAudienceRequest> fetchAndJoinCustomAudiences) {
-        this.mCustomAudiences = customAudiences;
-        this.mFetchAndJoinCustomAudiences = fetchAndJoinCustomAudiences;
+            Map<String, CustomAudience> customAudiences,
+            Map<String, FetchAndJoinCustomAudienceRequest> fetchAndJoinCustomAudiences) {
+        this.mCustomAudiences = ImmutableMap.copyOf(customAudiences);
+        this.mFetchAndJoinCustomAudiences = ImmutableMap.copyOf(fetchAndJoinCustomAudiences);
     }
 
     /**
      * @return list of custom audiences.
      */
-    public ImmutableList<CustomAudience> getCustomAudiences() {
+    public ImmutableMap<String, CustomAudience> getCustomAudiences() {
         return mCustomAudiences;
     }
 
     /**
      * @return list of fetch and join custom audience requests.
      */
-    public ImmutableList<FetchAndJoinCustomAudienceRequest> getFetchAndJoinCustomAudiences() {
+    public ImmutableMap<String, FetchAndJoinCustomAudienceRequest>
+            getFetchAndJoinCustomAudiences() {
         return mFetchAndJoinCustomAudiences;
     }
 }

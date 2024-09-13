@@ -219,8 +219,10 @@ public class AdSelectionWrapper {
             Uri sellerSfeUri,
             AdTechIdentifier seller,
             AdTechIdentifier buyer,
+            Uri coordinatorUri,
             Consumer<String> statusReceiver,
-            Consumer<String> renderUriReceiver) {
+            Consumer<String> renderUriReceiver,
+            Consumer<String> adSelectionIdReceiver) {
         if (!isTestableVersion(10, 10)) {
             statusReceiver.accept(
                     "Unsupported SDK Extension: Running Server-side auction requires 10, skipping");
@@ -235,15 +237,28 @@ public class AdSelectionWrapper {
         try {
             Log.i(TAG, "Auction Server ad selection seller:" + seller);
             Log.i(TAG, "Auction Server ad selection seller SFE URI:" + sellerSfeUri);
-            GetAdSelectionDataRequest getDataRequest =
-                    new GetAdSelectionDataRequest.Builder().setSeller(seller).build();
+            GetAdSelectionDataRequest.Builder getDataRequestBuilder =
+                    new GetAdSelectionDataRequest.Builder().setSeller(seller);
+            if (coordinatorUri != Uri.EMPTY){
+              if (!isTestableVersion(12, 12)) {
+                statusReceiver.accept(
+                    "Unsupported SDK Extension: Setting up coordinator URI requires SDK Extension 12, using default coordinator"
+                );
+                Log.w(
+                    TAG,
+                    "Unsupported SDK Extension: Setting up coordinator URI requires SDK Extension 12, using default coordinator"
+                );
+              } else {
+                getDataRequestBuilder.setCoordinatorOriginUri(coordinatorUri);
+              }
+            }
             ListenableFuture<AdSelectionOutcome> adSelectionOutcome =
-                    FluentFuture.from(mAdClient.getAdSelectionData(getDataRequest))
+                    FluentFuture.from(mAdClient.getAdSelectionData(getDataRequestBuilder.build()))
                             .transform(
                                     outcome -> {
                                         statusReceiver.accept(
                                                 "CA data collected from device! Id: "
-                                                        + outcome.getAdSelectionId());
+                                                        + outcome.getAdSelectionDataId());
                                         try {
                                             BiddingAuctionServerClient auctionServerClient =
                                                     new BiddingAuctionServerClient(mContext);
@@ -256,7 +271,7 @@ public class AdSelectionWrapper {
 
                                             Pair<Long, SelectAdsResponse> serverAuctionResult =
                                                     new Pair<>(
-                                                            outcome.getAdSelectionId(),
+                                                            outcome.getAdSelectionDataId(),
                                                             actualResponse);
                                             statusReceiver.accept(
                                                     "Server auction run successfully for "
@@ -273,14 +288,14 @@ public class AdSelectionWrapper {
                             .transformAsync(
                                     pair -> {
                                         Objects.requireNonNull(pair);
-                                        long adSelectionId = pair.first;
+                                        long adSelectionDataId = pair.first;
                                         SelectAdsResponse response = pair.second;
                                         Objects.requireNonNull(response);
                                         Objects.requireNonNull(response.auctionResultCiphertext);
                                         PersistAdSelectionResultRequest persistResultRequest =
                                                 new PersistAdSelectionResultRequest.Builder()
                                                         .setSeller(seller)
-                                                        .setAdSelectionId(adSelectionId)
+                                                        .setAdSelectionDataId(adSelectionDataId)
                                                         .setAdSelectionResult(
                                                                 BaseEncoding.base64()
                                                                         .decode(
@@ -301,6 +316,7 @@ public class AdSelectionWrapper {
                                 renderUriReceiver.accept(
                                         "Would display ad from "
                                                 + adSelectionOutcome.getRenderUri());
+                                adSelectionIdReceiver.accept(Long.toString(adSelectionOutcome.getAdSelectionId()));
                                 reportImpression(
                                         adSelectionOutcome.getAdSelectionId(), statusReceiver);
                             } else {

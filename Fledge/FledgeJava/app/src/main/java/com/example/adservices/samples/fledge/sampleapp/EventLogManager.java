@@ -63,6 +63,7 @@ public class EventLogManager {
             }
         }
         render();
+        Log.v(TAG, String.format("Event %s added in event log", event));
     }
 
     /** Re-renders the event log with the current events from {@link #mEvents}. */
@@ -75,7 +76,6 @@ public class EventLogManager {
                 output.append(eventNumber++).append(". ").append(it.next()).append("\n");
             }
             mDisplay.setText(output);
-            Log.v(TAG, "Event log set to: " + output);
         }
     }
 }

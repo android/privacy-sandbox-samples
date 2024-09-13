@@ -16,11 +16,9 @@ import android.net.Uri
 import android.util.Log
 import androidx.core.util.Consumer
 import com.example.adservices.samples.fledge.sdkExtensionsHelpers.VersionCompatUtil.isTestableVersion
+import com.google.common.collect.ImmutableBiMap
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableSet
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.StandardCharsets
@@ -28,12 +26,15 @@ import java.time.Duration
 import java.time.Instant
 import java.util.Arrays
 import java.util.Objects
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
 
 @SuppressLint("NewApi")
 class ConfigFileLoader(
     private val mContext: Context,
     private val mConfig: ConfigUris,
-    private val mStatusReceiver: Consumer<String>
+    private val mStatusReceiver: Consumer<String>,
 ) {
     @Throws(IOException::class, JSONException::class)
     private fun parseToJsonObject(inputStream: InputStream): JSONObject {
@@ -63,8 +64,9 @@ class ConfigFileLoader(
         fileString =
             fileString.replace(
                 VARIABLE_SERVER_AUCTION_BUYER_BASE_URI,
-                Objects.requireNonNull(Uri.parse("https://" + mConfig.auctionServerBuyer))
-                    .toString()
+                if (mConfig.isMaybeServerAuction
+                ) "https://" + mConfig.auctionServerBuyer.toString()
+                else Objects.requireNonNull(mConfig.baseUri).toString()
             )
         Log.v(MainActivity.TAG, "Loaded JSON file: $fileString")
         return JSONObject(fileString)
@@ -72,7 +74,7 @@ class ConfigFileLoader(
 
     @Throws(JSONException::class, IOException::class)
     fun loadCustomAudienceWithDevOverrides(
-        jsonObject: JSONObject
+        jsonObject: JSONObject,
     ): AddCustomAudienceOverrideRequest {
         return AddCustomAudienceOverrideRequest.Builder()
             .setName(jsonObject.getString(NAME))
@@ -95,12 +97,13 @@ class ConfigFileLoader(
         val inputStream = mContext.assets.open(filePath!!)
         val jsonObject = parseToJsonObject(inputStream)
 
-        val customAudiences = ImmutableList.builder<CustomAudience>()
+        val customAudienceMap = LinkedHashMap<String, CustomAudience>()
         if (jsonObject.has(CUSTOM_AUDIENCES_FIELD)) {
             val jsonArray = jsonObject.getJSONArray(CUSTOM_AUDIENCES_FIELD)
             for (i in 0 until jsonArray.length()) {
                 try {
-                    customAudiences.add(loadCustomAudience(jsonArray.getJSONObject(i)))
+                    val loadedCa = loadCustomAudience(jsonArray.getJSONObject(i))
+                    customAudienceMap[loadedCa.first] = loadedCa.second
                 } catch (e: java.lang.RuntimeException) {
                     mStatusReceiver.accept(e.message)
                     Log.w(MainActivity.TAG, e.message!!)
@@ -108,16 +111,16 @@ class ConfigFileLoader(
             }
         }
 
-        val fetchCustomAudiences =
-            ImmutableList.builder<FetchAndJoinCustomAudienceRequest>()
+        val fetchCustomAudiencesMap = LinkedHashMap<String, FetchAndJoinCustomAudienceRequest>()
         if (jsonObject.has(FETCH_CUSTOM_AUDIENCES_FIELD)) {
             val jsonArray = jsonObject.getJSONArray(FETCH_CUSTOM_AUDIENCES_FIELD)
             for (i in 0 until jsonArray.length()) {
-                fetchCustomAudiences.add(loadFetchCustomAudience(jsonArray.getJSONObject(i)))
+                val loadedFetchCaData = loadFetchCustomAudience(jsonArray.getJSONObject(i))
+                fetchCustomAudiencesMap[loadedFetchCaData.first] = loadedFetchCaData.second
             }
         }
 
-        return CustomAudienceConfigFile(customAudiences.build(), fetchCustomAudiences.build())
+        return CustomAudienceConfigFile(ImmutableBiMap.copyOf(customAudienceMap), ImmutableBiMap.copyOf(fetchCustomAudiencesMap))
     }
 
     @Throws(IOException::class, JSONException::class)
@@ -153,7 +156,15 @@ class ConfigFileLoader(
     }
 
     @Throws(JSONException::class)
-    private fun loadFetchCustomAudience(jsonObject: JSONObject): FetchAndJoinCustomAudienceRequest {
+    private fun loadFetchCustomAudience(jsonObject: JSONObject): Pair<String, FetchAndJoinCustomAudienceRequest> {
+        val labelName = jsonObject.getString(LABEL_NAME)
+        check(labelName.isNotEmpty()) {
+            java.lang.String.format(
+                "%s should be present in the configuration file to parse custom"
+                  + " audience data",
+                LABEL_NAME
+            )
+        }
         val builder =
             FetchAndJoinCustomAudienceRequest.Builder(
                 Uri.parse(jsonObject.getString(FETCH_URI))
@@ -162,7 +173,11 @@ class ConfigFileLoader(
             builder.setName(jsonObject.getString(NAME))
         }
         if (jsonObject.has(ACTIVATION_TIME)) {
-            builder.setActivationTime(Instant.parse(jsonObject.getString(ACTIVATION_TIME)))
+            builder.setActivationTime(
+                Instant.now().plusSeconds(
+                    jsonObject.getInt(ACTIVATION_TIME).toLong()
+                )
+            )
         }
         if (jsonObject.has(EXPIRATION_TIME)) {
             builder.setExpirationTime(
@@ -176,7 +191,7 @@ class ConfigFileLoader(
                 AdSelectionSignals.fromString(jsonObject.getString(USER_BIDDING_SIGNALS))
             )
         }
-        return builder.build()
+        return Pair(labelName, builder.build())
     }
 
     @Throws(IOException::class)
@@ -234,7 +249,15 @@ class ConfigFileLoader(
     }
 
     @Throws(JSONException::class)
-    fun loadCustomAudience(jsonObject: JSONObject): CustomAudience {
+    fun loadCustomAudience(jsonObject: JSONObject): Pair<String, CustomAudience> {
+        val labelName = jsonObject.getString(LABEL_NAME)
+        check(labelName.isNotEmpty()) {
+            java.lang.String.format(
+                "%s should be present in the configuration file to parse custom"
+                  + " audience data",
+                LABEL_NAME
+            )
+        }
         val builder =
             CustomAudience.Builder()
                 .setName(jsonObject.getString(NAME))
@@ -268,7 +291,7 @@ class ConfigFileLoader(
                 )
             )
         }
-        return builder.build()
+        return Pair(labelName, builder.build())
     }
 
     @Throws(JSONException::class)
@@ -285,6 +308,7 @@ class ConfigFileLoader(
         private const val CUSTOM_AUDIENCE_DEV_OVERRIDES_FIELD = "customAudienceDevOverrides"
         private const val FETCH_CUSTOM_AUDIENCES_FIELD = "fetchAndJoinCustomAudiences"
         private const val FETCH_URI = "fetch_uri"
+        private const val LABEL_NAME = "label_name"
         private const val NAME = "name"
         private const val BUYER = "buyer"
         private const val ACTIVATION_TIME = "activation_time_from_now_in_sec"

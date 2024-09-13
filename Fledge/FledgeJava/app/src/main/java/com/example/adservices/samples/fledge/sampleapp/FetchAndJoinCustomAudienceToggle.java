@@ -24,16 +24,19 @@ import android.content.Context;
 @SuppressLint("NewApi")
 public class FetchAndJoinCustomAudienceToggle implements Toggle {
 
+    private final String mLabelName;
     private final CustomAudienceWrapper mCustomAudienceWrapper;
     private final EventLogManager mEventLog;
     private final Context mContext;
     private final FetchAndJoinCustomAudienceRequest mFetchAndJoinCustomAudienceRequest;
 
     FetchAndJoinCustomAudienceToggle(
+            String labelName,
             FetchAndJoinCustomAudienceRequest fetchAndJoincustomAudienceRequest,
             CustomAudienceWrapper customAudienceWrapper,
             EventLogManager eventLog,
             Context context) {
+        this.mLabelName = labelName;
         this.mFetchAndJoinCustomAudienceRequest = fetchAndJoincustomAudienceRequest;
         this.mCustomAudienceWrapper = customAudienceWrapper;
         this.mEventLog = eventLog;
@@ -42,8 +45,7 @@ public class FetchAndJoinCustomAudienceToggle implements Toggle {
 
     @Override
     public String getLabel() {
-        return mContext.getString(
-                R.string.fetch_and_join_ca_toggle, mFetchAndJoinCustomAudienceRequest.getName());
+        return mContext.getString(R.string.fetch_and_join_ca_toggle, mLabelName);
     }
 
     @Override

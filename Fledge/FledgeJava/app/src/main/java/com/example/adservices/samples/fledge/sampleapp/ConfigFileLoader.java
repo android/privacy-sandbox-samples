@@ -33,6 +33,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
@@ -49,6 +50,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -60,6 +62,7 @@ public class ConfigFileLoader {
     private static final String CUSTOM_AUDIENCE_DEV_OVERRIDES_FIELD = "customAudienceDevOverrides";
     private static final String FETCH_CUSTOM_AUDIENCES_FIELD = "fetchAndJoinCustomAudiences";
     private static final String FETCH_URI = "fetch_uri";
+    private static final String LABEL_NAME = "label_name";
     private static final String NAME = "name";
     private static final String BUYER = "buyer";
     private static final String ACTIVATION_TIME = "activation_time_from_now_in_sec";
@@ -89,9 +92,11 @@ public class ConfigFileLoader {
     public static final String FCAP_AD_COUNTER_KEY = "ad_counter_key";
     public static final String FCAP_MAX_COUNT = "max_count";
     public static final String INTERVAL_IN_SEC_FIELD = "interval_in_sec";
-    public static final String VARIABLE_BASE_URI_BUYER = "{buyer}";
+    public static final String VARIABLE_BUYER = "{buyer}";
+    public static final String VARIABLE_BASE_URI_BUYER = "{base_uri}";
     public static final String VARIABLE_SERVER_AUCTION_BUYER = "{server_auction_buyer}";
-
+    public static final String VARIABLE_SERVER_AUCTION_BUYER_BASE_URI =
+            "{server_auction_buyer_base_uri}";
     private final Context mContext;
     private final ConfigUris mConfig;
     private final Consumer<String> mStatusReceiver;
@@ -117,12 +122,14 @@ public class ConfigFileLoader {
         InputStream inputStream = mContext.getAssets().open(filePath);
         JSONObject jsonObject = parseToJsonObject(inputStream);
 
-        ImmutableList.Builder<CustomAudience> customAudiences = ImmutableList.builder();
+        LinkedHashMap<String, CustomAudience> customAudienceHashMap = new LinkedHashMap<>();
         if (jsonObject.has(CUSTOM_AUDIENCES_FIELD)) {
             JSONArray jsonArray = jsonObject.getJSONArray(CUSTOM_AUDIENCES_FIELD);
             for (int i = 0; i < jsonArray.length(); i++) {
                 try {
-                    customAudiences.add(loadCustomAudience(jsonArray.getJSONObject(i)));
+                    Pair<String, CustomAudience> loadedCaData =
+                            loadCustomAudience(jsonArray.getJSONObject(i));
+                    customAudienceHashMap.put(loadedCaData.first, loadedCaData.second);
                 } catch (RuntimeException e) {
                     mStatusReceiver.accept(e.getMessage());
                     Log.w(TAG, Objects.requireNonNull(e.getMessage()));
@@ -130,16 +137,20 @@ public class ConfigFileLoader {
             }
         }
 
-        ImmutableList.Builder<FetchAndJoinCustomAudienceRequest> fetchCustomAudiences =
-                ImmutableList.builder();
+        LinkedHashMap<String, FetchAndJoinCustomAudienceRequest>
+                fetchAndJoinCustomAudienceRequestMap = new LinkedHashMap<>();
         if (jsonObject.has(FETCH_CUSTOM_AUDIENCES_FIELD)) {
             JSONArray jsonArray = jsonObject.getJSONArray(FETCH_CUSTOM_AUDIENCES_FIELD);
             for (int i = 0; i < jsonArray.length(); i++) {
-                fetchCustomAudiences.add(loadFetchCustomAudience(jsonArray.getJSONObject(i)));
+                Pair<String, FetchAndJoinCustomAudienceRequest> loadedFetchCaData =
+                        loadFetchCustomAudience(jsonArray.getJSONObject(i));
+                fetchAndJoinCustomAudienceRequestMap.put(
+                        loadedFetchCaData.first, loadedFetchCaData.second);
             }
         }
 
-        return new CustomAudienceConfigFile(customAudiences.build(), fetchCustomAudiences.build());
+        return new CustomAudienceConfigFile(
+                customAudienceHashMap, fetchAndJoinCustomAudienceRequestMap);
     }
 
     /**
@@ -174,7 +185,16 @@ public class ConfigFileLoader {
                 customAudienceOverrides.build(), overrideScoringSignals, overrideScoringJs);
     }
 
-    private CustomAudience loadCustomAudience(@NonNull JSONObject jsonObject) throws JSONException {
+    private Pair<String, CustomAudience> loadCustomAudience(@NonNull JSONObject jsonObject)
+            throws JSONException {
+        String labelName = jsonObject.getString(LABEL_NAME);
+        if (labelName.isEmpty()) {
+            throw new IllegalStateException(
+                    String.format(
+                            "%s should be present in the configuration file to parse custom"
+                                + " audience data",
+                            LABEL_NAME));
+        }
         CustomAudience.Builder builder =
                 new CustomAudience.Builder()
                         .setName(jsonObject.getString(NAME))
@@ -200,7 +220,7 @@ public class ConfigFileLoader {
             builder.setActivationTime(
                     calculateRelativeTime(Duration.ofSeconds(jsonObject.getInt(ACTIVATION_TIME))));
         }
-        return builder.build();
+        return Pair.create(labelName, builder.build());
     }
 
     private TrustedBiddingData getTrustedBiddingDataFromJson(JSONObject jsonObject)
@@ -238,7 +258,8 @@ public class ConfigFileLoader {
                 builder.setAdRenderId(jsonObject.getString(AD_AD_RENDER_ID));
             } else {
                 throw new RuntimeException(
-                        "Unsupported SDK Extension: Ad render id (and server auction) requires 10, skipping");
+                        "Unsupported SDK Extension: Ad render id (and server auction) requires 10,"
+                            + " skipping");
             }
         }
         if (jsonObject.has(ADS_AD_COUNTER_KEYS)) {
@@ -257,7 +278,8 @@ public class ConfigFileLoader {
                                 .build());
             } else {
                 throw new RuntimeException(
-                        "Unsupported SDK Extension: Ad filters require 8 for T+ or 9 for S-, skipping");
+                        "Unsupported SDK Extension: Ad filters require 8 for T+ or 9 for S-,"
+                            + " skipping");
             }
         }
         return builder.build();
@@ -330,13 +352,22 @@ public class ConfigFileLoader {
         fileString =
                 fileString.replace(
                         VARIABLE_BASE_URI_BUYER,
-                        Objects.requireNonNull(mConfig.getBaseUri().getHost()));
+                        Objects.requireNonNull(mConfig.getBaseUri().toString()));
+        fileString =
+                fileString.replace(
+                        VARIABLE_BUYER, Objects.requireNonNull(mConfig.getBaseUri().getHost()));
         fileString =
                 fileString.replace(
                         VARIABLE_SERVER_AUCTION_BUYER,
                         mConfig.isMaybeServerAuction()
                                 ? mConfig.getAuctionServerBuyer().toString()
                                 : mConfig.getBaseUri().getHost());
+        fileString =
+                fileString.replace(
+                        VARIABLE_SERVER_AUCTION_BUYER_BASE_URI,
+                        mConfig.isMaybeServerAuction()
+                                ? "https://" + mConfig.getAuctionServerBuyer()
+                                : Objects.requireNonNull(mConfig.getBaseUri().toString()));
         Log.v(MainActivity.TAG, "Loaded JSON file: " + fileString);
         return new JSONObject(fileString);
     }
@@ -356,16 +387,25 @@ public class ConfigFileLoader {
                 .build();
     }
 
-    private FetchAndJoinCustomAudienceRequest loadFetchCustomAudience(JSONObject jsonObject)
-            throws JSONException {
+    private Pair<String, FetchAndJoinCustomAudienceRequest> loadFetchCustomAudience(
+            JSONObject jsonObject) throws JSONException {
         FetchAndJoinCustomAudienceRequest.Builder builder =
                 new FetchAndJoinCustomAudienceRequest.Builder(
                         Uri.parse(jsonObject.getString(FETCH_URI)));
+        String labelName = jsonObject.getString(LABEL_NAME);
+        if (labelName.isEmpty()) {
+            throw new IllegalStateException(
+                    String.format(
+                            "%s should be present in the configuration file to parse custom"
+                                + " audience data",
+                            LABEL_NAME));
+        }
         if (jsonObject.has(NAME)) {
             builder.setName(jsonObject.getString(NAME));
         }
         if (jsonObject.has(ACTIVATION_TIME)) {
-            builder.setActivationTime(Instant.parse(jsonObject.getString(ACTIVATION_TIME)));
+            builder.setActivationTime(
+                    calculateRelativeTime(Duration.ofSeconds(jsonObject.getInt(ACTIVATION_TIME))));
         }
         if (jsonObject.has(EXPIRATION_TIME)) {
             builder.setExpirationTime(
@@ -375,7 +415,7 @@ public class ConfigFileLoader {
             builder.setUserBiddingSignals(
                     AdSelectionSignals.fromString(jsonObject.getString(USER_BIDDING_SIGNALS)));
         }
-        return builder.build();
+        return Pair.create(labelName, builder.build());
     }
 
     private String readAssetToString(String assetFileName) throws IOException {

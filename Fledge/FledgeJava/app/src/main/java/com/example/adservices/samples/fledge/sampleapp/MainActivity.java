@@ -27,6 +27,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String AUCTION_SERVER_SELLER_SFE_URL_INTENT = "auctionServerSellerSfeUrl";
     private static final String AUCTION_SERVER_SELLER_INTENT = "auctionServerSeller";
     private static final String AUCTION_SERVER_BUYER_INTENT = "auctionServerBuyer";
+    private static final String AUCTION_SERVER_COORDINATOR_URL_INTENT = "auctionServerCoordinatorUrl";
 
     // Executor to be used for API calls
     private static final Executor EXECUTOR = Executors.newCachedThreadPool();
@@ -95,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
                         .setAuctionServerSellerSfeUri(auctionServerSellerSfeUriOrEmpty())
                         .setAuctionServerSeller(auctionServerSellerOrEmpty())
                         .setAuctionServerBuyer(auctionServerBuyerOrEmpty())
+                        .setCoordinatorUri(auctionServerCoordinatorOrEmpty())
                         .build();
 
         try {
@@ -131,35 +135,55 @@ public class MainActivity extends AppCompatActivity {
                         buyers,
                         mConfig.getSeller(),
                         Uri.parse(mConfig.getBaseUri() + "/scoring"),
-                        Uri.parse(mConfig.getBaseUri() + "/bidding/trusted"),
+                        Uri.parse(mConfig.getBaseUri() + "/scoring/trusted"),
                         context,
                         EXECUTOR);
 
         binding.auctionServer.setChecked(mConfig.isMaybeServerAuction());
-
-        if (mConfig.isMaybeServerAuction()) {
-            binding.runAdsButton.setOnClickListener(
-                    v ->
-                            adWrapper.runAdSelectionOnAuctionServer(
-                                    mConfig.getAuctionServerSellerSfeUri(),
-                                    mConfig.getAuctionServerSeller(),
-                                    mConfig.getAuctionServerBuyer(),
-                                    eventLog::writeEvent,
-                                    binding.adSpace::setText));
-        } else {
-            binding.runAdsButton.setOnClickListener(
-                    v ->
-                            adWrapper.runAdSelection(
-                                    eventLog::writeEvent,
-                                    binding.adSpace::setText,
-                                    adSelectionId -> {
-                                        binding.adSelectionIdClickInput.setText(adSelectionId);
-                                        binding.adSelectionIdImpressionInput.setText(adSelectionId);
-                                        binding.adSelectionIdHistogramInput.setText(adSelectionId);
-                                    }));
-        }
+        setupRunAdSelectionButton(mConfig.isMaybeServerAuction(), binding);
+        binding.auctionServer.setOnCheckedChangeListener(
+            (compoundButton, isAuctionServerEnabled) -> setupRunAdSelectionButton(isAuctionServerEnabled, binding));
     }
 
+    private void setupRunAdSelectionButton(boolean isAuctionServerEnabled, ActivityMainBinding binding){
+        if(isAuctionServerEnabled && !mConfig.isMaybeServerAuction()){
+            Log.e(TAG, "Cannot enable auction on server without all server auction configurations");
+            binding.eventLog.append("Cannot enable auction on server without all server auction configurations");
+            binding.auctionServer.setChecked(false);
+            return;
+        }
+        if (isAuctionServerEnabled) {
+            binding.runAdsButton.setOnClickListener(
+                v ->
+                    adWrapper.runAdSelectionOnAuctionServer(
+                        mConfig.getAuctionServerSellerSfeUri(),
+                        mConfig.getAuctionServerSeller(),
+                        mConfig.getAuctionServerBuyer(),
+                        mConfig.getCoordinatorUri(),
+                        eventLog::writeEvent,
+                        binding.adSpace::setText,
+                        adSelectionId -> runOnUiThread(() -> {
+                            binding.adSelectionIdClickInput.setText(adSelectionId);
+                            binding.adSelectionIdImpressionInput.setText(adSelectionId);
+                            binding.adSelectionIdHistogramInput.setText(adSelectionId);
+                        })));
+            Log.d(TAG, String.format("Run Ad Selection On Auction Server URL: %s", mConfig.getAuctionServerSellerSfeUri()));
+            binding.eventLog.append(String.format("Run Ad Selection On Auction Server URL: %s", mConfig.getAuctionServerSellerSfeUri()));
+        } else {
+            binding.runAdsButton.setOnClickListener(
+                v ->
+                    adWrapper.runAdSelection(
+                        eventLog::writeEvent,
+                        binding.adSpace::setText,
+                        adSelectionId -> runOnUiThread(() -> {
+                            binding.adSelectionIdClickInput.setText(adSelectionId);
+                            binding.adSelectionIdImpressionInput.setText(adSelectionId);
+                            binding.adSelectionIdHistogramInput.setText(adSelectionId);
+                        })));
+            Log.d(TAG,"Run Ad Selection On Device");
+            binding.eventLog.append("Run Ad Selection On Device");
+        }
+    }
     private void setupCASwitches(ActivityMainBinding binding, Context context) {
         try {
             CustomAudienceWrapper customAudienceWrapper =
@@ -314,6 +338,25 @@ public class MainActivity extends AppCompatActivity {
             return AdTechIdentifier.fromString(auctionServerBuyer);
         } else {
             return AdTechIdentifier.fromString("");
+        }
+    }
+
+    private Uri auctionServerCoordinatorOrEmpty() {
+        if (!isTestableVersion(12, 12)) {
+            eventLog.writeEvent(
+                "Unsupported SDK Extension: Setting up coordinator URI requires SDK Extension 12, using default coordinator"
+            );
+            Log.w(
+                TAG,
+                "Unsupported SDK Extension: Setting up coordinator URI requires SDK Extension 12, using default coordinator"
+            );
+            return Uri.EMPTY;
+        }
+        String sfeUriString;
+        if ((sfeUriString = getIntentOrNull(AUCTION_SERVER_COORDINATOR_URL_INTENT)) != null) {
+            return Uri.parse(sfeUriString);
+        } else {
+            return Uri.EMPTY;
         }
     }
 

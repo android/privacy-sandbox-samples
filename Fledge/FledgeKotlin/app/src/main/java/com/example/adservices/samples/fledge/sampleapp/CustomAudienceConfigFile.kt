@@ -2,9 +2,9 @@ package com.example.adservices.samples.fledge.sampleapp
 
 import android.adservices.customaudience.CustomAudience
 import android.adservices.customaudience.FetchAndJoinCustomAudienceRequest
-import com.google.common.collect.ImmutableList
+import com.google.common.collect.ImmutableBiMap
 
 class CustomAudienceConfigFile(
-    val customAudiences: ImmutableList<CustomAudience>,
-    val fetchAndJoinCustomAudiences: ImmutableList<FetchAndJoinCustomAudienceRequest>
+    val customAudiences: ImmutableBiMap<String, CustomAudience>,
+    val fetchAndJoinCustomAudiences: ImmutableBiMap<String, FetchAndJoinCustomAudienceRequest>
 )

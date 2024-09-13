@@ -140,8 +140,10 @@ class AdSelectionWrapper(
         sellerSfeUri: Uri,
         seller: AdTechIdentifier,
         buyer: AdTechIdentifier,
+        coordinatorUri: Uri,
         statusReceiver: Consumer<String>,
-        renderUriReceiver: Consumer<String>
+        renderUriReceiver: Consumer<String>,
+        adSelectionIdReceiver: Consumer<String>
     ) {
         if (!isTestableVersion(8, 9)) {
             statusReceiver.accept(
@@ -159,15 +161,28 @@ class AdSelectionWrapper(
         try {
             Log.i(TAG, "Auction Server ad selection seller:$seller")
             Log.i(TAG, "Auction Server ad selection seller SFE URI:$sellerSfeUri")
-            val getDataRequest: GetAdSelectionDataRequest = GetAdSelectionDataRequest.Builder()
-                .setSeller(seller).build()
+            val getDataRequestBuilder: GetAdSelectionDataRequest.Builder = GetAdSelectionDataRequest.Builder()
+                .setSeller(seller);
+            if(coordinatorUri != Uri.EMPTY){
+                if (!isTestableVersion(12, 12)) {
+                    statusReceiver.accept(
+                        "Unsupported SDK Extension: Setting up coordinator URI requires SDK Extension 12, using default coordinator"
+                    );
+                    Log.w(
+                        TAG,
+                        "Unsupported SDK Extension: Setting up coordinator URI requires SDK Extension 12, using default coordinator"
+                    );
+                } else {
+                    getDataRequestBuilder.setCoordinatorOriginUri(coordinatorUri);
+                }
+            }
             val adSelectionOutcome: ListenableFuture<AdSelectionOutcome> =
-                FluentFuture.from(adClient.getAdSelectionData(getDataRequest))
+                FluentFuture.from(adClient.getAdSelectionData(getDataRequestBuilder.build()))
                     .transform(
                         { outcome ->
                             statusReceiver.accept(
                                 "CA data collected from device! Id: "
-                                        + outcome!!.getAdSelectionId()
+                                        + outcome!!.adSelectionDataId
                             )
                             try {
                                 val auctionServerClient = BiddingAuctionServerClient(context)
@@ -176,10 +191,10 @@ class AdSelectionWrapper(
                                         sellerSfeUri.toString(),
                                         seller.toString(),
                                         buyer.toString(),
-                                        outcome.getAdSelectionData()
+                                        outcome.adSelectionData
                                     )
                                 val serverAuctionResult: Pair<Long, SelectAdsResponse> =
-                                    Pair(outcome.getAdSelectionId(), actualResponse)
+                                    Pair(outcome.adSelectionDataId, actualResponse)
                                 statusReceiver.accept(
                                     "Server auction run successfully for "
                                             + serverAuctionResult.first
@@ -196,15 +211,15 @@ class AdSelectionWrapper(
                     )
                     .transformAsync(
                         { pair ->
-                            val adSelectionId: Long = pair!!.first
-                            val response: SelectAdsResponse = pair!!.second
+                            val adSelectionDataId: Long = pair!!.first
+                            val response: SelectAdsResponse = pair.second
                             val persistResultRequest: PersistAdSelectionResultRequest =
                                 PersistAdSelectionResultRequest.Builder()
                                     .setSeller(seller)
-                                    .setAdSelectionId(adSelectionId)
+                                    .setAdSelectionDataId(adSelectionDataId)
                                     .setAdSelectionResult(
                                         BaseEncoding.base64().decode(
-                                            response!!.auctionResultCiphertext!!
+                                            response.auctionResultCiphertext!!
                                         )
                                     )
                                     .build()
@@ -217,15 +232,16 @@ class AdSelectionWrapper(
                     override fun onSuccess(adSelectionOutcome: AdSelectionOutcome?) {
                         statusReceiver.accept(
                             "Auction Result is persisted for : "
-                                    + adSelectionOutcome!!.getAdSelectionId()
+                                    + adSelectionOutcome!!.adSelectionId
                         )
                         if (adSelectionOutcome.hasOutcome()) {
                             renderUriReceiver.accept(
                                 "Would display ad from " +
-                                        adSelectionOutcome!!.getRenderUri()
+                                        adSelectionOutcome.renderUri
                             )
+                            adSelectionIdReceiver.accept(adSelectionOutcome.adSelectionId.toString())
                             reportImpression(
-                                adSelectionOutcome!!.getAdSelectionId(), statusReceiver
+                                adSelectionOutcome.adSelectionId, statusReceiver
                             )
                         } else {
                             renderUriReceiver.accept("Would display ad from contextual winner")
@@ -262,7 +278,7 @@ class AdSelectionWrapper(
                 override fun onSuccess(unused: Void?) {
                     statusReceiver.accept("Reported impressions from ad selection.")
 
-                    if (isTestableVersion(8, 9)) {
+                    if (!isTestableVersion(8, 9)) {
                         statusReceiver.accept(
                             "Unsupported SDK Extension: Event reporting requires 8 for T+ or 9 for S-, skipping"
                         )
@@ -312,7 +328,7 @@ class AdSelectionWrapper(
         reportingDestinations: Int,
         statusReceiver: Consumer<String>,
     ) {
-        if (isTestableVersion(8, 9)) {
+        if (!isTestableVersion(8, 9)) {
             statusReceiver.accept("Unsupported SDK Extension: Event reporting requires 8, skipping")
             Log.w(
                 TAG,
@@ -355,7 +371,7 @@ class AdSelectionWrapper(
         adEventType: Int,
         statusReceiver: Consumer<String>,
     ) {
-        if (isTestableVersion(8, 9)) {
+        if (!isTestableVersion(8, 9)) {
             statusReceiver.accept(
                 "Unsupported SDK Extension: Ad counter histogram update requires 8 for T+ or 9 for S-, skipping"
             )
