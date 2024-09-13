@@ -34,14 +34,16 @@ import com.example.R
 import com.example.api.FullscreenAd
 
 
-class FullscreenAdImpl(private val sdkContext: Context,
-                       private val mediateeSdk: com.mediatee.api.SdkService?,
-                       private val inAppMediatee: com.example.api.InAppMediateeSdkInterface?,
-                       private val mediationType: String
+class FullscreenAdImpl(
+    private val sdkContext: Context,
+    private val mediationType: String
 ) : FullscreenAd {
 
     private val webView = WebView(sdkContext)
     private val controller = SdkSandboxControllerCompat.from(sdkContext)
+
+    private var mediateeSdk: com.mediatee.api.SdkService? = null
+    private var inAppMediatee: com.example.api.InAppMediateeSdkInterface? = null
 
     init {
         initializeSettings(webView.settings)
@@ -62,14 +64,14 @@ class FullscreenAdImpl(private val sdkContext: Context,
             }
             // Activity Launcher to be used to load interstitial ad will be passed from
             // mediator to mediatee SDK.
-            mediateeSdk.getFullscreenAd().show(activityLauncher)
+            mediateeSdk!!.getFullscreenAd().show(activityLauncher)
         } else if (mediationType == sdkContext.getString(R.string.mediation_option_re_inapp)) {
             if (inAppMediatee == null) {
                 throw RemoteException("In App Mediatee SDK not registered with mediator SDK!")
             }
             // In App mediatee declares its own activity in its manifest (statically linked to the
             // app), which opens in the app process. ActivityLauncher is not passed from mediator.
-            inAppMediatee.showFullscreenAd()
+            inAppMediatee!!.showFullscreenAd()
         } else {
             val handler = object : SdkSandboxActivityHandlerCompat {
                 @RequiresApi(Build.VERSION_CODES.R)
@@ -89,6 +91,14 @@ class FullscreenAdImpl(private val sdkContext: Context,
             val launched = activityLauncher.launchSdkActivity(token)
             if (!launched) controller.unregisterSdkSandboxActivityHandler(handler)
         }
+    }
+
+    fun setReMediateeSdkService(mediateeSdk: com.mediatee.api.SdkService?) {
+        this.mediateeSdk = mediateeSdk
+    }
+
+    fun setInAppMediateeSdkService(inAppMediatee: com.example.api.InAppMediateeSdkInterface?) {
+        this.inAppMediatee = inAppMediatee
     }
 
     private fun initializeSettings(settings: WebSettings) {

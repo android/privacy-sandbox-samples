@@ -102,7 +102,10 @@ class SdkServiceImpl(private val context: Context) : SdkService {
                 Log.e(tag, "Failed to load SDK, error code: $e", e)
             }
         }
-        return FullscreenAdImpl(context, remoteInstance, inAppMediateeSdkInterface, mediationType)
+        val fullscreenAd = FullscreenAdImpl(context, mediationType)
+        fullscreenAd.setReMediateeSdkService(remoteInstance)
+        fullscreenAd.setInAppMediateeSdkService(inAppMediateeSdkInterface)
+        return fullscreenAd
     }
 
     override suspend fun registerInAppMediatee(inAppMediatee: InAppMediateeSdkInterface) {
