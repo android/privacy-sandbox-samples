@@ -32,18 +32,18 @@ import androidx.privacysandbox.sdkruntime.core.activity.SdkSandboxActivityHandle
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import com.example.R
 import com.example.api.FullscreenAd
+import com.example.api.MediateeAdapterInterface
 
 
-class FullscreenAdImpl(
-    private val sdkContext: Context,
-    private val mediationType: String
+class FullscreenAdImpl(private val sdkContext: Context,
+                       private val mediationType: String
 ) : FullscreenAd {
 
     private val webView = WebView(sdkContext)
     private val controller = SdkSandboxControllerCompat.from(sdkContext)
 
     private var mediateeSdk: com.mediatee.api.SdkService? = null
-    private var inAppMediatee: com.example.api.InAppMediateeSdkInterface? = null
+    private var inAppMediateeAdapter: MediateeAdapterInterface? = null
 
     init {
         initializeSettings(webView.settings)
@@ -66,12 +66,12 @@ class FullscreenAdImpl(
             // mediator to mediatee SDK.
             mediateeSdk!!.getFullscreenAd().show(activityLauncher)
         } else if (mediationType == sdkContext.getString(R.string.mediation_option_re_inapp)) {
-            if (inAppMediatee == null) {
+            if (inAppMediateeAdapter == null) {
                 throw RemoteException("In App Mediatee SDK not registered with mediator SDK!")
             }
             // In App mediatee declares its own activity in its manifest (statically linked to the
             // app), which opens in the app process. ActivityLauncher is not passed from mediator.
-            inAppMediatee!!.showFullscreenAd()
+            inAppMediateeAdapter!!.showFullscreenAd(activityLauncher)
         } else {
             val handler = object : SdkSandboxActivityHandlerCompat {
                 @RequiresApi(Build.VERSION_CODES.R)
@@ -97,8 +97,8 @@ class FullscreenAdImpl(
         this.mediateeSdk = mediateeSdk
     }
 
-    fun setInAppMediateeSdkService(inAppMediatee: com.example.api.InAppMediateeSdkInterface?) {
-        this.inAppMediatee = inAppMediatee
+    fun setInAppMediateeAdapter(inAppMediateeAdapter: MediateeAdapterInterface?) {
+        this.inAppMediateeAdapter = inAppMediateeAdapter
     }
 
     private fun initializeSettings(settings: WebSettings) {

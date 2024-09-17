@@ -19,7 +19,7 @@ plugins {
 }
 
 android {
-    namespace "com.inappmediatee"
+    namespace "com.inappmediateeadapter"
 
     defaultConfig {
         minSdk 21
@@ -46,6 +46,11 @@ android {
 }
 
 dependencies {
+    debugImplementation project(':example-sdk-bundle')
+    implementation project(':inapp-mediatee-sdk')
+
+    implementation 'androidx.privacysandbox.activity:activity-core:1.0.0-alpha01'
+    implementation 'androidx.privacysandbox.activity:activity-provider:1.0.0-alpha01'
     implementation 'androidx.activity:activity-ktx:1.9.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
 

@@ -2,11 +2,10 @@ package com.inappmediatee.sdk
 
 import android.content.Context
 import android.content.Intent
-import com.example.api.InAppMediateeSdkInterface
 
-class InAppMediateeSdk(private val context: Context) : InAppMediateeSdkInterface {
+class InAppMediateeSdk(private val context: Context) {
 
-    override suspend fun showFullscreenAd() {
+    fun showFullscreenAd() {
         val intent = Intent(context, LocalActivity::class.java)
         context.startActivity(intent)
     }

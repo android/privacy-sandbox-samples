@@ -27,5 +27,5 @@ interface SdkService {
 
     suspend fun getFullscreenAd(mediationType: String): FullscreenAd
 
-    suspend fun registerInAppMediatee(inAppMediatee: InAppMediateeSdkInterface)
+    fun registerInAppMediateeAdapter(mediateeAdapter: MediateeAdapterInterface)
 }

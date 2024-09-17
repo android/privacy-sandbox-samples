@@ -15,9 +15,17 @@
  */
 package com.example.api
 
+import android.os.Bundle
+import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import androidx.privacysandbox.tools.PrivacySandboxCallback
 
 @PrivacySandboxCallback
-interface InAppMediateeSdkInterface {
-    suspend fun showFullscreenAd()
+interface MediateeAdapterInterface {
+    suspend fun getBannerAd(
+        appPackageName: String,
+        activityLauncher: SdkActivityLauncher,
+        isWebViewBannerAd: Boolean
+    ): Bundle
+
+    suspend fun showFullscreenAd(activityLauncher: SdkActivityLauncher)
 }

@@ -40,13 +40,13 @@ android {
 }
 
 dependencies {
-    implementation project(':inapp-mediatee-sdk')
     // Note that here we depend on the example-sdk-bundle, not the example-sdk.
     //
     // The example-sdk library contains all the logic, but apps are not compiled using its full
     // classpath. Instead, the bundle contains information about the SDK API and the Android Gradle
     // Plugin uses it to generate sources and compile the app.
     debugImplementation project(':example-sdk-bundle')
+    implementation project(':inapp-mediatee-sdk-adapter')
 
     // Required for backwards compatibility on devices where SDK Runtime is unavailable.
     implementation "androidx.privacysandbox.sdkruntime:sdkruntime-client:$privacy_sandbox_sdk_runtime_version"

@@ -22,11 +22,11 @@ import androidx.privacysandbox.sdkruntime.client.SdkSandboxManagerCompat
 import androidx.privacysandbox.sdkruntime.core.LoadSdkCompatException
 import com.example.api.SdkService
 import com.example.api.SdkServiceFactory
-import com.inappmediatee.sdk.InAppMediateeSdk
+import com.inappmediateeadapter.implementation.InAppMediateeSdkAdapter
 
 class ExistingSdk(private val context: Context) {
 
-    private val inAppMediateeSdk = InAppMediateeSdk(context)
+    private val inAppMediateeSdkAdapter = InAppMediateeSdkAdapter(context)
 
     /** Initialize the SDK. If the SDK failed to initialize, return false, else true. */
     suspend fun initialize(): Boolean {
@@ -42,7 +42,7 @@ class ExistingSdk(private val context: Context) {
 
     suspend fun registerInAppMediateeSdk() {
         if (isSdkLoaded()) {
-            remoteInstance?.registerInAppMediatee(inAppMediateeSdk)
+            remoteInstance?.registerInAppMediateeAdapter(inAppMediateeSdkAdapter)
         }
     }
 

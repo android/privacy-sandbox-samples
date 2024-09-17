@@ -18,6 +18,8 @@ package com.example.implementation
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
+import com.example.R
 import com.example.api.FullscreenAd
 import com.example.api.SdkBannerRequest
 import com.example.api.SdkService
@@ -26,13 +28,11 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
-import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import androidx.privacysandbox.ui.core.SandboxedSdkViewUiInfo
 import androidx.privacysandbox.ui.core.SessionObserver
 import androidx.privacysandbox.ui.core.SessionObserverContext
 import androidx.privacysandbox.ui.core.SessionObserverFactory
-import com.example.R
-import com.example.api.InAppMediateeSdkInterface
+import com.example.api.MediateeAdapterInterface
 import com.mediatee.api.SdkServiceFactory
 import com.example.api.SdkSandboxedUiAdapter
 
@@ -43,7 +43,7 @@ class SdkServiceImpl(private val context: Context) : SdkService {
 
     private var remoteInstance: com.mediatee.api.SdkService? = null
 
-    private var inAppMediateeSdkInterface: InAppMediateeSdkInterface? = null
+    private var inAppMediateeAdapter: MediateeAdapterInterface? = null
 
     /** Name of the SDK to be loaded. */
     private val mediateeSdkName = "com.mediatee.sdk"
@@ -110,12 +110,12 @@ class SdkServiceImpl(private val context: Context) : SdkService {
         }
         val fullscreenAd = FullscreenAdImpl(context, mediationType)
         fullscreenAd.setReMediateeSdkService(remoteInstance)
-        fullscreenAd.setInAppMediateeSdkService(inAppMediateeSdkInterface)
+        fullscreenAd.setInAppMediateeAdapter(inAppMediateeAdapter)
         return fullscreenAd
     }
 
-    override suspend fun registerInAppMediatee(inAppMediatee: InAppMediateeSdkInterface) {
-        inAppMediateeSdkInterface = inAppMediatee
+    override fun registerInAppMediateeAdapter(mediateeAdapter: MediateeAdapterInterface) {
+        inAppMediateeAdapter = mediateeAdapter
     }
 }
 
