@@ -46,6 +46,7 @@ dependencies {
     // classpath. Instead, the bundle contains information about the SDK API and the Android Gradle
     // Plugin uses it to generate sources and compile the app.
     debugImplementation project(':example-sdk-bundle')
+    debugImplementation project(':mediatee-sdk-adapter-bundle')
     implementation project(':inapp-mediatee-sdk-adapter')
 
     // Required for backwards compatibility on devices where SDK Runtime is unavailable.

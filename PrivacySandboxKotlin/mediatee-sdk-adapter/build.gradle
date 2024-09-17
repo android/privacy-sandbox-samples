@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2024 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ plugins {
 }
 
 android {
-    namespace "com.example"
+    namespace "com.mediateeadapter"
 
     defaultConfig {
         minSdk 21
@@ -47,6 +47,9 @@ android {
 }
 
 dependencies {
+    debugImplementation project(":example-sdk-bundle")
+    debugImplementation project(":mediatee-sdk-bundle")
+
     implementation 'androidx.activity:activity-ktx:1.9.0'
     ksp 'androidx.annotation:annotation:1.6.0'
     implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10'
@@ -59,13 +62,13 @@ dependencies {
     implementation "androidx.privacysandbox.activity:activity-provider:$privacy_sandbox_activity_version"
 
     implementation "androidx.privacysandbox.ui:ui-core:$privacy_sandbox_ui_version"
-    implementation "androidx.privacysandbox.ui:ui-provider:$privacy_sandbox_ui_version"
     implementation "androidx.privacysandbox.ui:ui-client:$privacy_sandbox_ui_version"
+    implementation "androidx.privacysandbox.ui:ui-provider:$privacy_sandbox_ui_version"
 
     implementation "androidx.privacysandbox.sdkruntime:sdkruntime-core:$privacy_sandbox_sdk_runtime_version"
     implementation "androidx.privacysandbox.sdkruntime:sdkruntime-client:$privacy_sandbox_sdk_runtime_version"
     implementation "androidx.privacysandbox.sdkruntime:sdkruntime-provider:$privacy_sandbox_sdk_runtime_version"
 
-    ksp "androidx.privacysandbox.tools:tools-apicompiler:$privacy_sandbox_tools_version"
     implementation "androidx.privacysandbox.tools:tools:$privacy_sandbox_tools_version"
+    ksp "androidx.privacysandbox.tools:tools-apicompiler:$privacy_sandbox_tools_version"
 }

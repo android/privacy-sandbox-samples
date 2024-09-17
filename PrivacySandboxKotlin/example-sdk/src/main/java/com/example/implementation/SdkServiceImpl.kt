@@ -19,6 +19,7 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
+import androidx.privacysandbox.ui.client.SandboxedUiAdapterFactory
 import com.example.R
 import com.example.api.FullscreenAd
 import com.example.api.SdkBannerRequest
@@ -33,20 +34,16 @@ import androidx.privacysandbox.ui.core.SessionObserver
 import androidx.privacysandbox.ui.core.SessionObserverContext
 import androidx.privacysandbox.ui.core.SessionObserverFactory
 import com.example.api.MediateeAdapterInterface
-import com.mediatee.api.SdkServiceFactory
 import com.example.api.SdkSandboxedUiAdapter
 
 class SdkServiceImpl(private val context: Context) : SdkService {
     override suspend fun getMessage(): String = "Hello from Privacy Sandbox!"
 
     private val tag = "ExampleSdk"
-
-    private var remoteInstance: com.mediatee.api.SdkService? = null
+    private val reAdapterSdkName = "com.mediateeadapter.sdk"
 
     private var inAppMediateeAdapter: MediateeAdapterInterface? = null
-
-    /** Name of the SDK to be loaded. */
-    private val mediateeSdkName = "com.mediatee.sdk"
+    private var reMediateeAdapter: MediateeAdapterInterface? = null
 
     override suspend fun createFile(sizeInMb: Int): String {
         val path = Paths.get(
@@ -73,49 +70,52 @@ class SdkServiceImpl(private val context: Context) : SdkService {
             bannerAdAdapter.addObserverFactory(SessionObserverFactoryImpl())
             return bannerAdAdapter
         }
-        try {
-            if (remoteInstance == null) {
-                val controller = SdkSandboxControllerCompat.from(context)
-                // Runtime enabled Mediator SDK can load another SDK in the SDK Runtime or if it is
-                // already loaded they may get the SDK binder from controller#getSandboxedSdks.
-                val sandboxedSdk = controller.loadSdk(mediateeSdkName, Bundle.EMPTY)
-                remoteInstance = SdkServiceFactory.wrapToSdkService(sandboxedSdk.getInterface()!!)
-            }
-
-            val newRequest: com.mediatee.api.SdkBannerRequest =
-                com.mediatee.api.SdkBannerRequest(context.packageName, request.isWebViewBannerAd)
-            return SdkSandboxedUiAdapterImpl(
-                context,
-                request,
-                remoteInstance!!.getBanner(newRequest)
+        loadReMediateeAdapter()
+        return SdkSandboxedUiAdapterImpl(
+            context,
+            request,
+            SandboxedUiAdapterFactory.createFromCoreLibInfo(
+                reMediateeAdapter!!.getBannerAd(
+                    request.appPackageName,
+                    request.activityLauncher,
+                    request.isWebViewBannerAd
+                )
             )
-        } catch (e: Exception) {
-            Log.e(tag, "Failed to load SDK, error code: $e", e)
-            return null
-        }
+        )
     }
 
     override suspend fun getFullscreenAd(mediationType: String): FullscreenAd {
         if (mediationType == context.getString(R.string.mediation_option_re_re)) {
-            try {
-                if (remoteInstance == null) {
-                    val controller = SdkSandboxControllerCompat.from(context)
-                    val sandboxedSdk = controller.loadSdk(mediateeSdkName, Bundle.EMPTY)
-                    remoteInstance =
-                        SdkServiceFactory.wrapToSdkService(sandboxedSdk.getInterface()!!)
-                }
-            } catch (e: Exception) {
-                Log.e(tag, "Failed to load SDK, error code: $e", e)
-            }
+            loadReMediateeAdapter()
         }
         val fullscreenAd = FullscreenAdImpl(context, mediationType)
-        fullscreenAd.setReMediateeSdkService(remoteInstance)
+        fullscreenAd.setReMediateeAdapter(reMediateeAdapter)
         fullscreenAd.setInAppMediateeAdapter(inAppMediateeAdapter)
         return fullscreenAd
     }
 
+    override fun registerReMediateeAdapter(mediateeAdapter: MediateeAdapterInterface) {
+        reMediateeAdapter = mediateeAdapter
+    }
+
     override fun registerInAppMediateeAdapter(mediateeAdapter: MediateeAdapterInterface) {
         inAppMediateeAdapter = mediateeAdapter
+    }
+
+    private suspend fun loadReMediateeAdapter() {
+        val controller = SdkSandboxControllerCompat.from(context)
+         var adapterSdkLoaded = false
+        // Check if SdkSandboxController has already loaded mediateeSdk before trying to load
+        // again.
+        for (loadedSandboxedSdk in controller.getSandboxedSdks()) {
+            if (loadedSandboxedSdk.getSdkInfo()!!.name == reAdapterSdkName) {
+                adapterSdkLoaded = true
+                break
+            }
+        }
+        if (!adapterSdkLoaded) {
+            controller.loadSdk(reAdapterSdkName, Bundle.EMPTY)
+        }
     }
 }
 

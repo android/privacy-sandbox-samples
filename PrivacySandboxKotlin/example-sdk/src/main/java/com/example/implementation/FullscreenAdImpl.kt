@@ -42,7 +42,7 @@ class FullscreenAdImpl(private val sdkContext: Context,
     private val webView = WebView(sdkContext)
     private val controller = SdkSandboxControllerCompat.from(sdkContext)
 
-    private var mediateeSdk: com.mediatee.api.SdkService? = null
+    private var reMediateeAdapter: MediateeAdapterInterface? = null
     private var inAppMediateeAdapter: MediateeAdapterInterface? = null
 
     init {
@@ -59,12 +59,12 @@ class FullscreenAdImpl(private val sdkContext: Context,
 
     override suspend fun show(activityLauncher: SdkActivityLauncher) {
         if (mediationType == sdkContext.getString(R.string.mediation_option_re_re)) {
-            if (mediateeSdk == null) {
-                throw RemoteException("Mediatee SDK not loaded!")
+            if (reMediateeAdapter == null) {
+                throw RemoteException("Mediatee SDK not registered with mediator SDK!")
             }
             // Activity Launcher to be used to load interstitial ad will be passed from
             // mediator to mediatee SDK.
-            mediateeSdk!!.getFullscreenAd().show(activityLauncher)
+            reMediateeAdapter!!.showFullscreenAd(activityLauncher)
         } else if (mediationType == sdkContext.getString(R.string.mediation_option_re_inapp)) {
             if (inAppMediateeAdapter == null) {
                 throw RemoteException("In App Mediatee SDK not registered with mediator SDK!")
@@ -93,8 +93,8 @@ class FullscreenAdImpl(private val sdkContext: Context,
         }
     }
 
-    fun setReMediateeSdkService(mediateeSdk: com.mediatee.api.SdkService?) {
-        this.mediateeSdk = mediateeSdk
+    fun setReMediateeAdapter(reMediateeAdapter: MediateeAdapterInterface?) {
+        this.reMediateeAdapter = reMediateeAdapter
     }
 
     fun setInAppMediateeAdapter(inAppMediateeAdapter: MediateeAdapterInterface?) {
