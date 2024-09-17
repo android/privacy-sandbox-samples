@@ -67,7 +67,7 @@ class SdkServiceImpl(private val context: Context) : SdkService {
     override suspend fun getBanner(
         request: SdkBannerRequest,
         shouldLoadMediatedAd: Boolean
-    ): SdkSandboxedUiAdapter? {
+    ): SdkSandboxedUiAdapter {
         if (!shouldLoadMediatedAd) {
             val bannerAdAdapter = SdkSandboxedUiAdapterImpl(context, request, null)
             bannerAdAdapter.addObserverFactory(SessionObserverFactoryImpl())
