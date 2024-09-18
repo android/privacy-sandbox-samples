@@ -17,6 +17,6 @@
 
 <resources>
     <string name="mediation_option_none">NONE</string>
-    <string name="mediation_option_re_re">RUNTIME_RUNTIME</string>
-    <string name="mediation_option_re_inapp">RUNTIME_INAPP</string>
+    <string name="mediation_option_re_re">RUNTIME_MEDIATEE</string>
+    <string name="mediation_option_re_inapp">INAPP_MEDIATEE</string>
 </resources>

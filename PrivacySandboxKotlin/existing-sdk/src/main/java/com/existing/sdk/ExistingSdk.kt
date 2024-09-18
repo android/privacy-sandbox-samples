@@ -26,8 +26,6 @@ import com.inappmediateeadapter.implementation.InAppMediateeSdkAdapter
 
 class ExistingSdk(private val context: Context) {
 
-    private val inAppMediateeSdkAdapter = InAppMediateeSdkAdapter(context)
-
     /** Initialize the SDK. If the SDK failed to initialize, return false, else true. */
     suspend fun initialize(): Boolean {
         // You can also have a fallback mechanism here, where if the SDK cannot be loaded in the SDK
@@ -40,8 +38,15 @@ class ExistingSdk(private val context: Context) {
         return loadSdkIfNeeded(context)?.createFile(size)
     }
 
-    suspend fun registerInAppMediateeSdk() {
+    /**
+     * In-App mediatee is initialised and registered from the App.
+     *
+     * Once In-App mediatee transitions to run in Runtime process, this will not be done by the app
+     * anymore.
+     */
+    fun registerInAppMediateeAdapter() {
         if (isSdkLoaded()) {
+            val inAppMediateeSdkAdapter = InAppMediateeSdkAdapter(context)
             remoteInstance?.registerInAppMediateeAdapter(inAppMediateeSdkAdapter)
         }
     }
