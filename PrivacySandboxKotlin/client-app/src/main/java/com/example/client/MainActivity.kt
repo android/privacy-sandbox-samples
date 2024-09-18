@@ -63,14 +63,14 @@ class MainActivity : AppCompatActivity() {
     //
     // As SDKs transition into the SDK Runtime, we may have some SDKs still in the app process
     // while the mediator and other SDKs have moved.
-    // RE_RE Mediated Ads is the scenario when the winning ad network is Runtime Enabled as is the
-    // Mediator.
-    // RE_INAPP Mediated Ads is the scenario when the winning ad network is running in the same
-    // process as the app (pre-Runtime world) and the Mediator is Runtime Enabled.
+    // RUNTIME_MEDIATEE Mediated Ads is the scenario when the winning ad network is Runtime Enabled
+    // as is the Mediator.
+    // INAPP_MEDIATEE Mediated Ads is the scenario when the winning ad network is running in the
+    // same process as the app and the Mediator is Runtime Enabled.
     enum class MediationOption {
         NONE,
-        RUNTIME_RUNTIME,
-        RUNTIME_INAPP
+        RUNTIME_MEDIATEE,
+        INAPP_MEDIATEE
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -131,12 +131,10 @@ class MainActivity : AppCompatActivity() {
         // launches whenever they feel SDKs shouldn't be launching activities (in the middle of
         // certain game scenes, video playback, etc).
         val loadWebView = adTypes[adTypeSpinner.selectedItemPosition].contains("WebView")
-        // Mediated Ads are enabled when RE-RE Mediation option is chosen.
-        val loadMediatedAd =
-            mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_RUNTIME.ordinal.toLong()
-        val shouldLoadInAppMediateeAd =
-            mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_INAPP.ordinal.toLong()
-        if (shouldLoadInAppMediateeAd) {
+        // Mediated Ad is enabled when RUNTIME_MEDIATEE Mediation option is chosen.
+        val mediationType =
+            MediationOption.entries[mediationDropDownMenu.selectedItemId.toInt()].toString()
+        if (mediationType == MediationOption.INAPP_MEDIATEE.toString()) {
             makeToast("RE_SDK<>InApp Mediated Banner Ad not yet implemented!")
         } else {
             bannerAd.loadAd(
@@ -144,7 +142,7 @@ class MainActivity : AppCompatActivity() {
                 PACKAGE_NAME,
                 shouldStartActivityPredicate(),
                 loadWebView,
-                loadMediatedAd
+                mediationType
             )
         }
     }
@@ -152,8 +150,8 @@ class MainActivity : AppCompatActivity() {
     private fun showFullscreenView() = lifecycleScope.launch {
         val mediationType =
             MediationOption.entries[mediationDropDownMenu.selectedItemId.toInt()].toString()
-        if (mediationType == MediationOption.RUNTIME_INAPP.toString()) {
-            existingSdk.registerInAppMediateeSdk()
+        if (mediationType == MediationOption.INAPP_MEDIATEE.toString()) {
+            existingSdk.registerInAppMediateeAdapter()
         }
         val fullscreenAd = FullscreenAd.create(this@MainActivity, mediationType)
         fullscreenAd.show(this@MainActivity, shouldStartActivityPredicate())

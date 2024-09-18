@@ -4,7 +4,7 @@ import android.app.Activity
 import android.os.Bundle
 import com.inappmediatee.R
 
-// This activity is declared in the manifest of the In-app mediatee.
+/** This activity is declared in the manifest of the In-app mediatee. */
 class LocalActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

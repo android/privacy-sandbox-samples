@@ -6,6 +6,11 @@ import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import com.inappmediatee.sdk.InAppMediateeSdk
 import com.example.api.MediateeAdapterInterface
 
+/**
+ * Adapter class that implements the interface declared by the Mediator.
+ *
+ * This is loaded by and registered with Mediator from existing-sdk (RA_SDK).
+ */
 class InAppMediateeSdkAdapter(private val context: Context): MediateeAdapterInterface {
 
     private val inAppMediateeSdk = InAppMediateeSdk(context)

@@ -34,7 +34,6 @@ import com.example.R
 import com.example.api.FullscreenAd
 import com.example.api.MediateeAdapterInterface
 
-
 class FullscreenAdImpl(private val sdkContext: Context,
                        private val mediationType: String
 ) : FullscreenAd {
@@ -57,6 +56,14 @@ class FullscreenAdImpl(private val sdkContext: Context,
         webView.loadUrl(WEB_VIEW_LINK)
     }
 
+    /**
+     * Shows ad in a new Activity.
+     *
+     * For mediationType == RUNTIME_MEDIATEE, RE mediatee uses the [SdkActivityLauncher] passed to
+     * it to open new activity and show its ad.
+     * For mediationType == INAPP_MEDIATEE, In-App mediatee ignores the [SdkActivityLauncher] passed
+     * to it and opens a new activity that is declared in its manifest.
+     */
     override suspend fun show(activityLauncher: SdkActivityLauncher) {
         if (mediationType == sdkContext.getString(R.string.mediation_option_re_re)) {
             if (mediateeSdk == null) {
