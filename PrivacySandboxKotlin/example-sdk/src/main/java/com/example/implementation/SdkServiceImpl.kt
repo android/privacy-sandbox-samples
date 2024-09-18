@@ -109,7 +109,7 @@ class SdkServiceImpl(private val context: Context) : SdkService {
             }
         }
         val fullscreenAd = FullscreenAdImpl(context, mediationType)
-        fullscreenAd.setReMediateeSdkService(remoteInstance)
+        fullscreenAd.setRuntimeMediateeSdkService(remoteInstance)
         fullscreenAd.setInAppMediateeAdapter(inAppMediateeAdapter)
         return fullscreenAd
     }

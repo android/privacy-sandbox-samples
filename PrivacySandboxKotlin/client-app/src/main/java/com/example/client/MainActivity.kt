@@ -131,7 +131,7 @@ class MainActivity : AppCompatActivity() {
         // launches whenever they feel SDKs shouldn't be launching activities (in the middle of
         // certain game scenes, video playback, etc).
         val loadWebView = adTypes[adTypeSpinner.selectedItemPosition].contains("WebView")
-        // Mediated Ad is enabled when RUNTIME_MEDIATEE Mediation option is chosen.
+        // Mediated Banner Ad is shown when RUNTIME_MEDIATEE Mediation option is chosen.
         val mediationType =
             MediationOption.entries[mediationDropDownMenu.selectedItemId.toInt()].toString()
         if (mediationType == MediationOption.INAPP_MEDIATEE.toString()) {

@@ -59,8 +59,8 @@ class FullscreenAdImpl(private val sdkContext: Context,
     /**
      * Shows ad in a new Activity.
      *
-     * For mediationType == RUNTIME_MEDIATEE, RE mediatee uses the [SdkActivityLauncher] passed to
-     * it to open new activity and show its ad.
+     * For mediationType == RUNTIME_MEDIATEE, Runtime mediatee uses the [SdkActivityLauncher] passed
+     * to it to open new activity and show its ad.
      * For mediationType == INAPP_MEDIATEE, In-App mediatee ignores the [SdkActivityLauncher] passed
      * to it and opens a new activity that is declared in its manifest.
      */
@@ -77,7 +77,8 @@ class FullscreenAdImpl(private val sdkContext: Context,
                 throw RemoteException("In App Mediatee SDK not registered with mediator SDK!")
             }
             // In App mediatee declares its own activity in its manifest (statically linked to the
-            // app), which opens in the app process. ActivityLauncher is not passed from mediator.
+            // app), which opens in the app process. ActivityLauncher is passed from mediator is
+            // ignored at the Adapter.
             inAppMediateeAdapter!!.showFullscreenAd(activityLauncher)
         } else {
             val handler = object : SdkSandboxActivityHandlerCompat {
@@ -100,7 +101,7 @@ class FullscreenAdImpl(private val sdkContext: Context,
         }
     }
 
-    fun setReMediateeSdkService(mediateeSdk: com.mediatee.api.SdkService?) {
+    fun setRuntimeMediateeSdkService(mediateeSdk: com.mediatee.api.SdkService?) {
         this.mediateeSdk = mediateeSdk
     }
 
