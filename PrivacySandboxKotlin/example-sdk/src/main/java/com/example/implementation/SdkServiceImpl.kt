@@ -18,6 +18,8 @@ package com.example.implementation
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
+import com.example.R
 import com.example.api.FullscreenAd
 import com.example.api.SdkBannerRequest
 import com.example.api.SdkService
@@ -26,12 +28,11 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
-import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import androidx.privacysandbox.ui.core.SandboxedSdkViewUiInfo
 import androidx.privacysandbox.ui.core.SessionObserver
 import androidx.privacysandbox.ui.core.SessionObserverContext
 import androidx.privacysandbox.ui.core.SessionObserverFactory
-import com.example.R
+import com.example.api.MediateeAdapterInterface
 import com.mediatee.api.SdkServiceFactory
 import com.example.api.SdkSandboxedUiAdapter
 
@@ -41,6 +42,8 @@ class SdkServiceImpl(private val context: Context) : SdkService {
     private val tag = "ExampleSdk"
 
     private var remoteInstance: com.mediatee.api.SdkService? = null
+
+    private var inAppMediateeAdapter: MediateeAdapterInterface? = null
 
     /** Name of the SDK to be loaded. */
     private val mediateeSdkName = "com.mediatee.sdk"
@@ -63,9 +66,9 @@ class SdkServiceImpl(private val context: Context) : SdkService {
 
     override suspend fun getBanner(
         request: SdkBannerRequest,
-        shouldLoadMediatedAd: Boolean
+        mediationType: String
     ): SdkSandboxedUiAdapter? {
-        if (!shouldLoadMediatedAd) {
+        if (mediationType == context.getString(R.string.mediation_option_none)) {
             val bannerAdAdapter = SdkSandboxedUiAdapterImpl(context, request, null)
             bannerAdAdapter.addObserverFactory(SessionObserverFactoryImpl())
             return bannerAdAdapter
@@ -105,7 +108,14 @@ class SdkServiceImpl(private val context: Context) : SdkService {
                 Log.e(tag, "Failed to load SDK, error code: $e", e)
             }
         }
-        return FullscreenAdImpl(context, remoteInstance, mediationType)
+        val fullscreenAd = FullscreenAdImpl(context, mediationType)
+        fullscreenAd.setRuntimeMediateeSdkService(remoteInstance)
+        fullscreenAd.setInAppMediateeAdapter(inAppMediateeAdapter)
+        return fullscreenAd
+    }
+
+    override fun registerInAppMediateeAdapter(mediateeAdapter: MediateeAdapterInterface) {
+        inAppMediateeAdapter = mediateeAdapter
     }
 }
 

@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2024 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.existing.sdk
 
 import android.content.Context
@@ -21,13 +36,13 @@ class BannerAd(context: Context, attrs: AttributeSet) : LinearLayout(context, at
         clientMessage: String,
         allowSdkActivityLaunch: () -> Boolean,
         shouldLoadWebView: Boolean,
-        shouldLoadMediatedAd: Boolean) {
+        mediationType: String) {
         val bannerAd = getBannerAdFromRuntimeEnabledSdkIfExists(
             baseActivity,
             clientMessage,
             allowSdkActivityLaunch,
             shouldLoadWebView,
-            shouldLoadMediatedAd
+            mediationType
         )
         if (bannerAd != null) {
             val sandboxedSdkView = SandboxedSdkView(context)
@@ -46,7 +61,7 @@ class BannerAd(context: Context, attrs: AttributeSet) : LinearLayout(context, at
         message: String,
         allowSdkActivityLaunch: () -> Boolean,
         shouldLoadWebView: Boolean,
-        shouldLoadMediatedAd: Boolean
+        mediationType: String
     ): SandboxedUiAdapter? {
         if (!ExistingSdk.isSdkLoaded()) {
             return null
@@ -54,7 +69,7 @@ class BannerAd(context: Context, attrs: AttributeSet) : LinearLayout(context, at
 
         val launcher = baseActivity.createSdkActivityLauncher(allowSdkActivityLaunch)
         val request = SdkBannerRequest(message, launcher, shouldLoadWebView)
-        return ExistingSdk.loadSdkIfNeeded(context)?.getBanner(request, shouldLoadMediatedAd)
+        return ExistingSdk.loadSdkIfNeeded(context)?.getBanner(request, mediationType)
     }
 
     private fun addViewToLayout(view: View) {

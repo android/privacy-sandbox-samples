@@ -23,10 +23,7 @@ import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import com.example.api.FullscreenAd
 
 class FullscreenAd(private val sdkFullscreenAd: FullscreenAd) {
-    suspend fun show(
-        baseActivity: AppCompatActivity,
-        allowSdkActivityLaunch: () -> Boolean
-    ) {
+    suspend fun show(baseActivity: AppCompatActivity, allowSdkActivityLaunch: () -> Boolean) {
         val activityLauncher = baseActivity.createSdkActivityLauncher(allowSdkActivityLaunch)
         sdkFullscreenAd.show(activityLauncher)
     }

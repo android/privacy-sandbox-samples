@@ -47,6 +47,9 @@ dependencies {
     // Plugin uses it to generate sources and compile the app.
     debugImplementation project(':example-sdk-bundle')
 
+    // Static dependency on inapp-mediatee-sdk-adapter.
+    implementation project(':inapp-mediatee-sdk-adapter')
+
     // Required for backwards compatibility on devices where SDK Runtime is unavailable.
     implementation "androidx.privacysandbox.sdkruntime:sdkruntime-client:$privacy_sandbox_sdk_runtime_version"
 
