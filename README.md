@@ -3,7 +3,7 @@ SDK Runtime and Privacy Preserving APIs Repository
 
 This repository contains a set of individual Android Studio projects to help you get started writing apps using the SDK Runtime and Privacy Preserving APIs (PPAPIs).
 
-Branches
+Branches 
 -----------
 Due to the dynamic nature of this project, there are three branches provided.
 Please ensure you are using the correct branch for your needs.
