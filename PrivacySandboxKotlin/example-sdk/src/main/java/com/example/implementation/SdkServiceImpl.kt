@@ -18,9 +18,7 @@ package com.example.implementation
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import androidx.privacysandbox.ui.client.SandboxedUiAdapterFactory
-import com.example.R
 import com.example.api.FullscreenAd
 import com.example.api.SdkBannerRequest
 import com.example.api.SdkService
@@ -38,9 +36,6 @@ import com.example.api.SdkSandboxedUiAdapter
 
 class SdkServiceImpl(private val context: Context) : SdkService {
     override suspend fun getMessage(): String = "Hello from Privacy Sandbox!"
-
-    private val tag = "ExampleSdk"
-    private val reAdapterSdkName = "com.mediateeadapter.sdk"
 
     private var inAppMediateeAdapter: MediateeAdapterInterface? = null
     private var reMediateeAdapter: MediateeAdapterInterface? = null
@@ -70,7 +65,6 @@ class SdkServiceImpl(private val context: Context) : SdkService {
             bannerAdAdapter.addObserverFactory(SessionObserverFactoryImpl())
             return bannerAdAdapter
         }
-        loadReMediateeAdapter()
         return SdkSandboxedUiAdapterImpl(
             context,
             request,
@@ -85,9 +79,6 @@ class SdkServiceImpl(private val context: Context) : SdkService {
     }
 
     override suspend fun getFullscreenAd(mediationType: String): FullscreenAd {
-        if (mediationType == context.getString(R.string.mediation_option_re_re)) {
-            loadReMediateeAdapter()
-        }
         val fullscreenAd = FullscreenAdImpl(context, mediationType)
         fullscreenAd.setReMediateeAdapter(reMediateeAdapter)
         fullscreenAd.setInAppMediateeAdapter(inAppMediateeAdapter)
@@ -100,22 +91,6 @@ class SdkServiceImpl(private val context: Context) : SdkService {
 
     override fun registerInAppMediateeAdapter(mediateeAdapter: MediateeAdapterInterface) {
         inAppMediateeAdapter = mediateeAdapter
-    }
-
-    private suspend fun loadReMediateeAdapter() {
-        val controller = SdkSandboxControllerCompat.from(context)
-         var adapterSdkLoaded = false
-        // Check if SdkSandboxController has already loaded mediateeSdk before trying to load
-        // again.
-        for (loadedSandboxedSdk in controller.getSandboxedSdks()) {
-            if (loadedSandboxedSdk.getSdkInfo()!!.name == reAdapterSdkName) {
-                adapterSdkLoaded = true
-                break
-            }
-        }
-        if (!adapterSdkLoaded) {
-            controller.loadSdk(reAdapterSdkName, Bundle.EMPTY)
-        }
     }
 }
 

@@ -16,11 +16,21 @@
 package com.example.implementation
 
 import android.content.Context
+import android.os.Bundle
+import androidx.privacysandbox.sdkruntime.core.SandboxedSdkCompat
+import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import com.example.api.AbstractSandboxedSdkProviderCompat
 import com.example.api.SdkService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /** Provides an [SdkService] implementation when the SDK is loaded. */
 class SdkProvider : AbstractSandboxedSdkProviderCompat() {
+
+    private val reAdapterSdkName = "com.mediateeadapter.sdk"
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     /**
      * Returns the [SdkService] implementation. Called when the SDK is loaded.
@@ -29,4 +39,34 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
      * the Privacy Sandbox API Compiler plugin as the entry point for the app/SDK communication.
      */
     override fun createSdkService(context: Context): SdkService = SdkServiceImpl(context)
+
+    /**
+     * Does the work needed for the SDK to start handling requests.
+     *
+     * <p>This function is called by the SDK sandbox after it loads the SDK.
+     *
+     *  Mediator initialises the adapters in its own initialisation call.
+     */
+    override fun onLoadSdk(params: Bundle): SandboxedSdkCompat {
+        coroutineScope.launch {
+            initialiseAdapters()
+        }
+        return super.onLoadSdk(params)
+    }
+
+    private suspend fun initialiseAdapters() {
+        val controller = SdkSandboxControllerCompat.from(context!!)
+        var adapterSdkLoaded = false
+        // Check if SdkSandboxController has already loaded mediateeSdk before trying to load
+        // again.
+        for (loadedSandboxedSdk in controller.getSandboxedSdks()) {
+            if (loadedSandboxedSdk.getSdkInfo()!!.name == reAdapterSdkName) {
+                adapterSdkLoaded = true
+                break
+            }
+        }
+        if (!adapterSdkLoaded) {
+            controller.loadSdk(reAdapterSdkName, Bundle.EMPTY)
+        }
+    }
 }
