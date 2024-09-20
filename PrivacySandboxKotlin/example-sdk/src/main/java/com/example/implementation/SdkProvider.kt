@@ -45,16 +45,16 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
      *
      * <p>This function is called by the SDK sandbox after it loads the SDK.
      *
-     *  Mediator initialises the adapters in its own initialisation call.
+     *  Mediator initialises the RE adapters in its own initialisation call.
      */
     override fun onLoadSdk(params: Bundle): SandboxedSdkCompat {
         coroutineScope.launch {
-            initialiseAdapters()
+            initialiseReAdapters()
         }
         return super.onLoadSdk(params)
     }
 
-    private suspend fun initialiseAdapters() {
+    private suspend fun initialiseReAdapters() {
         val controller = SdkSandboxControllerCompat.from(context!!)
         var adapterSdkLoaded = false
         // Check if SdkSandboxController has already loaded mediateeSdk before trying to load

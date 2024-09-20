@@ -26,8 +26,6 @@ import com.inappmediateeadapter.implementation.InAppMediateeSdkAdapter
 
 class ExistingSdk(private val context: Context) {
 
-    private val inAppMediateeSdkAdapter = InAppMediateeSdkAdapter(context)
-
     /**
      * Initialize the SDK and In-App adapters. If the SDK failed to initialize, return false, else
      * true.

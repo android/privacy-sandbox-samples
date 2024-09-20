@@ -150,9 +150,6 @@ class MainActivity : AppCompatActivity() {
     private fun showFullscreenView() = lifecycleScope.launch {
         val mediationType =
             MediationOption.entries[mediationDropDownMenu.selectedItemId.toInt()].toString()
-        if (mediationType == MediationOption.RUNTIME_INAPP.toString()) {
-            existingSdk.registerInAppMediateeSdk()
-        }
         val fullscreenAd = FullscreenAd.create(this@MainActivity, mediationType)
         fullscreenAd.show(this@MainActivity, shouldStartActivityPredicate())
     }
