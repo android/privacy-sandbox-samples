@@ -43,7 +43,7 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
      * <p>This function is called by the SDK sandbox after it loads the SDK.
      *
      *  For RE Mediatee Adapter, when the adapter is loaded in the Mediator, the
-     *  MediateeAdapterInterface is registered with the Mediator.
+     *  MediateeAdapterInterface will be registered with the Mediator.
      */
     override fun onLoadSdk(params: Bundle): SandboxedSdkCompat {
         registerWithMediator()
@@ -51,7 +51,7 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
     }
 
     /**
-     * Regsiters MediateeAdapterInterface with the Mediator.
+     * Registers MediateeAdapterInterface with the Mediator.
      */
     private fun registerWithMediator() {
         val controller = SdkSandboxControllerCompat.from(context!!)
