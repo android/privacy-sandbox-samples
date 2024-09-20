@@ -34,7 +34,6 @@ import com.example.R
 import com.example.api.FullscreenAd
 import com.example.api.MediateeAdapterInterface
 
-
 class FullscreenAdImpl(private val sdkContext: Context,
                        private val mediationType: String
 ) : FullscreenAd {
@@ -57,20 +56,29 @@ class FullscreenAdImpl(private val sdkContext: Context,
         webView.loadUrl(WEB_VIEW_LINK)
     }
 
+    /**
+     * Shows ad in a new Activity.
+     *
+     * For mediationType == RUNTIME_MEDIATEE, Runtime mediatee uses the [SdkActivityLauncher] passed
+     * to it to open new activity and show its ad.
+     * For mediationType == INAPP_MEDIATEE, In-App mediatee ignores the [SdkActivityLauncher] passed
+     * to it and opens a new activity that is declared in its manifest.
+     */
     override suspend fun show(activityLauncher: SdkActivityLauncher) {
         if (mediationType == sdkContext.getString(R.string.mediation_option_re_re)) {
             if (reMediateeAdapter == null) {
                 throw RemoteException("Mediatee SDK not registered with mediator SDK!")
             }
             // Activity Launcher to be used to load interstitial ad will be passed from
-            // mediator to mediatee SDK.
+            // mediator to Adapter to mediatee SDK.
             reMediateeAdapter!!.showFullscreenAd(activityLauncher)
         } else if (mediationType == sdkContext.getString(R.string.mediation_option_re_inapp)) {
             if (inAppMediateeAdapter == null) {
                 throw RemoteException("In App Mediatee SDK not registered with mediator SDK!")
             }
             // In App mediatee declares its own activity in its manifest (statically linked to the
-            // app), which opens in the app process. ActivityLauncher is not passed from mediator.
+            // app), which opens in the app process. ActivityLauncher is passed from mediator is
+            // ignored at the Adapter.
             inAppMediateeAdapter!!.showFullscreenAd(activityLauncher)
         } else {
             val handler = object : SdkSandboxActivityHandlerCompat {

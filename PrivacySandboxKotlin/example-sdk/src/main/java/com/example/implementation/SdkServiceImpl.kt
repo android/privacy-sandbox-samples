@@ -19,6 +19,8 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.privacysandbox.ui.client.SandboxedUiAdapterFactory
+import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
+import com.example.R
 import com.example.api.FullscreenAd
 import com.example.api.SdkBannerRequest
 import com.example.api.SdkService
@@ -39,6 +41,8 @@ class SdkServiceImpl(private val context: Context) : SdkService {
 
     private var inAppMediateeAdapter: MediateeAdapterInterface? = null
     private var reMediateeAdapter: MediateeAdapterInterface? = null
+  
+    private val tag = "ExampleSdk"
 
     override suspend fun createFile(sizeInMb: Int): String {
         val path = Paths.get(
@@ -58,9 +62,9 @@ class SdkServiceImpl(private val context: Context) : SdkService {
 
     override suspend fun getBanner(
         request: SdkBannerRequest,
-        shouldLoadMediatedAd: Boolean
-    ): SdkSandboxedUiAdapter {
-        if (!shouldLoadMediatedAd) {
+        mediationType: String
+    ): SdkSandboxedUiAdapter? {
+        if (mediationType == context.getString(R.string.mediation_option_none)) {
             val bannerAdAdapter = SdkSandboxedUiAdapterImpl(context, request, null)
             bannerAdAdapter.addObserverFactory(SessionObserverFactoryImpl())
             return bannerAdAdapter

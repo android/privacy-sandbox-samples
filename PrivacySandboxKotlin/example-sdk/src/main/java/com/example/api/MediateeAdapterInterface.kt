@@ -19,6 +19,14 @@ import android.os.Bundle
 import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import androidx.privacysandbox.tools.PrivacySandboxCallback
 
+/**
+ * Common interface to be implemented by Adapters.
+ *
+ * RE Adapters will register this interface with the Mediator.
+ * In-App Adapters will be initialised and registered with Mediator from the App.
+ *
+ * This interface will then be used by the Mediator to communicate with the Mediatees to show ads.
+ */
 @PrivacySandboxCallback
 interface MediateeAdapterInterface {
     suspend fun getBannerAd(

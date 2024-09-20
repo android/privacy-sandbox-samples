@@ -23,11 +23,25 @@ interface SdkService {
 
     suspend fun createFile(sizeInMb: Int): String
 
-    suspend fun getBanner(request: SdkBannerRequest, requestMediatedAd: Boolean): SdkSandboxedUiAdapter?
+    suspend fun getBanner(request: SdkBannerRequest, mediationType: String): SdkSandboxedUiAdapter?
 
     suspend fun getFullscreenAd(mediationType: String): FullscreenAd
 
+    /**
+     * Register the RE mediatee adapter.
+     *
+     * For the RE Adapter case, Adapter is initialised and registered with the mediator when 
+     * Mediator is initialised.
+     */  
     fun registerReMediateeAdapter(mediateeAdapter: MediateeAdapterInterface)
 
+    /**
+     * Register the In-App mediatee adapter.
+     *
+     * In-App Adapter is initialised and registered with the mediator from the app. This is
+     * unlike the pre-Rubidium world where the App does not directly communicate with mediatee.
+     * After In-App mediatee transitions to run in Runtime process, this will not be done by the
+     * app.
+     */
     fun registerInAppMediateeAdapter(mediateeAdapter: MediateeAdapterInterface)
 }

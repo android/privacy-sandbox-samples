@@ -49,6 +49,9 @@ dependencies {
     debugImplementation project(':mediatee-sdk-adapter-bundle')
     implementation project(':inapp-mediatee-sdk-adapter')
 
+    // Static dependency on inapp-mediatee-sdk-adapter.
+    implementation project(':inapp-mediatee-sdk-adapter')
+
     // Required for backwards compatibility on devices where SDK Runtime is unavailable.
     implementation "androidx.privacysandbox.sdkruntime:sdkruntime-client:$privacy_sandbox_sdk_runtime_version"
 
