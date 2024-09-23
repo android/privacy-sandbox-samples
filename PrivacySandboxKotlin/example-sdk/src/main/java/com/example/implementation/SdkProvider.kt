@@ -55,18 +55,6 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
     }
 
     private suspend fun initialiseAdapters() {
-        val controller = SdkSandboxControllerCompat.from(context!!)
-        var adapterSdkLoaded = false
-        // Check if SdkSandboxController has already loaded adapter Sdk before trying to load
-        // again.
-        for (loadedSandboxedSdk in controller.getSandboxedSdks()) {
-            if (loadedSandboxedSdk.getSdkInfo()?.name == adapterSdkName) {
-                adapterSdkLoaded = true
-                break
-            }
-        }
-        if (!adapterSdkLoaded) {
-            controller.loadSdk(adapterSdkName, Bundle.EMPTY)
-        }
+        SdkSandboxControllerCompat.from(context!!).loadSdk(adapterSdkName, Bundle.EMPTY)
     }
 }
