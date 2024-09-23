@@ -23,6 +23,11 @@ import androidx.privacysandbox.ui.provider.toCoreLibInfo
 import com.example.api.MediateeAdapterInterface
 import com.mediatee.api.SdkServiceFactory
 
+/**
+ * Implements MediateeAdapterInterface.
+ *
+ * Mediatee sdk is loaded and called to show ads.
+ */
 class MediateeAdapterInterfaceImpl(private val context: Context) : MediateeAdapterInterface {
 
     private var mediateeInstance: com.mediatee.api.SdkService? = null
@@ -34,16 +39,16 @@ class MediateeAdapterInterfaceImpl(private val context: Context) : MediateeAdapt
         appPackageName: String,
         activityLauncher: SdkActivityLauncher,
         isWebViewBannerAd: Boolean
-    ): Bundle {
+    ): Bundle? {
         loadMediateeSdk()
         val newRequest: com.mediatee.api.SdkBannerRequest =
             com.mediatee.api.SdkBannerRequest(context.packageName, isWebViewBannerAd)
-        return mediateeInstance!!.getBanner(newRequest).toCoreLibInfo(context)
+        return mediateeInstance?.getBanner(newRequest)?.toCoreLibInfo(context)
     }
 
     override suspend fun showFullscreenAd(activityLauncher: SdkActivityLauncher) {
         loadMediateeSdk()
-        return mediateeInstance!!.getFullscreenAd().show(activityLauncher)
+        mediateeInstance?.getFullscreenAd()?.show(activityLauncher)
     }
 
     private suspend fun loadMediateeSdk() {

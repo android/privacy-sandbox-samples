@@ -28,7 +28,7 @@ import kotlinx.coroutines.launch
 /** Provides an [SdkService] implementation when the SDK is loaded. */
 class SdkProvider : AbstractSandboxedSdkProviderCompat() {
 
-    private val reAdapterSdkName = "com.mediateeadapter.sdk"
+    private val adapterSdkName = "com.mediateeadapter.sdk"
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
@@ -49,24 +49,24 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
      */
     override fun onLoadSdk(params: Bundle): SandboxedSdkCompat {
         coroutineScope.launch {
-            initialiseReAdapters()
+            initialiseAdapters()
         }
         return super.onLoadSdk(params)
     }
 
-    private suspend fun initialiseReAdapters() {
+    private suspend fun initialiseAdapters() {
         val controller = SdkSandboxControllerCompat.from(context!!)
         var adapterSdkLoaded = false
         // Check if SdkSandboxController has already loaded adapter Sdk before trying to load
         // again.
         for (loadedSandboxedSdk in controller.getSandboxedSdks()) {
-            if (loadedSandboxedSdk.getSdkInfo()!!.name == reAdapterSdkName) {
+            if (loadedSandboxedSdk.getSdkInfo()?.name == adapterSdkName) {
                 adapterSdkLoaded = true
                 break
             }
         }
         if (!adapterSdkLoaded) {
-            controller.loadSdk(reAdapterSdkName, Bundle.EMPTY)
+            controller.loadSdk(adapterSdkName, Bundle.EMPTY)
         }
     }
 }

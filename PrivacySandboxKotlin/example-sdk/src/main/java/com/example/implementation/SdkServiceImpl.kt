@@ -40,7 +40,7 @@ class SdkServiceImpl(private val context: Context) : SdkService {
     override suspend fun getMessage(): String = "Hello from Privacy Sandbox!"
 
     private var inAppMediateeAdapter: MediateeAdapterInterface? = null
-    private var reMediateeAdapter: MediateeAdapterInterface? = null
+    private var mediateeAdapter: MediateeAdapterInterface? = null
   
     private val tag = "ExampleSdk"
 
@@ -73,24 +73,24 @@ class SdkServiceImpl(private val context: Context) : SdkService {
             context,
             request,
             SandboxedUiAdapterFactory.createFromCoreLibInfo(
-                reMediateeAdapter!!.getBannerAd(
+                mediateeAdapter?.getBannerAd(
                     request.appPackageName,
                     request.activityLauncher,
                     request.isWebViewBannerAd
-                )
+                )!!
             )
         )
     }
 
     override suspend fun getFullscreenAd(mediationType: String): FullscreenAd {
         val fullscreenAd = FullscreenAdImpl(context, mediationType)
-        fullscreenAd.setReMediateeAdapter(reMediateeAdapter)
+        fullscreenAd.setMediateeAdapter(mediateeAdapter)
         fullscreenAd.setInAppMediateeAdapter(inAppMediateeAdapter)
         return fullscreenAd
     }
 
-    override fun registerReMediateeAdapter(mediateeAdapter: MediateeAdapterInterface) {
-        reMediateeAdapter = mediateeAdapter
+    override fun registerMediateeAdapter(mediateeAdapter: MediateeAdapterInterface) {
+        this.mediateeAdapter = mediateeAdapter
     }
 
     override fun registerInAppMediateeAdapter(mediateeAdapter: MediateeAdapterInterface) {

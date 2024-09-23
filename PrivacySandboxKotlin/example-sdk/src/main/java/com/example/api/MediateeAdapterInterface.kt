@@ -33,7 +33,7 @@ interface MediateeAdapterInterface {
         appPackageName: String,
         activityLauncher: SdkActivityLauncher,
         isWebViewBannerAd: Boolean
-    ): Bundle
+    ): Bundle?
 
     suspend fun showFullscreenAd(activityLauncher: SdkActivityLauncher)
 }

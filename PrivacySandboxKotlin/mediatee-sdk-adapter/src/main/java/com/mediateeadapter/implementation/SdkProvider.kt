@@ -58,13 +58,13 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
         var sandboxedSdk: SandboxedSdkCompat? = null
         // Get mediatorSdk from SdkSandboxController#getSandboxedSdks.
         for (loadedSandboxedSdk in controller.getSandboxedSdks()) {
-            if (loadedSandboxedSdk.getSdkInfo()!!.name == mediatorSdkName) {
+            if (loadedSandboxedSdk.getSdkInfo()?.name == mediatorSdkName) {
                 sandboxedSdk = loadedSandboxedSdk
                 break
             }
         }
-        mediatorInstance = SdkServiceFactory.wrapToSdkService(sandboxedSdk!!.getInterface()!!)
+        mediatorInstance = SdkServiceFactory.wrapToSdkService(sandboxedSdk?.getInterface()!!)
         // Register MediateeAdapterInterface.
-        mediatorInstance!!.registerReMediateeAdapter(MediateeAdapterInterfaceImpl(context!!))
+        mediatorInstance?.registerMediateeAdapter(MediateeAdapterInterfaceImpl(context!!))
     }
 }

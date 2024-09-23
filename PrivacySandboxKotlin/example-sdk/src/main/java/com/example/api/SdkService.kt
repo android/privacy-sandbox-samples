@@ -28,15 +28,15 @@ interface SdkService {
     suspend fun getFullscreenAd(mediationType: String): FullscreenAd
 
     /**
-     * Register the RE mediatee adapter.
+     * Registers the RE mediatee adapter.
      *
      * For the RE Adapter case, Adapter is initialised and registered with the mediator when 
      * Mediator is initialised.
      */  
-    fun registerReMediateeAdapter(mediateeAdapter: MediateeAdapterInterface)
+    fun registerMediateeAdapter(mediateeAdapter: MediateeAdapterInterface)
 
     /**
-     * Register the In-App mediatee adapter.
+     * Registers the In-App mediatee adapter.
      *
      * In-App Adapter is initialised and registered with the mediator from the app. This is
      * unlike the pre-Rubidium world where the App does not directly communicate with mediatee.
