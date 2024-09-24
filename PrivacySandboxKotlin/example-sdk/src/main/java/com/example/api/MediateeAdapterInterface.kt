@@ -35,5 +35,7 @@ interface MediateeAdapterInterface {
         isWebViewBannerAd: Boolean
     ): Bundle?
 
+    suspend fun loadFullscreenAd()
+
     suspend fun showFullscreenAd(activityLauncher: SdkActivityLauncher)
 }

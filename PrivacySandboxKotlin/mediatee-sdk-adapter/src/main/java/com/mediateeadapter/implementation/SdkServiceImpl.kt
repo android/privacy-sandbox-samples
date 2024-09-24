@@ -17,4 +17,5 @@ package com.mediateeadapter.implementation
 
 import com.mediateeadapter.api.SdkService
 
+/** Implements SdkService - which is empty for our sample. */
 class SdkServiceImpl() : SdkService

@@ -21,16 +21,20 @@ import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import androidx.privacysandbox.ui.provider.toCoreLibInfo
 import com.example.api.MediateeAdapterInterface
+import com.mediatee.api.FullscreenAd
 import com.mediatee.api.SdkServiceFactory
 
 /**
- * Implements MediateeAdapterInterface.
+ * Implements [MediateeAdapterInterface].
  *
- * Mediatee sdk is loaded and called to show ads.
+ * This class has APIs that takes requests from the mediator and gets responses from the mediatee.
  */
 class MediateeAdapterInterfaceImpl(private val context: Context) : MediateeAdapterInterface {
 
     private var mediateeInstance: com.mediatee.api.SdkService? = null
+
+    /** When loadFullscreenAd is called, the adapter caches the ad received from the mediatee. */
+    private var loadedFullscreenAd: FullscreenAd? = null
 
     /** Name of the SDK to be loaded. */
     private val mediateeSdkName = "com.mediatee.sdk"
@@ -46,16 +50,20 @@ class MediateeAdapterInterfaceImpl(private val context: Context) : MediateeAdapt
         return mediateeInstance?.getBanner(newRequest)?.toCoreLibInfo(context)
     }
 
-    override suspend fun showFullscreenAd(activityLauncher: SdkActivityLauncher) {
+    override suspend fun loadFullscreenAd() {
         loadMediateeSdk()
-        mediateeInstance?.getFullscreenAd()?.show(activityLauncher)
+        loadedFullscreenAd = mediateeInstance?.getFullscreenAd()
+    }
+
+    override suspend fun showFullscreenAd(activityLauncher: SdkActivityLauncher) {
+        loadedFullscreenAd?.show(activityLauncher)
     }
 
     private suspend fun loadMediateeSdk() {
         if (mediateeInstance == null) {
             val controller = SdkSandboxControllerCompat.from(context)
             val sandboxedSdk = controller.loadSdk(mediateeSdkName, Bundle.EMPTY)
-            mediateeInstance = SdkServiceFactory.wrapToSdkService(sandboxedSdk.getInterface()!!)
+            mediateeInstance = SdkServiceFactory.wrapToSdkService(checkNotNull(sandboxedSdk.getInterface()))
         }
     }
 }

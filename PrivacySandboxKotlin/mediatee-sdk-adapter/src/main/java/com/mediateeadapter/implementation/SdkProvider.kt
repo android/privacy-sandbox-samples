@@ -43,7 +43,7 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
      * <p>This function is called by the SDK sandbox after it loads the SDK.
      *
      *  For Runtime-enabled Mediatee Adapter, when the adapter is loaded in the Mediator, the
-     *  MediateeAdapterInterface will be registered with the Mediator.
+     *  [MediateeAdapterInterface] will be registered with the Mediator.
      */
     override fun onLoadSdk(params: Bundle): SandboxedSdkCompat {
         registerWithMediator()
@@ -51,10 +51,10 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
     }
 
     /**
-     * Registers MediateeAdapterInterface with the Mediator.
+     * Registers [MediateeAdapterInterface] with the Mediator.
      */
     private fun registerWithMediator() {
-        val controller = SdkSandboxControllerCompat.from(context!!)
+        val controller = SdkSandboxControllerCompat.from(checkNotNull(context))
         var sandboxedSdk: SandboxedSdkCompat? = null
         // Get mediatorSdk from SdkSandboxController#getSandboxedSdks.
         for (loadedSandboxedSdk in controller.getSandboxedSdks()) {
@@ -63,8 +63,10 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
                 break
             }
         }
-        mediatorInstance = SdkServiceFactory.wrapToSdkService(sandboxedSdk?.getInterface()!!)
+        mediatorInstance =
+            SdkServiceFactory.wrapToSdkService(checkNotNull(sandboxedSdk?.getInterface()))
         // Register MediateeAdapterInterface.
-        mediatorInstance?.registerMediateeAdapter(MediateeAdapterInterfaceImpl(context!!))
+        mediatorInstance?.registerMediateeAdapter(MediateeAdapterInterfaceImpl(
+            checkNotNull(context) { "Adapter can't be registered with Mediator!" }))
     }
 }

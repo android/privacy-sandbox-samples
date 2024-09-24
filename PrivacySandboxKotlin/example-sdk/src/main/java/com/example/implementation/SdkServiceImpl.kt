@@ -17,9 +17,9 @@ package com.example.implementation
 
 import android.content.Context
 import android.os.Bundle
+import android.os.RemoteException
 import android.util.Log
 import androidx.privacysandbox.ui.client.SandboxedUiAdapterFactory
-import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import com.example.R
 import com.example.api.FullscreenAd
 import com.example.api.SdkBannerRequest
@@ -72,21 +72,32 @@ class SdkServiceImpl(private val context: Context) : SdkService {
         return SdkSandboxedUiAdapterImpl(
             context,
             request,
-            SandboxedUiAdapterFactory.createFromCoreLibInfo(
+            SandboxedUiAdapterFactory.createFromCoreLibInfo(checkNotNull(
                 mediateeAdapter?.getBannerAd(
                     request.appPackageName,
                     request.activityLauncher,
                     request.isWebViewBannerAd
-                )!!
-            )
+                )
+            ) { "No banner Ad received from mediatee!" })
         )
     }
 
     override suspend fun getFullscreenAd(mediationType: String): FullscreenAd {
-        val fullscreenAd = FullscreenAdImpl(context, mediationType)
-        fullscreenAd.setMediateeAdapter(mediateeAdapter)
-        fullscreenAd.setInAppMediateeAdapter(inAppMediateeAdapter)
-        return fullscreenAd
+        if (mediationType == context.getString(R.string.mediation_option_none)) {
+            return FullscreenAdImpl(context, null, false)
+        }
+        val adapter: MediateeAdapterInterface?
+        if (mediationType == context.getString(R.string.mediation_option_re_inapp)) {
+            inAppMediateeAdapter
+                ?: throw RemoteException("In-App mediatee SDK not registered with mediator SDK!")
+            adapter = inAppMediateeAdapter
+        } else {
+            mediateeAdapter
+                ?: throw RemoteException("Mediatee SDK not registered with mediator SDK!")
+            adapter = mediateeAdapter
+        }
+        adapter?.loadFullscreenAd()
+        return FullscreenAdImpl(context, adapter, true)
     }
 
     override fun registerMediateeAdapter(mediateeAdapter: MediateeAdapterInterface) {

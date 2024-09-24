@@ -55,6 +55,7 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
     }
 
     private suspend fun initialiseAdapters() {
-        SdkSandboxControllerCompat.from(context!!).loadSdk(adapterSdkName, Bundle.EMPTY)
+        SdkSandboxControllerCompat.from(checkNotNull(context) { "Cannot initialise adapters!" })
+            .loadSdk(adapterSdkName, Bundle.EMPTY)
     }
 }
