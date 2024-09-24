@@ -18,10 +18,10 @@ package com.mediateeadapter.api
 import androidx.privacysandbox.tools.PrivacySandboxService
 
 /**
- * SDK Service for the RE Adapter - which is empty for our sample.
+ * SDK Service for the Runtime-enabled Adapter - which is empty for our sample.
  *
- * Every RE SDK has to define a PrivacySandboxService, which is the interface used to communicate
- * with the SDK.
+ * Every Runtime-enabled SDK has to define a PrivacySandboxService, which is the interface used to
+ * communicate with the SDK.
  */
 @PrivacySandboxService
 interface SdkService

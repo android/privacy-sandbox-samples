@@ -45,7 +45,7 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
      *
      * <p>This function is called by the SDK sandbox after it loads the SDK.
      *
-     *  Mediator initialises the RE adapters in its own initialisation call.
+     *  Mediator initialises the Runtime-enabled adapters in its own initialisation call.
      */
     override fun onLoadSdk(params: Bundle): SandboxedSdkCompat {
         coroutineScope.launch {

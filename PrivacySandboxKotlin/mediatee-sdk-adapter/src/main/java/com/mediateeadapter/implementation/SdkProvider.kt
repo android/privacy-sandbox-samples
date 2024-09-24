@@ -42,7 +42,7 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
      *
      * <p>This function is called by the SDK sandbox after it loads the SDK.
      *
-     *  For RE Mediatee Adapter, when the adapter is loaded in the Mediator, the
+     *  For Runtime-enabled Mediatee Adapter, when the adapter is loaded in the Mediator, the
      *  MediateeAdapterInterface will be registered with the Mediator.
      */
     override fun onLoadSdk(params: Bundle): SandboxedSdkCompat {
