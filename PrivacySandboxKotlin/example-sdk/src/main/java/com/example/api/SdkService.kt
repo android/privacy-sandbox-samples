@@ -28,7 +28,7 @@ interface SdkService {
     suspend fun getFullscreenAd(mediationType: String): FullscreenAd
 
     /**
-     * Registers the RE mediatee adapter.
+     * Registers the Runtime-enabled mediatee adapter.
      *
      * For the RE Adapter case, Adapter is initialised and registered with the mediator when 
      * Mediator is initialised.
