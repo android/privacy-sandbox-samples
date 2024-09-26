@@ -6,7 +6,7 @@ import android.content.Intent
 class InAppMediateeSdk(private val context: Context) {
 
     fun loadFullscreenAd() {
-      // This could contain more logic. For our sample this is empty.
+      // All the heavy logic to load fullscreen Ad that Mdiatee needs to perform goes here.
     }
 
     fun showFullscreenAd() {

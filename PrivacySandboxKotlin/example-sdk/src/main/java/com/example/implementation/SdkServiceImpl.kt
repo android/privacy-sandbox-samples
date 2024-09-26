@@ -87,7 +87,7 @@ class SdkServiceImpl(private val context: Context) : SdkService {
             return FullscreenAdImpl(context, null, false)
         }
         val adapter: MediateeAdapterInterface?
-        if (mediationType == context.getString(R.string.mediation_option_re_inapp)) {
+        if (mediationType == context.getString(R.string.mediation_option_inapp_mediatee)) {
             inAppMediateeAdapter
                 ?: throw RemoteException("In-App mediatee SDK not registered with mediator SDK!")
             adapter = inAppMediateeAdapter

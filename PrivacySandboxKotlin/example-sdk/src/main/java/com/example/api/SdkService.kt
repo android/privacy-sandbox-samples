@@ -28,20 +28,14 @@ interface SdkService {
     suspend fun getFullscreenAd(mediationType: String): FullscreenAd
 
     /**
-     * Registers the Runtime-enabled mediatee adapter.
-     *
-     * For the Runtime-enabled Adapter case, Adapter is initialised and registered with the
-     * Mediator when Mediator is initialised.
+     * Registers the Runtime-enabled mediatee adapter so that it can be used by the Mediator later
+     * to show ads.
      */  
     fun registerMediateeAdapter(mediateeAdapter: MediateeAdapterInterface)
 
     /**
-     * Registers the In-App mediatee adapter.
-     *
-     * In-App Adapter is initialised and registered with the mediator from the app. This is
-     * unlike the pre-Rubidium world where the App does not directly communicate with mediatee.
-     * After In-App mediatee transitions to run in Runtime process, this will not be done by the
-     * app.
+     * Registers the In-App mediatee adapter so that it can be used by the Mediator later
+     * to show ads.
      */
     fun registerInAppMediateeAdapter(mediateeAdapter: MediateeAdapterInterface)
 }
