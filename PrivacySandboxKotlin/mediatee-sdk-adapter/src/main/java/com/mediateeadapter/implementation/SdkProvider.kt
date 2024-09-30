@@ -22,13 +22,21 @@ import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCo
 import com.example.api.SdkServiceFactory
 import com.mediateeadapter.api.AbstractSandboxedSdkProviderCompat
 import com.mediateeadapter.api.SdkService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /** Provides an [SdkService] implementation when the SDK is loaded. */
 class SdkProvider : AbstractSandboxedSdkProviderCompat() {
 
     private val mediatorSdkName = "com.example.sdk"
+    private val mediateeSdkName = "com.mediatee.sdk"
 
     private var mediatorInstance: com.example.api.SdkService? = null
+    private var mediateeInstance: com.mediatee.api.SdkService? = null
+
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+
     /**
      * Returns the [SdkService] implementation. Called when the SDK is loaded.
      *
@@ -42,8 +50,10 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
      *
      * <p>This function is called by the SDK sandbox after it loads the SDK.
      *
-     *  For Runtime-enabled Mediatee Adapter, when the adapter is loaded in the Mediator, the
-     *  [MediateeAdapterInterface] will be registered with the Mediator.
+     * Mediatee is initialised when Adapter is initialised.
+     *
+     * For Runtime-enabled Mediatee Adapter, when the adapter is loaded in the Mediator, the
+     * [MediateeAdapterInterface] will be registered with the Mediator.
      */
     override fun onLoadSdk(params: Bundle): SandboxedSdkCompat {
         registerWithMediator()
@@ -65,8 +75,22 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
         }
         mediatorInstance =
             SdkServiceFactory.wrapToSdkService(checkNotNull(sandboxedSdk?.getInterface()))
-        // Register MediateeAdapterInterface.
-        mediatorInstance?.registerMediateeAdapter(MediateeAdapterInterfaceImpl(
-            checkNotNull(context) { "Adapter can't be registered with Mediator!" }))
+        // Load mediatee sdk and register MediateeAdapterInterface with Mediator.
+        coroutineScope.launch {
+            loadMediateeSdk(checkNotNull(context) { "Mediatee Sdk can't be loaded!" })
+            val mediateeAdapterInterfaceImpl = MediateeAdapterInterfaceImpl(
+                checkNotNull(context) { "Adapter can't be registered with Mediator!" },
+                checkNotNull(mediateeInstance) { "Mediatee Sdk is not loaded!" })
+            mediatorInstance?.registerMediateeAdapter(mediateeAdapterInterfaceImpl)
+        }
+    }
+
+    private suspend fun loadMediateeSdk(context: Context) {
+        if (mediateeInstance == null) {
+            val controller = SdkSandboxControllerCompat.from(context)
+            val sandboxedSdk = controller.loadSdk(mediateeSdkName, Bundle.EMPTY)
+            mediateeInstance =
+                com.mediatee.api.SdkServiceFactory.wrapToSdkService(checkNotNull(sandboxedSdk.getInterface()))
+        }
     }
 }

@@ -18,52 +18,39 @@ package com.mediateeadapter.implementation
 import android.content.Context
 import android.os.Bundle
 import androidx.privacysandbox.activity.core.SdkActivityLauncher
-import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import androidx.privacysandbox.ui.provider.toCoreLibInfo
 import com.example.api.MediateeAdapterInterface
 import com.mediatee.api.FullscreenAd
-import com.mediatee.api.SdkServiceFactory
+import com.mediatee.api.SdkService
 
 /**
  * Implements [MediateeAdapterInterface].
  *
  * This class has APIs that takes requests from the mediator and gets responses from the mediatee.
  */
-class MediateeAdapterInterfaceImpl(private val context: Context) : MediateeAdapterInterface {
-
-    private var mediateeInstance: com.mediatee.api.SdkService? = null
+class MediateeAdapterInterfaceImpl(
+    private val context: Context,
+    private val mediateeInstance: SdkService
+) : MediateeAdapterInterface {
 
     /** When loadFullscreenAd is called, the adapter caches the ad received from the mediatee. */
     private var loadedFullscreenAd: FullscreenAd? = null
-
-    /** Name of the SDK to be loaded. */
-    private val mediateeSdkName = "com.mediatee.sdk"
 
     override suspend fun getBannerAd(
         appPackageName: String,
         activityLauncher: SdkActivityLauncher,
         isWebViewBannerAd: Boolean
-    ): Bundle? {
-        loadMediateeSdk()
+    ): Bundle {
         val newRequest: com.mediatee.api.SdkBannerRequest =
             com.mediatee.api.SdkBannerRequest(context.packageName, isWebViewBannerAd)
-        return mediateeInstance?.getBanner(newRequest)?.toCoreLibInfo(context)
+        return mediateeInstance.getBanner(newRequest).toCoreLibInfo(context)
     }
 
     override suspend fun loadFullscreenAd() {
-        loadMediateeSdk()
-        loadedFullscreenAd = mediateeInstance?.getFullscreenAd()
+        loadedFullscreenAd = mediateeInstance.getFullscreenAd()
     }
 
     override suspend fun showFullscreenAd(activityLauncher: SdkActivityLauncher) {
         loadedFullscreenAd?.show(activityLauncher)
-    }
-
-    private suspend fun loadMediateeSdk() {
-        if (mediateeInstance == null) {
-            val controller = SdkSandboxControllerCompat.from(context)
-            val sandboxedSdk = controller.loadSdk(mediateeSdkName, Bundle.EMPTY)
-            mediateeInstance = SdkServiceFactory.wrapToSdkService(checkNotNull(sandboxedSdk.getInterface()))
-        }
     }
 }
