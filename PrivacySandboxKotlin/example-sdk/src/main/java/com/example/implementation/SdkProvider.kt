@@ -41,11 +41,12 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
     override fun createSdkService(context: Context): SdkService = SdkServiceImpl(context)
 
     /**
-     * Does the work needed for the SDK to start handling requests.
+     * Does the work needed for the SDK to start handling requests. SDK should do any work to be
+     * ready to handle upcoming requests.
      *
-     * <p>This function is called by the SDK sandbox after it loads the SDK.
+     * This function is called by the SDK sandbox after it loads the SDK.
      *
-     *  Mediator initialises the Runtime-enabled adapters in its own initialisation call.
+     * Mediator initialises the Runtime-enabled adapters in its own initialisation call.
      */
     override fun onLoadSdk(params: Bundle): SandboxedSdkCompat {
         coroutineScope.launch {

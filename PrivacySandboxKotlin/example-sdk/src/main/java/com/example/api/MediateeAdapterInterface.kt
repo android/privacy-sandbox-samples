@@ -38,9 +38,9 @@ interface MediateeAdapterInterface {
      * We return a Bundle here, not an interface that extends SandboxedUiAdapter, since a
      * PrivacySandboxInterface declared in one SDK cannot be implemented by another and returned
      * back.
-     * PrivacySandboxInterface is expected to be implemented by the declaring SDK (example-sdk in
-     * this case) and PrivacySandboxCallback is expected to be implemented by the consuming SDK
-     * (adapter-sdk).
+     * A PrivacySandboxInterface is expected to be implemented by the declaring SDK (example-sdk in
+     * this case) and a PrivacySandboxCallback is expected to be implemented by the consuming SDK
+     * (adapter sdks).
      */
     suspend fun getBannerAd(
         appPackageName: String,

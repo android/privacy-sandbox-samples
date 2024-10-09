@@ -46,9 +46,10 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
     override fun createSdkService(context: Context): SdkService = SdkServiceImpl()
 
     /**
-     * Does the work needed for the SDK to start handling requests.
+     * Does the work needed for the SDK to start handling requests. SDK should do any work to be
+     * ready to handle upcoming requests.
      *
-     * <p>This function is called by the SDK sandbox after it loads the SDK.
+     * This function is called by the SDK sandbox after it loads the SDK.
      *
      * Mediatee is initialised when Adapter is initialised.
      *
@@ -60,13 +61,13 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
         return super.onLoadSdk(params)
     }
 
-    /**
-     * Registers [MediateeAdapterInterface] with the Mediator.
-     */
+    /** Registers [MediateeAdapterInterface] with the Mediator. */
     private fun registerWithMediator() {
         val controller = SdkSandboxControllerCompat.from(checkNotNull(context))
         var sandboxedSdk: SandboxedSdkCompat? = null
-        // Get mediatorSdk from SdkSandboxController#getSandboxedSdks.
+        // Get mediatorSdk from SdkSandboxController#getSandboxedSdks. Since the adapter is
+        // loaded from Mediator when Mediator is loaded, Mediator sdk should be present in already
+        // loaded sdks.
         for (loadedSandboxedSdk in controller.getSandboxedSdks()) {
             if (loadedSandboxedSdk.getSdkInfo()?.name == mediatorSdkName) {
                 sandboxedSdk = loadedSandboxedSdk
