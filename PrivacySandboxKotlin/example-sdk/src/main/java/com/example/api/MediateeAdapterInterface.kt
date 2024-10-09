@@ -22,18 +22,33 @@ import androidx.privacysandbox.tools.PrivacySandboxCallback
 /**
  * Common interface to be implemented by Adapters.
  *
- * RE Adapters will register this interface with the Mediator.
- * In-App Adapters will be initialised and registered with Mediator from the App.
+ * Runtime-enabled Adapters will register an object that implements this interface with the
+ * Mediator.
+ * In-App Adapters will implement this interface and be initialised and registered with Mediator
+ * from the App.
  *
  * This interface will then be used by the Mediator to communicate with the Mediatees to show ads.
  */
 @PrivacySandboxCallback
 interface MediateeAdapterInterface {
+
+    /**
+     * Returns a Bundle containing a SandboxedUiAdapter binder.
+     *
+     * We return a Bundle here, not an interface that extends SandboxedUiAdapter, since a
+     * PrivacySandboxInterface declared in one SDK cannot be implemented by another and returned
+     * back.
+     * A PrivacySandboxInterface is expected to be implemented by the declaring SDK (example-sdk in
+     * this case) and a PrivacySandboxCallback is expected to be implemented by the consuming SDK
+     * (adapter sdks).
+     */
     suspend fun getBannerAd(
         appPackageName: String,
         activityLauncher: SdkActivityLauncher,
         isWebViewBannerAd: Boolean
-    ): Bundle
+    ): Bundle?
+
+    suspend fun loadFullscreenAd()
 
     suspend fun showFullscreenAd(activityLauncher: SdkActivityLauncher)
 }

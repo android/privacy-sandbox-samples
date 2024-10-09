@@ -97,7 +97,7 @@ private class SdkUiSession(
     clientExecutor: Executor,
     private val sdkContext: Context,
     private val request: SdkBannerRequest,
-    private val mediateeAdapter: SandboxedUiAdapter?
+    private val mediateeSandboxedUiAdapter: SandboxedUiAdapter?
 ) : AbstractSandboxedUiAdapter.AbstractSession() {
 
     private val controller = SdkSandboxControllerCompat.from(sdkContext)
@@ -112,7 +112,7 @@ private class SdkUiSession(
     override val view: View = getAdView()
 
     private fun getAdView() : View {
-        if (mediateeAdapter != null) {
+        if (mediateeSandboxedUiAdapter != null) {
             // The Mediator (example-sdk) view contains a SandboxedSdkView that is being populated
             // with the ad view from the Runtime enabled Mediatee, which runs in the same process
             // as the Mediator. The view also has an overlay from the Mediator sdk. This will be
@@ -124,7 +124,7 @@ private class SdkUiSession(
                 textView.text =
                     context.getString(R.string.banner_ad_label, request.appPackageName)
                 val ssv = SandboxedSdkView(context)
-                ssv.setAdapter(mediateeAdapter)
+                ssv.setAdapter(mediateeSandboxedUiAdapter)
                 adLayout.addView(ssv)
             }
         }

@@ -23,6 +23,10 @@ class InAppMediateeSdkAdapter(private val context: Context): MediateeAdapterInte
         TODO("Not yet implemented")
     }
 
+    override suspend fun loadFullscreenAd() {
+        inAppMediateeSdk.loadFullscreenAd()
+    }
+
     override suspend fun showFullscreenAd(activityLauncher: SdkActivityLauncher) {
         // SdkActivityLauncher is ignored since In-App mediatee does not need it in its
         // showFullscreenAd() call.

@@ -35,14 +35,12 @@ import com.example.api.FullscreenAd
 import com.example.api.MediateeAdapterInterface
 
 class FullscreenAdImpl(private val sdkContext: Context,
-                       private val mediationType: String
+                       private val adapter: MediateeAdapterInterface?,
+                       private val requestMediatedAd: Boolean
 ) : FullscreenAd {
 
     private val webView = WebView(sdkContext)
     private val controller = SdkSandboxControllerCompat.from(sdkContext)
-
-    private var mediateeSdk: com.mediatee.api.SdkService? = null
-    private var inAppMediateeAdapter: MediateeAdapterInterface? = null
 
     init {
         initializeSettings(webView.settings)
@@ -65,21 +63,13 @@ class FullscreenAdImpl(private val sdkContext: Context,
      * to it and opens a new activity that is declared in its manifest.
      */
     override suspend fun show(activityLauncher: SdkActivityLauncher) {
-        if (mediationType == sdkContext.getString(R.string.mediation_option_re_re)) {
-            if (mediateeSdk == null) {
-                throw RemoteException("Mediatee SDK not loaded!")
-            }
+        if (requestMediatedAd) {
             // Activity Launcher to be used to load interstitial ad will be passed from
-            // mediator to mediatee SDK.
-            mediateeSdk!!.getFullscreenAd().show(activityLauncher)
-        } else if (mediationType == sdkContext.getString(R.string.mediation_option_re_inapp)) {
-            if (inAppMediateeAdapter == null) {
-                throw RemoteException("In App Mediatee SDK not registered with mediator SDK!")
-            }
+            // mediator to Adapter to mediatee SDK.
             // In App mediatee declares its own activity in its manifest (statically linked to the
             // app), which opens in the app process. ActivityLauncher is passed from mediator is
             // ignored at the Adapter.
-            inAppMediateeAdapter!!.showFullscreenAd(activityLauncher)
+            adapter?.showFullscreenAd(activityLauncher)
         } else {
             val handler = object : SdkSandboxActivityHandlerCompat {
                 @RequiresApi(Build.VERSION_CODES.R)
@@ -99,14 +89,6 @@ class FullscreenAdImpl(private val sdkContext: Context,
             val launched = activityLauncher.launchSdkActivity(token)
             if (!launched) controller.unregisterSdkSandboxActivityHandler(handler)
         }
-    }
-
-    fun setRuntimeMediateeSdkService(mediateeSdk: com.mediatee.api.SdkService?) {
-        this.mediateeSdk = mediateeSdk
-    }
-
-    fun setInAppMediateeAdapter(inAppMediateeAdapter: MediateeAdapterInterface?) {
-        this.inAppMediateeAdapter = inAppMediateeAdapter
     }
 
     private fun initializeSettings(settings: WebSettings) {
