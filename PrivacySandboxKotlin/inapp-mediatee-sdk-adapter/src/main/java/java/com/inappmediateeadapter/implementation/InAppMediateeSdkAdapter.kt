@@ -2,9 +2,11 @@ package com.inappmediateeadapter.implementation
 
 import android.content.Context
 import android.os.Bundle
+import androidx.privacysandbox.ui.provider.toCoreLibInfo
 import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import com.inappmediatee.sdk.InAppMediateeSdk
 import com.example.api.MediateeAdapterInterface
+import java.com.inappmediateeadapter.implementation.SandboxedUiAdapterImpl
 
 /**
  * Adapter class that implements the interface declared by the Mediator.
@@ -20,7 +22,8 @@ class InAppMediateeSdkAdapter(private val context: Context): MediateeAdapterInte
         activityLauncher: SdkActivityLauncher,
         isWebViewBannerAd: Boolean
     ): Bundle {
-        TODO("Not yet implemented")
+        return SandboxedUiAdapterImpl(inAppMediateeSdk.loadBannerAd(isWebViewBannerAd))
+            .toCoreLibInfo(context)
     }
 
     override suspend fun loadFullscreenAd() {
