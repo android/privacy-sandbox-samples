@@ -69,11 +69,15 @@ class SdkServiceImpl(private val context: Context) : SdkService {
             bannerAdAdapter.addObserverFactory(SessionObserverFactoryImpl())
             return bannerAdAdapter
         }
+        var adapter = mediateeAdapter
+        if (mediationType == context.getString(R.string.mediation_option_inapp_mediatee)) {
+            adapter = inAppMediateeAdapter
+        }
         return SdkSandboxedUiAdapterImpl(
             context,
             request,
             SandboxedUiAdapterFactory.createFromCoreLibInfo(checkNotNull(
-                mediateeAdapter?.getBannerAd(
+                adapter?.getBannerAd(
                     request.appPackageName,
                     request.activityLauncher,
                     request.isWebViewBannerAd

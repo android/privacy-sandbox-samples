@@ -2,8 +2,27 @@ package com.inappmediatee.sdk
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.view.View
+import android.webkit.WebView
+import android.widget.TextView
 
 class InAppMediateeSdk(private val context: Context) {
+
+    private val webViewUrl = "https://www.google.com"
+    private val bannerAdMsg = "Rendered from In-app Mediatee SDK"
+
+    fun loadBannerAd(isWebViewBannerAd: Boolean) : View {
+        if (isWebViewBannerAd) {
+            val webview = WebView(context)
+            webview.loadUrl(webViewUrl)
+            return webview
+        }
+        val textView = TextView(context)
+        textView.text = bannerAdMsg
+        textView.setTextColor(Color.BLACK)
+        return textView
+    }
 
     fun loadFullscreenAd() {
       // All the heavy logic to load fullscreen Ad that Mdiatee needs to perform goes here.
