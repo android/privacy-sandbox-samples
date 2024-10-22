@@ -15,6 +15,7 @@
  */
 package com.example.api
 
+import android.os.Bundle
 import androidx.privacysandbox.tools.PrivacySandboxService
 
 @PrivacySandboxService
@@ -23,7 +24,7 @@ interface SdkService {
 
     suspend fun createFile(sizeInMb: Int): String
 
-    suspend fun getBanner(request: SdkBannerRequest, mediationType: String): SdkSandboxedUiAdapter?
+    suspend fun getBanner(request: SdkBannerRequest, mediationType: String): Bundle?
 
     suspend fun getFullscreenAd(mediationType: String): FullscreenAd
 

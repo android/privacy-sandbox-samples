@@ -22,6 +22,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.privacysandbox.activity.client.createSdkActivityLauncher
+import androidx.privacysandbox.ui.client.SandboxedUiAdapterFactory
 import androidx.privacysandbox.ui.client.view.SandboxedSdkView
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
 import com.example.api.SdkBannerRequest
@@ -69,7 +70,12 @@ class BannerAd(context: Context, attrs: AttributeSet) : LinearLayout(context, at
 
         val launcher = baseActivity.createSdkActivityLauncher(allowSdkActivityLaunch)
         val request = SdkBannerRequest(message, launcher, shouldLoadWebView)
-        return ExistingSdk.loadSdkIfNeeded(context)?.getBanner(request, mediationType)
+        return SandboxedUiAdapterFactory.createFromCoreLibInfo(
+            checkNotNull(
+                ExistingSdk.loadSdkIfNeeded(
+                    context
+                )?.getBanner(request, mediationType)
+            ) { "No banner Ad received from ad SDK!" })
     }
 
     private fun addViewToLayout(view: View) {

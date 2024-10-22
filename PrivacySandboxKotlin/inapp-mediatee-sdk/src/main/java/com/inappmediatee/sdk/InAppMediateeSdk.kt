@@ -10,7 +10,7 @@ import android.widget.TextView
 class InAppMediateeSdk(private val context: Context) {
 
     private val webViewUrl = "https://www.google.com"
-    private val bannerAdMsg = "Rendered from In-app Mediatee SDK"
+    private val bannerAdMsg = "Ad from In-app Mediatee SDK"
 
     fun loadBannerAd(isWebViewBannerAd: Boolean) : View {
         if (isWebViewBannerAd) {
@@ -20,12 +20,12 @@ class InAppMediateeSdk(private val context: Context) {
         }
         val textView = TextView(context)
         textView.text = bannerAdMsg
-        textView.setTextColor(Color.BLACK)
+        textView.setTextColor(Color.WHITE)
         return textView
     }
 
     fun loadFullscreenAd() {
-      // All the heavy logic to load fullscreen Ad that Mdiatee needs to perform goes here.
+      // All the heavy logic to load fullscreen Ad that Mediatee needs to perform goes here.
     }
 
     fun showFullscreenAd() {
