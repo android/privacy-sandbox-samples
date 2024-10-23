@@ -80,6 +80,8 @@ class ExistingSdk(private val context: Context) {
 
                 val sandboxedSdk = sandboxManagerCompat.loadSdk(SDK_NAME, Bundle.EMPTY)
                 remoteInstance = SdkServiceFactory.wrapToSdkService(sandboxedSdk.getInterface()!!)
+                // Initialise Adapters and Mediatees.
+                remoteInstance?.initialise()
                 return remoteInstance
             } catch (e: LoadSdkCompatException) {
                 Log.e(TAG, "Failed to load SDK, error code: ${e.loadSdkErrorCode}", e)
