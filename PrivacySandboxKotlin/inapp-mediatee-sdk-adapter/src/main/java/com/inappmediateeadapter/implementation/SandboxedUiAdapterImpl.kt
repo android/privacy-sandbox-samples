@@ -1,4 +1,4 @@
-package java.com.inappmediateeadapter.implementation
+package com.inappmediateeadapter.implementation
 
 import android.content.Context
 import android.content.res.Configuration

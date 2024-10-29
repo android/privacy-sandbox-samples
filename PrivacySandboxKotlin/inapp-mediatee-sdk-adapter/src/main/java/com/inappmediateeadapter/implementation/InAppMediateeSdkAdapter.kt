@@ -6,7 +6,6 @@ import androidx.privacysandbox.ui.provider.toCoreLibInfo
 import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import com.inappmediatee.sdk.InAppMediateeSdk
 import com.example.api.MediateeAdapterInterface
-import java.com.inappmediateeadapter.implementation.SandboxedUiAdapterImpl
 
 /**
  * Adapter class that implements the interface declared by the Mediator.
