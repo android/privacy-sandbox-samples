@@ -14,6 +14,12 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import java.util.concurrent.Executor
 
+/**
+ * SandboxedUiAdapter containing the Ad view from the inapp mediatee.
+ *
+ * This is to be shared with the mediator running in Runtime, which will then return it to the app
+ * when app requests for winning ad.
+ */
 class InAppAdViewSandboxedUiAdapter(private val mediateeAdView: View):
     AbstractSandboxedUiAdapter(), SdkSandboxedUiAdapter {
     override fun openSession(
