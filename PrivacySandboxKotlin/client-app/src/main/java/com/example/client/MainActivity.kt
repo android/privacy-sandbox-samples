@@ -134,17 +134,13 @@ class MainActivity : AppCompatActivity() {
         // Mediated Banner Ad is shown when RUNTIME_MEDIATEE Mediation option is chosen.
         val mediationType =
             MediationOption.entries[mediationDropDownMenu.selectedItemId.toInt()].toString()
-        if (mediationType == MediationOption.INAPP_MEDIATEE.toString()) {
-            makeToast("RE_SDK<>InApp Mediated Banner Ad not yet implemented!")
-        } else {
-            bannerAd.loadAd(
-                this@MainActivity,
-                PACKAGE_NAME,
-                shouldStartActivityPredicate(),
-                loadWebView,
-                mediationType
-            )
-        }
+        bannerAd.loadAd(
+            this@MainActivity,
+            PACKAGE_NAME,
+            shouldStartActivityPredicate(),
+            loadWebView,
+            mediationType
+        )
     }
 
     private fun showFullscreenView() = lifecycleScope.launch {

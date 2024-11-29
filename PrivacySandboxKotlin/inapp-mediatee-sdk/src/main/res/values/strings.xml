@@ -13,4 +13,5 @@
 -->
 <resources>
     <string name="activity_label">Full screen ad launched by in-app mediatee!</string>
+    <string name="banner_ad_label">Ad from In-app Mediatee SDK (no overlay from mediator)</string>
 </resources>

@@ -41,6 +41,12 @@ class MediateeAdapterInterfaceImpl(
         activityLauncher: SdkActivityLauncher,
         isWebViewBannerAd: Boolean
     ): Bundle {
+        // We return a Bundle here, not an interface that extends SandboxedUiAdapter, since a
+        // PrivacySandboxInterface declared in one SDK cannot be implemented by another and
+        // returned back.
+        // A PrivacySandboxInterface is expected to be implemented by the declaring SDK (example-sdk
+        // in this case) and a PrivacySandboxCallback is expected to be implemented by the
+        // consuming SDK (adapter sdks).
         val newRequest: com.mediatee.api.SdkBannerRequest =
             com.mediatee.api.SdkBannerRequest(context.packageName, isWebViewBannerAd)
         return mediateeInstance.getBanner(newRequest).toCoreLibInfo(context)

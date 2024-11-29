@@ -15,6 +15,7 @@
  */
 package com.example.api
 
+import android.os.Bundle
 import androidx.privacysandbox.tools.PrivacySandboxService
 
 @PrivacySandboxService
@@ -23,7 +24,16 @@ interface SdkService {
 
     suspend fun createFile(sizeInMb: Int): String
 
-    suspend fun getBanner(request: SdkBannerRequest, mediationType: String): SdkSandboxedUiAdapter?
+    /**
+     *  Returns a Bundle containing a SandboxedUiAdapter binder.
+     *
+     * We return a Bundle here, not an interface that extends SandboxedUiAdapter. This is because
+     * for in app mediatees, the SandboxedUiAdapter received from the mediatee is directly returned
+     * by the mediator to the app, without any wrapper, to avoid nested remote rendering. Since
+     * this will need to be returned in a Bundle (one SDK cannot use a shim object defined by
+     * another SDK), return type for getBanner will always be a Bundle.
+     */
+    suspend fun getBanner(request: SdkBannerRequest, mediationType: String): Bundle?
 
     suspend fun getFullscreenAd(mediationType: String): FullscreenAd
 

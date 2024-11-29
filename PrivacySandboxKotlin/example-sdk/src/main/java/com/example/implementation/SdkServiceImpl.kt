@@ -33,8 +33,8 @@ import androidx.privacysandbox.ui.core.SandboxedSdkViewUiInfo
 import androidx.privacysandbox.ui.core.SessionObserver
 import androidx.privacysandbox.ui.core.SessionObserverContext
 import androidx.privacysandbox.ui.core.SessionObserverFactory
+import androidx.privacysandbox.ui.provider.toCoreLibInfo
 import com.example.api.MediateeAdapterInterface
-import com.example.api.SdkSandboxedUiAdapter
 
 class SdkServiceImpl(private val context: Context) : SdkService {
     override suspend fun getMessage(): String = "Hello from Privacy Sandbox!"
@@ -60,14 +60,29 @@ class SdkServiceImpl(private val context: Context) : SdkService {
         return "Created $actualFileSize MB file successfully"
     }
 
+    // We return a Bundle here, not an interface that extends SandboxedUiAdapter. This is because
+    // for in app mediatees, the SandboxedUiAdapter received from the mediatee is directly returned
+    // by the mediator to the app, without any wrapper, to avoid nested remote rendering. Since
+    // this will need to be returned in a Bundle (one SDK cannot use a shim object defined by
+    // another SDK), return type for getBanner will always be a Bundle.
     override suspend fun getBanner(
         request: SdkBannerRequest,
         mediationType: String
-    ): SdkSandboxedUiAdapter? {
+    ): Bundle? {
         if (mediationType == context.getString(R.string.mediation_option_none)) {
             val bannerAdAdapter = SdkSandboxedUiAdapterImpl(context, request, null)
             bannerAdAdapter.addObserverFactory(SessionObserverFactoryImpl())
-            return bannerAdAdapter
+            return bannerAdAdapter.toCoreLibInfo(context)
+        }
+        // For In-app mediatee, SandboxedUiAdapter returned by mediatee is not wrapped, it is
+        // directly returned to app. This is to avoid nested remote rendering.
+        // There is no overlay in this case for this reason.
+        if (mediationType == context.getString(R.string.mediation_option_inapp_mediatee)) {
+            return inAppMediateeAdapter?.getBannerAd(
+                        request.appPackageName,
+                        request.activityLauncher,
+                        request.isWebViewBannerAd
+                    )
         }
         return SdkSandboxedUiAdapterImpl(
             context,
@@ -79,7 +94,7 @@ class SdkServiceImpl(private val context: Context) : SdkService {
                     request.isWebViewBannerAd
                 )
             ) { "No banner Ad received from mediatee!" })
-        )
+        ).toCoreLibInfo(context)
     }
 
     override suspend fun getFullscreenAd(mediationType: String): FullscreenAd {
