@@ -70,6 +70,7 @@ class BannerAd(context: Context, attrs: AttributeSet) : LinearLayout(context, at
 
         val launcher = baseActivity.createSdkActivityLauncher(allowSdkActivityLaunch)
         val request = SdkBannerRequest(message, launcher, shouldLoadWebView)
+        // Get the SandboxedUiAdapter from the Bundle.
         return SandboxedUiAdapterFactory.createFromCoreLibInfo(
             checkNotNull(
                 ExistingSdk.loadSdkIfNeeded(
