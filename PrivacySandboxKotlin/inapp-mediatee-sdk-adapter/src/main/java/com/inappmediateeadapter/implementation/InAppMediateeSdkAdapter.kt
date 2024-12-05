@@ -5,12 +5,12 @@ import android.os.Bundle
 import androidx.privacysandbox.ui.provider.toCoreLibInfo
 import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import com.inappmediatee.sdk.InAppMediateeSdk
-import com.example.api.MediateeAdapterInterface
+import com.runtimeenabled.api.MediateeAdapterInterface
 
 /**
  * Adapter class that implements the interface declared by the Mediator.
  *
- * This is loaded by and registered with Mediator from existing-sdk (RA_SDK).
+ * This is loaded by and registered with Mediator from runtime-aware-sdk (RA_SDK).
  */
 class InAppMediateeSdkAdapter(private val context: Context): MediateeAdapterInterface {
 
@@ -26,7 +26,7 @@ class InAppMediateeSdkAdapter(private val context: Context): MediateeAdapterInte
         // We return a Bundle here, not an interface that extends SandboxedUiAdapter, since a
         // PrivacySandboxInterface declared in one SDK cannot be implemented by another and
         // returned back.
-        // A PrivacySandboxInterface is expected to be implemented by the declaring SDK (example-sdk
+        // A PrivacySandboxInterface is expected to be implemented by the declaring SDK (runtime-enabled-sdk
         // in this case) and a PrivacySandboxCallback is expected to be implemented by the
         // consuming SDK (adapter sdks).
         return InAppAdViewSandboxedUiAdapter(inAppMediateeSdk.loadBannerAd(isWebViewBannerAd))

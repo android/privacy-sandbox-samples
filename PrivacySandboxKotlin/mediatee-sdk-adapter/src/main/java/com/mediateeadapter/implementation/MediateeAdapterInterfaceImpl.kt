@@ -19,7 +19,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.privacysandbox.activity.core.SdkActivityLauncher
 import androidx.privacysandbox.ui.provider.toCoreLibInfo
-import com.example.api.MediateeAdapterInterface
+import com.runtimeenabled.api.MediateeAdapterInterface
 import com.mediatee.api.FullscreenAd
 import com.mediatee.api.SdkService
 
@@ -44,7 +44,7 @@ class MediateeAdapterInterfaceImpl(
         // We return a Bundle here, not an interface that extends SandboxedUiAdapter, since a
         // PrivacySandboxInterface declared in one SDK cannot be implemented by another and
         // returned back.
-        // A PrivacySandboxInterface is expected to be implemented by the declaring SDK (example-sdk
+        // A PrivacySandboxInterface is expected to be implemented by the declaring SDK (runtime-enabled-sdk
         // in this case) and a PrivacySandboxCallback is expected to be implemented by the
         // consuming SDK (adapter sdks).
         val newRequest: com.mediatee.api.SdkBannerRequest =

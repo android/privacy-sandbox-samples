@@ -19,7 +19,7 @@ import android.content.Context
 import android.os.Bundle
 import androidx.privacysandbox.sdkruntime.core.SandboxedSdkCompat
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
-import com.example.api.SdkServiceFactory
+import com.runtimeenabled.api.SdkServiceFactory
 import com.mediateeadapter.api.AbstractSandboxedSdkProviderCompat
 import com.mediateeadapter.api.SdkService
 import kotlinx.coroutines.CoroutineScope
@@ -29,10 +29,10 @@ import kotlinx.coroutines.launch
 /** Provides an [SdkService] implementation when the SDK is loaded. */
 class SdkProvider : AbstractSandboxedSdkProviderCompat() {
 
-    private val mediatorSdkName = "com.example.sdk"
+    private val mediatorSdkName = "com.runtimeenabled.sdk"
     private val mediateeSdkName = "com.mediatee.sdk"
 
-    private var mediatorInstance: com.example.api.SdkService? = null
+    private var mediatorInstance: com.runtimeenabled.api.SdkService? = null
     private var mediateeInstance: com.mediatee.api.SdkService? = null
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main)

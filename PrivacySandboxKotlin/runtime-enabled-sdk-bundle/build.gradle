@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,19 +25,17 @@ android {
 
     bundle {
         // This package name is used to load this SDK in the Privacy Sandbox later on.
-        packageName = "com.mediateeadapter.sdk"
+        packageName = "com.runtimeenabled.sdk"
 
         setVersion(1, 0, 0)
         // SDK provider defined in the SDK Runtime library. This is an important part of the
         // future backwards compatibility support, so most SDKs won't need to change it.
         sdkProviderClassName = "androidx.privacysandbox.sdkruntime.provider.SandboxedSdkProviderAdapter"
-        // SDK provider defined by the mediatee-adapter-sdk itself.
-        compatSdkProviderClassName = "com.mediateeadapter.implementation.SdkProvider"
+        // SDK provider defined by the runtime-enabled-sdk itself.
+        compatSdkProviderClassName = "com.runtimeenabled.implementation.SdkProvider"
     }
 }
 
 dependencies {
-    include project(":mediatee-sdk-adapter")
-    requiredSdk project(":runtime-enabled-sdk-bundle")
-    requiredSdk project(":mediatee-sdk-bundle")
+    include project(":runtime-enabled-sdk")
 }
