@@ -18,13 +18,14 @@ package com.runtimeaware.sdk
 import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
+import com.runtimeenabled.api.FullscreenAd
 import androidx.privacysandbox.activity.client.createSdkActivityLauncher
 import androidx.privacysandbox.activity.core.SdkActivityLauncher
 
 class FullscreenAd(private val sdkFullscreenAd: FullscreenAd) {
     suspend fun show(baseActivity: AppCompatActivity, allowSdkActivityLaunch: () -> Boolean) {
         val activityLauncher = baseActivity.createSdkActivityLauncher(allowSdkActivityLaunch)
-        sdkFullscreenAd.show(activityLauncher, true)
+        sdkFullscreenAd.show(activityLauncher)
     }
 
     companion object {
