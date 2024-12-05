@@ -7,7 +7,7 @@ import android.os.IBinder
 import android.view.View
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
 import androidx.privacysandbox.ui.provider.AbstractSandboxedUiAdapter
-import com.example.api.SdkSandboxedUiAdapter
+import com.runtimeenabled.api.SdkSandboxedUiAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher

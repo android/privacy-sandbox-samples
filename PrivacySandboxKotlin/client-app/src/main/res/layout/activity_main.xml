@@ -112,7 +112,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
-    <com.existing.sdk.BannerAd
+    <com.runtimeaware.sdk.BannerAd
         android:id="@+id/banner_ad"
         android:layout_width="match_parent"
         android:layout_height="150dp"

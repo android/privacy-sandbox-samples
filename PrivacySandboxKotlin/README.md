@@ -20,13 +20,13 @@ compatible with your custom interfaces. To use it just extend `AbstractSandboxed
 it will be generated in the same package that defined the `@PrivacySandboxService` interface.
 
 ## Running the Sample
-The sample contains a working SDK in the `example-sdk` module. The SDK is bundled for release and
-app consumption in the `example-sdk-bundle` module, this is where the SDK version, package name and
+The sample contains a working SDK in the `runtime-enabled` module. The SDK is bundled for release and
+app consumption in the `runtime-enabled-bundle` module, this is where the SDK version, package name and
 signing information is defined.
 
-The client app is implemented in the `client-app` module. The `existing-sdk` module represents a
+The client app is implemented in the `client-app` module. The `runtime-aware-sdk` module represents a
 modified version of a regular SDK that runs in the app as usual but is also capable of loading and
-interacting with the example SDK.
+interacting with the runtime-enabled SDK.
 
 There are two methods for building and installing the SDK. The preferred option is use Android
 Studio's UI to handle building and deploying the SDK and launching the client app. However, it is
