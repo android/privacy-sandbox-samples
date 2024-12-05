@@ -30,8 +30,8 @@ class FullscreenAd(private val sdkFullscreenAd: FullscreenAd) {
 
     companion object {
         // This method could divert a percentage of requests to a sandboxed SDK and fallback to
-        // existing ad logic. For this runtimeenabled, we send all requests to the sandboxed SDK as long as
-        // it exists.
+        // existing ad logic. For this example, we send all requests to the
+        // runtime-enabled sandboxed SDK as long as it exists.
         suspend fun create(
             context: Context,
             mediationType: String
