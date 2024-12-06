@@ -53,7 +53,7 @@ class SdkServiceImpl(private val context: Context) : SdkService {
         sandboxController.loadSdk(adapterSdkName, Bundle.EMPTY)
     }
 
-    override suspend fun getMessage(): String = "Hello from Privacy Sandbox!"
+    override suspend fun getMessage(): String = "Hello from Runtime-enabled SDK!"
 
     override suspend fun createFile(sizeInMb: Int): String {
         val path = Paths.get(
