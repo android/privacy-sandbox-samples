@@ -22,9 +22,6 @@ import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCo
 import com.runtimeenabled.api.SdkServiceFactory
 import com.mediateeadapter.api.AbstractSandboxedSdkProviderCompat
 import com.mediateeadapter.api.SdkService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 /** Provides an [SdkService] implementation when the SDK is loaded. */
 class SdkProvider : AbstractSandboxedSdkProviderCompat() {
@@ -34,8 +31,6 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
 
     private var mediatorInstance: com.runtimeenabled.api.SdkService? = null
     private var mediateeInstance: com.mediatee.api.SdkService? = null
-
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
 
     /**
      * Returns the [SdkService] implementation. Called when the SDK is loaded.
@@ -64,34 +59,33 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
     /** Registers [MediateeAdapterInterface] with the Mediator. */
     private fun registerWithMediator() {
         val controller = SdkSandboxControllerCompat.from(checkNotNull(context))
-        var sandboxedSdk: SandboxedSdkCompat? = null
-        // Get mediatorSdk from SdkSandboxController#getSandboxedSdks. Since the adapter is
-        // loaded from Mediator when Mediator is loaded, Mediator sdk should be present in already
-        // loaded sdks.
+        var mediatorSdk: SandboxedSdkCompat? = null
+        var mediateeSdk: SandboxedSdkCompat? = null
+
+        // Get mediatorSdk and mediateeSdk from SdkSandboxController#getSandboxedSdks.
+        // Since the adapter is loaded from Mediator when initialise() API is called, Mediator sdk
+        // should be present in already loaded sdks.
+        // mediateeSdk is loaded before the adapter loadSdk call is made, so it should be present
+        // in already loaded sdks.
         for (loadedSandboxedSdk in controller.getSandboxedSdks()) {
-            if (loadedSandboxedSdk.getSdkInfo()?.name == mediatorSdkName) {
-                sandboxedSdk = loadedSandboxedSdk
+            if (mediatorSdk == null && loadedSandboxedSdk.getSdkInfo()?.name == mediatorSdkName) {
+                mediatorSdk = loadedSandboxedSdk
+            }
+            if (mediateeSdk == null && loadedSandboxedSdk.getSdkInfo()?.name == mediateeSdkName) {
+                mediateeSdk = loadedSandboxedSdk
+            }
+            if (mediatorSdk != null && mediateeSdk != null) {
                 break
             }
         }
         mediatorInstance =
-            SdkServiceFactory.wrapToSdkService(checkNotNull(sandboxedSdk?.getInterface()))
-        // Load mediatee sdk and register MediateeAdapterInterface with Mediator.
-        coroutineScope.launch {
-            loadMediateeSdk(checkNotNull(context) { "Mediatee Sdk can't be loaded!" })
-            val mediateeAdapterInterfaceImpl = MediateeAdapterInterfaceImpl(
-                checkNotNull(context) { "Adapter can't be registered with Mediator!" },
-                checkNotNull(mediateeInstance) { "Mediatee Sdk is not loaded!" })
-            mediatorInstance?.registerMediateeAdapter(mediateeAdapterInterfaceImpl)
-        }
-    }
-
-    private suspend fun loadMediateeSdk(context: Context) {
-        if (mediateeInstance == null) {
-            val controller = SdkSandboxControllerCompat.from(context)
-            val sandboxedSdk = controller.loadSdk(mediateeSdkName, Bundle.EMPTY)
-            mediateeInstance =
-                com.mediatee.api.SdkServiceFactory.wrapToSdkService(checkNotNull(sandboxedSdk.getInterface()))
-        }
+            SdkServiceFactory.wrapToSdkService(checkNotNull(mediatorSdk?.getInterface()))
+        mediateeInstance =
+            com.mediatee.api.SdkServiceFactory.wrapToSdkService(checkNotNull(mediateeSdk?.getInterface()))
+        // Register MediateeAdapterInterface with Mediator.
+        val mediateeAdapterInterfaceImpl = MediateeAdapterInterfaceImpl(
+            checkNotNull(context) { "Adapter can't be registered with Mediator!" },
+            checkNotNull(mediateeInstance) { "Mediatee Sdk is not loaded!" })
+        mediatorInstance?.registerMediateeAdapter(mediateeAdapterInterfaceImpl)
     }
 }

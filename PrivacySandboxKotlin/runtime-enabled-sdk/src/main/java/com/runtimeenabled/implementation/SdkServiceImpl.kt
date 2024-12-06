@@ -19,6 +19,7 @@ import android.content.Context
 import android.os.Bundle
 import android.os.RemoteException
 import android.util.Log
+import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import androidx.privacysandbox.ui.client.SandboxedUiAdapterFactory
 import com.runtimeenabled.R
 import com.runtimeenabled.api.FullscreenAd
@@ -37,12 +38,22 @@ import androidx.privacysandbox.ui.provider.toCoreLibInfo
 import com.runtimeenabled.api.MediateeAdapterInterface
 
 class SdkServiceImpl(private val context: Context) : SdkService {
-    override suspend fun getMessage(): String = "Hello from Privacy Sandbox!"
 
     private var inAppMediateeAdapter: MediateeAdapterInterface? = null
     private var mediateeAdapter: MediateeAdapterInterface? = null
-  
+
+    private val adapterSdkName = "com.mediateeadapter.sdk"
+    private val mediateeSdkName = "com.mediatee.sdk"
     private val tag = "ExampleSdk"
+
+    override suspend fun initialise() {
+        val sandboxController = SdkSandboxControllerCompat.from(context)
+        sandboxController.loadSdk(mediateeSdkName, Bundle.EMPTY)
+        // Adapter should only be loaded after Mediatee is loaded.
+        sandboxController.loadSdk(adapterSdkName, Bundle.EMPTY)
+    }
+
+    override suspend fun getMessage(): String = "Hello from Privacy Sandbox!"
 
     override suspend fun createFile(sizeInMb: Int): String {
         val path = Paths.get(
