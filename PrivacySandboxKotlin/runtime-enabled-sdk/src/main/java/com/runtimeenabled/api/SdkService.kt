@@ -21,10 +21,7 @@ import androidx.privacysandbox.tools.PrivacySandboxService
 @PrivacySandboxService
 interface SdkService {
 
-    /**
-     * App has to call this API after loadSdk("mediator") call.
-     * Mediatee and Adapter SDKs are loaded by the Mediator when this API is called.
-     */
+    /** Loads Mediatee and Adapter SDKs. */
     suspend fun initialise()
 
     suspend fun getMessage(): String
