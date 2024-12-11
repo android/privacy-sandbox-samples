@@ -20,6 +20,10 @@ import androidx.privacysandbox.tools.PrivacySandboxService
 
 @PrivacySandboxService
 interface SdkService {
+
+    /** Loads Mediatee and Adapter SDKs. */
+    suspend fun initialise()
+
     suspend fun getMessage(): String
 
     suspend fun createFile(sizeInMb: Int): String
