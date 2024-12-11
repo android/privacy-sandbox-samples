@@ -68,10 +68,14 @@ class SdkProvider : AbstractSandboxedSdkProviderCompat() {
         // mediateeSdk is loaded before the adapter loadSdk call is made, so it should be present
         // in already loaded sdks.
         for (loadedSandboxedSdk in controller.getSandboxedSdks()) {
-            if (mediatorSdk == null && loadedSandboxedSdk.getSdkInfo()?.name == mediatorSdkName) {
+            val needToLoadMediator =
+                mediatorSdk == null && loadedSandboxedSdk.getSdkInfo()?.name == mediatorSdkName
+            val needToLoadMediatee =
+                mediateeSdk == null && loadedSandboxedSdk.getSdkInfo()?.name == mediateeSdkName
+            if (needToLoadMediator) {
                 mediatorSdk = loadedSandboxedSdk
             }
-            if (mediateeSdk == null && loadedSandboxedSdk.getSdkInfo()?.name == mediateeSdkName) {
+            if (needToLoadMediatee) {
                 mediateeSdk = loadedSandboxedSdk
             }
             if (mediatorSdk != null && mediateeSdk != null) {

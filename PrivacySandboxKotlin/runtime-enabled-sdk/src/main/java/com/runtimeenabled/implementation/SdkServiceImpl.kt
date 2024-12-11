@@ -44,7 +44,7 @@ class SdkServiceImpl(private val context: Context) : SdkService {
 
     private val adapterSdkName = "com.mediateeadapter.sdk"
     private val mediateeSdkName = "com.mediatee.sdk"
-    private val tag = "ExampleSdk"
+    private val tag = "RuntimeEnabledSdk"
 
     override suspend fun initialise() {
         val sandboxController = SdkSandboxControllerCompat.from(context)
