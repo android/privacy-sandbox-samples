@@ -20,5 +20,6 @@
         <item>No Mediation</item>
         <item>Runtime-Runtime Mediation</item>
         <item>Runtime-InApp Mediation</item>
+        <item>Refresh Mediated Ad</item>
     </string-array>
 </resources>

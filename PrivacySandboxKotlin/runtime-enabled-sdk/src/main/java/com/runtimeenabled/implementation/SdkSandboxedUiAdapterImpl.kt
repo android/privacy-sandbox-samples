@@ -27,6 +27,7 @@ import androidx.privacysandbox.sdkruntime.core.activity.ActivityHolder
 import androidx.privacysandbox.sdkruntime.core.activity.SdkSandboxActivityHandlerCompat
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import androidx.privacysandbox.ui.client.view.SandboxedSdkView
+import androidx.privacysandbox.ui.core.DelegatingSandboxedUiAdapter
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
 import androidx.privacysandbox.ui.provider.AbstractSandboxedUiAdapter
 import com.runtimeenabled.R

@@ -70,7 +70,8 @@ class MainActivity : AppCompatActivity() {
     enum class MediationOption {
         NONE,
         RUNTIME_MEDIATEE,
-        INAPP_MEDIATEE
+        INAPP_MEDIATEE,
+        REFRESH_MEDIATED_ADS
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

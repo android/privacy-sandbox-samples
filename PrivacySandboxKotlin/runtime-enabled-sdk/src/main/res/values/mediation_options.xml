@@ -18,5 +18,6 @@
 <resources>
     <string name="mediation_option_none">NONE</string>
     <string name="mediation_option_runtime_mediatee">RUNTIME_MEDIATEE</string>
+    <string name="mediation_option_refresh_mediated_ads">REFRESH_MEDIATED_ADS</string>
     <string name="mediation_option_inapp_mediatee">INAPP_MEDIATEE</string>
 </resources>
