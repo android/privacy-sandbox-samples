@@ -1,5 +1,12 @@
 # FLEDGE Server Spec
 
+> [!WARNING]
+> This branch contains an example of an unreleased version of the
+> on-device bidding logic. For the recommended version, see
+> [the `main` branch](https://github.com/android/privacy-sandbox-samples/tree/main/Fledge/FledgeServerSpec)
+> of this repo and
+> [the official documentation](https://developers.google.com/privacy-sandbox/private-advertising/protected-audience/android/developer-guide/index.md#javascript-ad).
+
 ## Single SSP Auctions
 To run a single SSP Auctions, you can follow one of the options below for to 
 either use overrides or one server to represent your SSP.
