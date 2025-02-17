@@ -17,10 +17,14 @@ package com.runtimeenabled.implementation
 
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.RemoteException
 import android.util.Log
 import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCompat
 import androidx.privacysandbox.ui.client.SandboxedUiAdapterFactory
+import androidx.privacysandbox.ui.core.DelegatingSandboxedUiAdapter
+import androidx.privacysandbox.ui.core.ExperimentalFeatures
 import com.runtimeenabled.R
 import com.runtimeenabled.api.FullscreenAd
 import com.runtimeenabled.api.SdkBannerRequest
@@ -36,6 +40,9 @@ import androidx.privacysandbox.ui.core.SessionObserverContext
 import androidx.privacysandbox.ui.core.SessionObserverFactory
 import androidx.privacysandbox.ui.provider.toCoreLibInfo
 import com.runtimeenabled.api.MediateeAdapterInterface
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class SdkServiceImpl(private val context: Context) : SdkService {
 
@@ -76,10 +83,34 @@ class SdkServiceImpl(private val context: Context) : SdkService {
     // by the mediator to the app, without any wrapper, to avoid nested remote rendering. Since
     // this will need to be returned in a Bundle (one SDK cannot use a shim object defined by
     // another SDK), return type for getBanner will always be a Bundle.
+    @OptIn(ExperimentalFeatures.DelegatingAdapterApi::class)
     override suspend fun getBanner(
         request: SdkBannerRequest,
         mediationType: String
     ): Bundle? {
+        if (mediationType == context.getString(R.string.mediation_option_refresh_mediated_ads)) {
+            val runtimeMediateeBanner = SandboxedUiAdapterFactory.createFromCoreLibInfo(checkNotNull(
+                mediateeAdapter?.getBannerAd(
+                    request.appPackageName,
+                    request.activityLauncher,
+                    request.isWebViewBannerAd
+                )
+            ) { "No banner Ad received from mediatee!" })
+            // DelegatingSandboxedUiAdapter enables updating delegate from which different ads
+            // can be served without the client's involvement.
+            val delegatingAdapter = DelegatingSandboxedUiAdapter(
+                SdkSandboxedUiAdapterImpl(
+                    context,
+                    request,
+                    runtimeMediateeBanner
+                ).toCoreLibInfo(context)
+            )
+            // Launches a function to refresh the ad after a few seconds
+            CoroutineScope(Dispatchers.IO).launch {
+                updateDelegateAfterSomeDelay(request, delegatingAdapter);
+            }
+            return delegatingAdapter.toCoreLibInfo(context)
+        }
         if (mediationType == context.getString(R.string.mediation_option_none)) {
             val bannerAdAdapter = SdkSandboxedUiAdapterImpl(context, request, null)
             bannerAdAdapter.addObserverFactory(SessionObserverFactoryImpl())
@@ -106,6 +137,22 @@ class SdkServiceImpl(private val context: Context) : SdkService {
                 )
             ) { "No banner Ad received from mediatee!" })
         ).toCoreLibInfo(context)
+    }
+
+    private suspend fun updateDelegateAfterSomeDelay(
+        request: SdkBannerRequest,
+        delegatingAdapter: DelegatingSandboxedUiAdapter
+    ) {
+        delay(10000)
+        val inAppMediateeBanner = inAppMediateeAdapter?.getBannerAd(
+            request.appPackageName,
+            request.activityLauncher,
+            request.isWebViewBannerAd
+        )
+        // Refresh the ad to show ads from another mediatee
+        if (inAppMediateeBanner != null) {
+            delegatingAdapter.updateDelegate(inAppMediateeBanner)
+        }
     }
 
     override suspend fun getFullscreenAd(mediationType: String): FullscreenAd {
