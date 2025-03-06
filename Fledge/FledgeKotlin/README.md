@@ -1,104 +1,138 @@
 ## Overview
 
-The FLEDGE sample app demonstrates how to initialize and call the Custom Audience
-and Ad Selection APIs in FLEDGE.
+The FLEDGE sample app demonstrates how to initialize and call the Custom Audience, Ad
+Selection and Protected App Signals APIs.
 
-The sample app has two client classes, `AdSelectionClient` and
-`CustomAudienceClient` that interact with the two FLEDGE APIs. `CustomAudienceClient`
-wraps the API calls that allow apps to join and leave custom audiences (CAs) while
-`AdSelectionClient` wraps the functionality that allows apps to run ad auctions
-and report impressions based on the results of those auctions.
+The sample app has three client classes that interacts with the Protected Audience APIs:
 
-Note that this sample includes several build flavors. Developers should use the "preview" flavor
-and can follow the commands described in this README as is. For OEMs to use the required build
-flavor, you will need to update the "Preview" part of the commands to "Oems", all other instructions
-are the same.
+- `CustomAudienceClient`: Wraps the API calls that allow apps to curate audiences on the device
+- `AdSelectionClient`: Wraps the functionality that allows apps to run ad
+  auctions, report events and impressions based on the results of those
+  auctions.
+- `BiddingAuctionServerClient`: A helper class to call and receive response
+  from Bidding & Auction Server.
 
-## About the FLEDGE API
+For a full overview of how Protected Audience API works, read
+the [design proposal](https://developers.google.com/privacy-sandbox/private-advertising/protected-audience/android).
+Review
+the [developer guide](https://developers.google.com/privacy-sandbox/private-advertising/protected-audience/android/developer-guide)
+for details on API usage and systems integration.
 
-For a full overview of how FLEDGE works, read the [design proposal]. Review the
-[developer guide] for details on API usage and systems integration.
+Similarly, to learn more about the Protected App Signals API, review
+the [design proposal](https://developers.google.com/privacy-sandbox/private-advertising/protected-audience/android/protected-app-signals) and read
+the [developer guide](https://developers.google.com/privacy-sandbox/private-advertising/protected-audience/android/protected-app-signals-developer-guide)
+for details on API usage and systems integration.
 
-## Set up development environment
+## Set up your development environment
+To test the functionality of the Protected Audience and Protected App Signals
+APIs, you need
+to [set up your development environment] for Privacy Sandbox on Android.
 
-To test functionality of the FLEDGE API, you need to [set up your development
-environment].
+## Running the sample app
+### 1. Enable adservices process and flags
+[Set up Ad Services CLI] and [enable the adservices process and flags] for either all features or a specific feature you want to test.
 
-## Set up bidding code and impression reporting endpoints
+### 2. Install the app
+Install the app on your device by running:
 
-In order for ad selection components of the app to work, you must follow the
-directions for a setting up a server located in the [FledgeServerSpec]
-folder.
-
-## Launching the app
-
-First install the app on your device by running
 ```shell
-./gradlew installPreviewDebug
+./gradlew installDebug
 ```
 
-Then, you will need to [enable developer
-options](https://developer.android.com/studio/debug/dev-options) on your device.
+Then, [enable developer options] on your device.
 
-Next, run the following command
-```
-adb shell "device_config put adservices fledge_js_isolate_enforce_max_heap_size false"
-```
+### 3. Set up a mock server
 
-Once the above steps are completed, you must launch it with these options:
+In order for on-device ad selection, fetch and join custom audience and protected app signals components of the app to work, you must follow the
+directions for setting up a server located in the [FledgeServerSpec] folder.
+
+### 4. Run the app!
+
+Once the above steps are completed, you can launch the app from the Android Studio UI or use this command:
+
 ```shell
 adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity
 ```
 
-Otherwise, to optionally use remote overrides or mock servers, run:
-```shell
-adb shell am start -n com.example.adservices.samples.fledge.sampleapp/.MainActivity -e reportingUrl [reporting endpoint] -e biddingUrl [bidding endpoint] -e scoringUrl [scoring endpoint]
-```
-These commands will inform the app where your server endpoints are running.
+## Manage custom audiences
 
-## Manage custom audiences and run ad selection
+Custom Audience tab contains the `Buyer base uri` text box with an attached button
+which takes an uri to update the buyer for the custom audiences, and
+toggles to `join`, `fetchAndJoin` and `leave` custom audiences generated from the
+`CustomAudienceConfig.json`.
 
-To view the end-to-end functionality of FLEDGE, you can use the toggles in the
-middle of the app to join and leave the "shirts" CA and the "shoes" CA which
-represent custom audiences for advertising shirts and shoes respectively.
+`Buyer base uri` is used for overriding the buyer related fields in custom audiences generated by the `CustomAudienceConfig.json`. You can also provide it within the `CustomAudienceBuyerConfig.json`.
 
-Once you have joined one or both of the custom audiences, you can run ad selection
-by pressing the "Run Ad Selection" button. This will trigger an ad auction. The
-ad auction will pull the bidding and scoring logic, in the form of JavaScript files,
-from two web endpoints. With the way the JavaScript is set up,
-if the phone is part of both CAs the shoes CA will outbid the shirts CA and win
-the auction.
+### Updating custom audiences in the background
 
-Once the ad auction is complete, the app with show the URL that would normally
-be used the render the ad in the top purple TextView. The app will then trigger
-impression reporting which will run the reportWin and reportResults functions from the
-JavaScript files pulled down during the ad auction. These JavaScript files will
-instruct FLEDGE to send some data back to two additional endpoints
-which will then display the HTTPS calls they received in the second and third
-TextViews.
-
-## Updating custom audiences in the background
-
-The FLEDGE background fetch job will run periodically, deleting custom audiences
+The Protected Audience API background fetch job will run periodically,
+deleting custom audiences
 that have passed their configured expiration time and updating custom audiences
-that have not been updated or joined in the last day.  To test these cases, you
-can use the toggles in the middle of the app to join the "short expiry" and
-"invalid fields" CAs.
+that have not been updated or joined in the last day. To test these cases, you
+can use the toggles to join the `short expiry` and
+`invalid fields` CAs.
 
 A CA that has expired is no longer eligible to participate in ad selection, and
-the "short expiry" CA is configured to expire 30 seconds after it is joined.
-Running ad selection with only the "short expiry" CA will succeed in the 30
-second window but should fail afterwards without seeing any valid bids.  Once
-the background fetch job has run, the "short expiry" CA should additionally be
+the `short expiry` CA is configured to expire 30 seconds after it is joined.
+Running ad selection with only the `short expiry` CA will succeed in the 30
+second window but should fail afterwards without seeing any valid bids. Once
+the background fetch job has run, the `short expiry` CA should additionally be
 removed from the device.
 
 A CA that is incomplete, or which was joined with invalid or missing fields,
 will not be eligible to participate in ad selection until the CA has been
-updated with valid fields.  Using the test app, this update will occur during
-the background fetch job.  Additionally, any CAs that have been joined will also
+updated with valid fields. Using the sample app, this update will occur during
+the background fetch job. Additionally, any CAs that have been joined will also
 be updated, if they haven't already been joined or updated within the last day.
 
-[design proposal]: https://developer.android.com/privacy-sandbox/fledge
+## Update protected app signals
+
+Protected App Signals tab contains the `Signals JSON URL` text box with an attached button which
+takes an URL to fetch signals from. After updating the signals, you can run the following command to encode the signals immediately:
+
+```shell
+python3 main.py app-signals trigger-encoding
+```
+
+## Run ad selection on auction server
+
+To run ad selection on an auction server, you need to set up a Bidding & Auction (B&A) server.
+
+Once the B&A server is set up, you need to fill out the `ServerAdSelectionJsonConfig.json` file to configure ad selection:
+```json
+{
+  "buyer": "<Buyer for server auction>",
+  "seller": "<Seller for server auction>",
+  "sellerSfeUri": "<Seller Sfe uri for server auction>",
+  "coordinatorOriginUri": "<Coordinator origin uri for server auction>"
+}
+```
+
+Finally, after joining at least one custom audience or adding protected app signals, you can run ad selection on auction server by checking the `Auction server` checkbox and clicking the `Run ad selection` button.
+Once the ad auction is complete, the app will show the URL that would normally be used the render the ad in the top purple TextView. It will then trigger the `reportImpression` and `reportEvent` APIs.
+
+## Run on-device ad selection
+
+To run on-device ad selection, you need to fill out the `OnDeviceAdSelectionJsonConfig.json` file:
+
+```json
+{
+  "baseUri": "<Base uri for on-device auction>"
+}
+```
+
+- The `baseUri` field is required; it's used to generate the `AdSelectionConfig` needed for on-device auctions.
+- You can also add the `trustedScoringSignalsUri` and `decisionLogicUri` fields. If you don't provide them, they'll be generated using the baseUri.
+
+Then, after joining one or more custom audiences, you can run on-device ad selection by de-selecting the `Auction server` checkbox and clicking the `Run ad selection` button.
+Once the ad auction is complete, the app will show the URL that would normally be used the render the ad in the top purple TextView. It will then trigger the `updateAdCounterHistogram`, `reportImpression` and finally the `reportEvent` APIs.
+
 [set up your development environment]: https://developer.android.com/design-for-safety/privacy-sandbox/setup
-[developer guide]: https://developer.android.com/design-for-safety/privacy-sandbox/guides/fledge
+
 [FledgeServerSpec]: ../FledgeServerSpec
+
+[enable developer options]: https://developer.android.com/studio/debug/dev-options
+
+[Set up Ad Services CLI]: https://github.com/privacysandbox/dev-tools/blob/main/adservices_cli
+
+[enable the adservices process and flags]: https://github.com/privacysandbox/dev-tools/blob/main/adservices_cli/README.md#enable-adservices-features

@@ -13,14 +13,17 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.ACCESS_ADSERVICES_AD_ID" />
   <uses-permission android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" />
   <uses-permission android:name="android.permission.ACCESS_ADSERVICES_CUSTOM_AUDIENCE" />
+  <uses-permission android:name="android.permission.ACCESS_ADSERVICES_PROTECTED_SIGNALS" />
+
   <application
+      android:name="com.example.adservices.samples.fledge.app.FledgeApplication"
       android:debuggable="true"
-      android:allowBackup="true"
       android:icon="@mipmap/ic_launcher"
       android:label="@string/app_name"
       android:roundIcon="@mipmap/ic_launcher_round"
@@ -28,15 +31,18 @@
       android:description="@string/app_description"
       android:theme="@style/Theme.FledgeSample"
       tools:ignore="HardcodedDebugMode">
+
     <property android:name="android.adservices.AD_SERVICES_CONFIG"
         android:resource="@xml/ad_services_config" />
+
     <uses-library android:name="android.ext.adservices" android:required="false"/>
+
     <activity
-        android:name="com.example.adservices.samples.fledge.sampleapp.MainActivity"
+        android:name="com.example.adservices.samples.fledge.ui.MainActivity"
+        android:windowSoftInputMode="adjustResize"
         android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
-
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
