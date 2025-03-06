@@ -1,0 +1,9 @@
+{
+  "put": {
+    "AA==": "AQ=="
+  },
+  "update_encoder": {
+    "action": "REGISTER",
+    "endpoint": "<encode-signals-script>"
+  }
+}

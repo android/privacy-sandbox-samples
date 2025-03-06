@@ -1,0 +1,6 @@
+{
+  "buyer": "<Buyer for server auction>",
+  "seller": "<Seller for server auction>",
+  "sellerSfeUri": "<Seller Sfe uri for server auction>",
+  "coordinatorOriginUri": "<Coordinator origin uri for server auction>"
+}
