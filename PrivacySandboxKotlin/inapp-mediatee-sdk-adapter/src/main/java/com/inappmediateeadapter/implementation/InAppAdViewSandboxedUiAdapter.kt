@@ -6,8 +6,8 @@ import android.os.Bundle
 import android.os.IBinder
 import android.view.View
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
+import androidx.privacysandbox.ui.core.SessionConstants
 import androidx.privacysandbox.ui.provider.AbstractSandboxedUiAdapter
-import com.runtimeenabled.api.SdkSandboxedUiAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -21,10 +21,10 @@ import java.util.concurrent.Executor
  * when app requests for winning ad.
  */
 class InAppAdViewSandboxedUiAdapter(private val mediateeAdView: View):
-    AbstractSandboxedUiAdapter(), SdkSandboxedUiAdapter {
+    AbstractSandboxedUiAdapter(), SandboxedUiAdapter {
     override fun openSession(
         context: Context,
-        windowInputToken: IBinder,
+        sessionConstants: SessionConstants,
         initialWidth: Int,
         initialHeight: Int,
         isZOrderOnTop: Boolean,

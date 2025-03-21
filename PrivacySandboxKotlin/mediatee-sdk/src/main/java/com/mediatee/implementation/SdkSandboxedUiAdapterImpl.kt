@@ -23,6 +23,7 @@ import android.view.View
 import android.webkit.WebView
 import android.widget.TextView
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
+import androidx.privacysandbox.ui.core.SessionConstants
 import androidx.privacysandbox.ui.core.SessionObserverFactory
 import com.mediatee.api.SdkBannerRequest
 import com.mediatee.api.SdkSandboxedUiAdapter
@@ -39,7 +40,7 @@ class SdkSandboxedUiAdapterImpl(
 ) : SdkSandboxedUiAdapter {
     override fun openSession(
         context: Context,
-        windowInputToken: IBinder,
+        sessionConstants: SessionConstants,
         initialWidth: Int,
         initialHeight: Int,
         isZOrderOnTop: Boolean,
@@ -50,16 +51,6 @@ class SdkSandboxedUiAdapterImpl(
         clientExecutor.execute {
             client.onSessionOpened(session)
         }
-    }
-
-    override fun addObserverFactory(sessionObserverFactory: SessionObserverFactory) {
-        // Adds a [SessionObserverFactory] with a [SandboxedUiAdapter] for tracking UI presentation
-        // state across UI sessions. This has no effect on already open sessions.
-    }
-
-    override fun removeObserverFactory(sessionObserverFactory: SessionObserverFactory) {
-        // Removes a [SessionObserverFactory] from a [SandboxedUiAdapter], if it has been
-        // previously added with [addObserverFactory].
     }
 }
 

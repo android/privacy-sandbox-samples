@@ -29,6 +29,7 @@ import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCo
 import androidx.privacysandbox.ui.client.view.SandboxedSdkView
 import androidx.privacysandbox.ui.core.DelegatingSandboxedUiAdapter
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
+import androidx.privacysandbox.ui.core.SessionConstants
 import androidx.privacysandbox.ui.provider.AbstractSandboxedUiAdapter
 import com.runtimeenabled.R
 import com.runtimeenabled.api.SdkBannerRequest
@@ -57,20 +58,9 @@ class SdkSandboxedUiAdapterImpl(
     private val mediateeAdapter: SandboxedUiAdapter?
 ) : AbstractSandboxedUiAdapter(), SdkSandboxedUiAdapter {
 
-    /**
-     * Opens a new UI session to handle notifications from and to the client.
-     *
-     * @param context The context of the client.
-     * @param windowInputToken The input token of the window.
-     * @param initialWidth The initial width of the ad view.
-     * @param initialHeight The initial height of the ad view.
-     * @param isZOrderOnTop Whether the ad view should be on top of other content.
-     * @param clientExecutor The executor to use for client callbacks.
-     * @param client A UI adapter for the client of this single session.
-     */
     override fun openSession(
         context: Context,
-        windowInputToken: IBinder,
+        sessionConstants: SessionConstants,
         initialWidth: Int,
         initialHeight: Int,
         isZOrderOnTop: Boolean,
