@@ -1,0 +1,40 @@
+/*
+ * Copyright (C) 2022 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+plugins {
+    id "com.android.privacy-sandbox-sdk"
+}
+
+android {
+    compileSdk 35
+    minSdk 21
+
+    bundle {
+        // This package name is used to load this SDK in the Privacy Sandbox later on.
+        packageName = "com.runtimeenabled.sdk"
+
+        setVersion(1, 0, 0)
+        // SDK provider defined in the SDK Runtime library. This is an important part of the
+        // future backwards compatibility support, so most SDKs won't need to change it.
+        sdkProviderClassName = "androidx.privacysandbox.sdkruntime.provider.SandboxedSdkProviderAdapter"
+        // SDK provider defined by the runtime-enabled-sdk itself.
+        compatSdkProviderClassName = "com.runtimeenabled.implementation.SdkProvider"
+    }
+}
+
+dependencies {
+    include project(":runtime-enabled-sdk")
+}

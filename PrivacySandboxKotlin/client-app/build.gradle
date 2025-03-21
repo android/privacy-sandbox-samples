@@ -27,8 +27,7 @@ android {
     defaultConfig {
         applicationId "com.example.privacysandbox.client"
         minSdkVersion 21
-        compileSdk 34
-        compileSdkExtension 12
+        compileSdk 35
         targetSdkVersion 34
         versionCode 2
         versionName "1.01"
@@ -54,7 +53,7 @@ android {
 
 dependencies {
     // Depend on the SDK library that will run inside the app.
-    implementation project(':existing-sdk')
+    implementation project(':runtime-aware-sdk')
 
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation "com.google.android.material:material:1.9.0"

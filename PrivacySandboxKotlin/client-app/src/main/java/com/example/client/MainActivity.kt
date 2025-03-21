@@ -24,16 +24,16 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.privacysandbox.client.R
-import com.existing.sdk.BannerAd
-import com.existing.sdk.ExistingSdk
-import com.existing.sdk.FullscreenAd
+import com.runtimeaware.sdk.BannerAd
+import com.runtimeaware.sdk.ExistingSdk
+import com.runtimeaware.sdk.FullscreenAd
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     /** Container for rendering content from the SDK. */
     private lateinit var bannerAd: BannerAd
 
-    private val existingSdk = ExistingSdk(this)
+    private val runtimeAwareSdk = ExistingSdk(this)
 
     /** A spinner for selecting the size of the file created in the sandbox. */
     private lateinit var fileSizeSpinner: Spinner
@@ -63,11 +63,15 @@ class MainActivity : AppCompatActivity() {
     //
     // As SDKs transition into the SDK Runtime, we may have some SDKs still in the app process
     // while the mediator and other SDKs have moved.
-    // RE_RE Mediated Ads is the scenario when the winning ad network is Runtime Enabled as is the
-    // Mediator.
+    // RUNTIME_MEDIATEE Mediated Ads is the scenario when the winning ad network is Runtime Enabled
+    // as is the Mediator.
+    // INAPP_MEDIATEE Mediated Ads is the scenario when the winning ad network is running in the
+    // same process as the app and the Mediator is Runtime Enabled.
     enum class MediationOption {
         NONE,
-        RUNTIME_RUNTIME
+        RUNTIME_MEDIATEE,
+        INAPP_MEDIATEE,
+        REFRESH_MEDIATED_ADS
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -115,7 +119,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onInitializeSkButtonPressed() = lifecycleScope.launch {
-        if (!existingSdk.initialize()) {
+        if (!runtimeAwareSdk.initialize()) {
             makeToast("Failed to initialize SDK")
         } else {
             makeToast("Initialized SDK!")
@@ -128,15 +132,15 @@ class MainActivity : AppCompatActivity() {
         // launches whenever they feel SDKs shouldn't be launching activities (in the middle of
         // certain game scenes, video playback, etc).
         val loadWebView = adTypes[adTypeSpinner.selectedItemPosition].contains("WebView")
-        // Mediated Ads are enabled when RE-RE Mediation option is chosen.
-        val loadMediatedAd =
-            mediationDropDownMenu.selectedItemId == MediationOption.RUNTIME_RUNTIME.ordinal.toLong()
+        // Mediated Banner Ad is shown when RUNTIME_MEDIATEE Mediation option is chosen.
+        val mediationType =
+            MediationOption.entries[mediationDropDownMenu.selectedItemId.toInt()].toString()
         bannerAd.loadAd(
             this@MainActivity,
             PACKAGE_NAME,
             shouldStartActivityPredicate(),
             loadWebView,
-            loadMediatedAd
+            mediationType
         )
     }
 
@@ -155,7 +159,7 @@ class MainActivity : AppCompatActivity() {
         val fileSize = fileSizes[fileSizeSpinner.selectedItemPosition]
 
         lifecycleScope.launch {
-            val success = existingSdk.createFile(fileSize.sizeInMb)
+            val success = runtimeAwareSdk.createFile(fileSize.sizeInMb)
             if (success == null) {
                 makeToast("Please load the SDK first!")
                 return@launch

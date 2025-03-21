@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2024 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
     ext.kotlin_version = '1.9.10'
@@ -5,7 +20,7 @@ buildscript {
     ext.privacy_sandbox_activity_version = "1.0.0-alpha01"
     ext.privacy_sandbox_sdk_runtime_version = "1.0.0-alpha14"
     ext.privacy_sandbox_tools_version = "1.0.0-alpha09"
-    ext.privacy_sandbox_ui_version = "1.0.0-alpha09"
+    ext.privacy_sandbox_ui_version = "1.0.0-alpha12"
     repositories {
         mavenCentral()
     }
@@ -14,8 +29,8 @@ buildscript {
     }
 }
 plugins {
-    id 'com.android.application' version '8.7.0-alpha04' apply false
-    id 'com.android.library' version '8.7.0-alpha04' apply false
+    id 'com.android.application' version '8.7.2' apply false
+    id 'com.android.library' version '8.7.2' apply false
 
     // These two plugins do annotation processing and code generation for the sdk-implementation.
     id 'androidx.privacysandbox.library' version '1.0.0-alpha02' apply false
