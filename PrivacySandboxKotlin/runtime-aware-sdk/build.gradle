@@ -43,7 +43,6 @@ dependencies {
     debugImplementation project(':runtime-enabled-sdk-bundle')
     debugImplementation project(':mediatee-sdk-adapter-bundle')
     implementation project(':inapp-mediatee-sdk-adapter')
-    implementation project(':inapp-mediatee-sdk-adapter')
     implementation libs.sdkruntime.backcompat.client
     implementation libs.bundles.sdkruntimeUi
     implementation libs.bundles.sdkruntimeActivity
