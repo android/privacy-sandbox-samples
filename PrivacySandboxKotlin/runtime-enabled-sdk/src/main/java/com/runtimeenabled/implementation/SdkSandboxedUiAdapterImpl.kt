@@ -57,7 +57,19 @@ class SdkSandboxedUiAdapterImpl(
     private val request: SdkBannerRequest,
     private val mediateeAdapter: SandboxedUiAdapter?
 ) : AbstractSandboxedUiAdapter(), SdkSandboxedUiAdapter {
-
+    /**
+     * Opens a new session to display remote UI.
+     * The session will handle notifications from and to the client.
+     * We consider the client the owner of the SandboxedSdkView.
+     *
+     * @param context The application context.
+     * @param sessionConstants Constants related to the session, such as the presentation id.
+     * @param initialWidth The initial width of the session's view.
+     * @param initialHeight The initial height of the session's view.
+     * @param isZOrderOnTop Whether the session's view should be drawn on top of other views.
+     * @param clientExecutor The executor to run callbacks on the client's thread.
+     * @param client The client to notify about the session events.
+     */
     override fun openSession(
         context: Context,
         sessionConstants: SessionConstants,
