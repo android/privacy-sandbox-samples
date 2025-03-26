@@ -49,15 +49,15 @@ android {
 
 dependencies {
     implementation libs.androidx.activity.ktx
-    ksp libs.androidx.annotation
     implementation libs.kotlin.stdlib.jdk8
     implementation libs.androidx.lifecycle.common
     implementation libs.bundles.coroutines
-
+    //Since this RE SDK does mediation, it needs both client and provider libraries
+    //Otherwise, it should be enough just with the sdkruntimeRESDK bundle
     implementation libs.bundles.sdkruntimeActivity
-    implementation libs.bundles.sdkruntimeUi
     implementation libs.bundles.sdkruntimeBackcompat
-
-    ksp libs.sdkruntime.tools.apicompiler
+    implementation libs.bundles.sdkruntimeUI
     implementation libs.sdkruntime.tools.tools
+    ksp libs.androidx.annotation
+    ksp libs.sdkruntime.tools.apicompiler
 }

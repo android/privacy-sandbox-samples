@@ -49,15 +49,10 @@ android {
 
 dependencies {
     implementation libs.androidx.activity.ktx
-    ksp libs.androidx.annotation
     implementation libs.kotlin.stdlib.jdk8
     implementation libs.androidx.lifecycle.common
     implementation libs.bundles.coroutines
-
-    implementation libs.bundles.sdkruntimeActivity
-    implementation libs.bundles.sdkruntimeUi
-    implementation libs.bundles.sdkruntimeBackcompat
-
-    implementation libs.sdkruntime.tools.tools
+    implementation libs.bundles.sdkruntimeRESDK
+    ksp libs.androidx.annotation
     ksp libs.sdkruntime.tools.apicompiler
 }

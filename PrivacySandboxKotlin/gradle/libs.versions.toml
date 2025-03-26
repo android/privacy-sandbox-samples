@@ -68,7 +68,8 @@ sdkruntime-tools-apipackager = { module = "androidx.privacysandbox.tools:tools-a
 
 [bundles]
 coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
-sdkruntimeShim = ["sdkruntime-tools-tools", "sdkruntime-tools-apicompiler", "sdkruntime-tools-apigenerator", "sdkruntime-tools-apipackager"]
-sdkruntimeUi = ["sdkruntime-ui-core", "sdkruntime-ui-client", "sdkruntime-ui-provider"]
+sdkruntimeRASDK = ["sdkruntime-backcompat-core", "sdkruntime-backcompat-client", "sdkruntime-ui-core", "sdkruntime-ui-client", "sdkruntime-activity-core", "sdkruntime-activity-client"]
+sdkruntimeRESDK = ["sdkruntime-backcompat-core", "sdkruntime-backcompat-provider","sdkruntime-ui-core", "sdkruntime-ui-provider", "sdkruntime-activity-core", "sdkruntime-activity-provider", "sdkruntime-tools-tools"]
+sdkruntimeUI = ["sdkruntime-ui-core", "sdkruntime-ui-client", "sdkruntime-ui-provider"]
 sdkruntimeActivity = ["sdkruntime-activity-core", "sdkruntime-activity-client", "sdkruntime-activity-provider"]
 sdkruntimeBackcompat = ["sdkruntime-backcompat-core", "sdkruntime-backcompat-client", "sdkruntime-backcompat-provider"]

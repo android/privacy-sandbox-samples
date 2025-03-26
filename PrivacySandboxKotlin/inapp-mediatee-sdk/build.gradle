@@ -48,7 +48,6 @@ android {
 dependencies {
     implementation libs.androidx.activity.ktx
     implementation libs.androidx.appcompat
-
     implementation libs.kotlin.stdlib.jdk8
     implementation libs.androidx.lifecycle.common
     implementation libs.bundles.coroutines
