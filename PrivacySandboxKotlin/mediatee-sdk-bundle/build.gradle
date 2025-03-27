@@ -28,7 +28,7 @@ android {
         packageName = "com.mediatee.sdk"
         setVersion(1, 0, 0)
 
-        // This specifies the standard SDK Provider, which you won't have to change
+        // Standard SDK Provider definition
         sdkProviderClassName = "androidx.privacysandbox.sdkruntime.provider.SandboxedSdkProviderAdapter"
 
         // This is your custom implementation of this specific SDK's provider,
