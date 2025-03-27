@@ -61,6 +61,6 @@ dependencies {
     implementation libs.androidx.lifecycle.common
     implementation libs.bundles.coroutines
 
-    //As an adapter for an in-app mediatee, this library needs to behave as an RE SDK
+    // As an adapter for an in-app mediatee, this library needs to behave as an RE SDK
     implementation libs.bundles.sdkruntimeRESDK
 }
