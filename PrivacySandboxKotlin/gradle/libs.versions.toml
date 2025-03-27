@@ -1,0 +1,75 @@
+# Copyright (C) 2025 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+[versions]
+kotlin = "1.9.10"
+ksp = "1.9.10-1.0.13"
+agp = "8.7.2"
+privacySandboxBuildPlugin = "1.0.0-alpha02"
+sdkRuntimeBackcompat = "1.0.0-alpha16"
+sdkRuntimeShim = "1.0.0-alpha12"
+sdkRuntimeUi = "1.0.0-alpha14"
+sdkRuntimeActivity = "1.0.0-alpha01"
+appcompat = "1.7.0"
+material = "1.9.0"
+activityKtx = "1.9.0"
+lifecycleCommon = "2.7.0"
+coroutines = "1.7.1"
+annotation = "1.6.0"
+kotlinStdlibJdk8 = "1.9.10"
+androidxTestRunner = "1.5.2"
+
+[libraries]
+# Plugins
+kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+ksp-gradlePlugin = { module = "com.google.devtools.ksp:symbol-processing-gradle-plugin", version.ref = "ksp"}
+
+# AndroidX Libraries
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+androidx-material = { module = "com.google.android.material:material", version.ref = "material" }
+androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityKtx" }
+androidx-lifecycle-common = { module = "androidx.lifecycle:lifecycle-common", version.ref = "lifecycleCommon" }
+androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "annotation"}
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidxTestRunner"}
+
+# Kotlin
+kotlin-stdlib-jdk8 = { module = "org.jetbrains.kotlin:kotlin-stdlib-jdk8", version.ref = "kotlinStdlibJdk8" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+
+# Privacy Sandbox (SDK Runtime Focused)
+sdkruntime-backcompat-client = { module = "androidx.privacysandbox.sdkruntime:sdkruntime-client", version.ref = "sdkRuntimeBackcompat" }
+sdkruntime-backcompat-core = { module = "androidx.privacysandbox.sdkruntime:sdkruntime-core", version.ref = "sdkRuntimeBackcompat" }
+sdkruntime-backcompat-provider = { module = "androidx.privacysandbox.sdkruntime:sdkruntime-provider", version.ref = "sdkRuntimeBackcompat" }
+
+sdkruntime-ui-core = { module = "androidx.privacysandbox.ui:ui-core", version.ref = "sdkRuntimeUi" }
+sdkruntime-ui-client = { module = "androidx.privacysandbox.ui:ui-client", version.ref = "sdkRuntimeUi" }
+sdkruntime-ui-provider = { module = "androidx.privacysandbox.ui:ui-provider", version.ref = "sdkRuntimeUi" }
+
+sdkruntime-activity-core = { module = "androidx.privacysandbox.activity:activity-core", version.ref = "sdkRuntimeActivity" }
+sdkruntime-activity-client = { module = "androidx.privacysandbox.activity:activity-client", version.ref = "sdkRuntimeActivity" }
+sdkruntime-activity-provider = { module = "androidx.privacysandbox.activity:activity-provider", version.ref = "sdkRuntimeActivity" }
+
+sdkruntime-tools-tools = { module = "androidx.privacysandbox.tools:tools", version.ref = "sdkRuntimeShim" }
+sdkruntime-tools-apicompiler = { module = "androidx.privacysandbox.tools:tools-apicompiler", version.ref = "sdkRuntimeShim" }
+sdkruntime-tools-apigenerator = { module = "androidx.privacysandbox.tools:tools-apigenerator", version.ref = "sdkRuntimeShim" }
+sdkruntime-tools-apipackager = { module = "androidx.privacysandbox.tools:tools-apipackager", version.ref = "sdkRuntimeShim" }
+
+[bundles]
+coroutines = ["kotlinx-coroutines-core", "kotlinx-coroutines-android"]
+sdkruntimeRASDK = ["sdkruntime-backcompat-core", "sdkruntime-backcompat-client", "sdkruntime-ui-core", "sdkruntime-ui-client", "sdkruntime-activity-core", "sdkruntime-activity-client"]
+sdkruntimeRESDK = ["sdkruntime-backcompat-core", "sdkruntime-backcompat-provider","sdkruntime-ui-core", "sdkruntime-ui-provider", "sdkruntime-activity-core", "sdkruntime-activity-provider", "sdkruntime-tools-tools"]
+sdkruntimeUI = ["sdkruntime-ui-core", "sdkruntime-ui-client", "sdkruntime-ui-provider"]
+sdkruntimeActivity = ["sdkruntime-activity-core", "sdkruntime-activity-client", "sdkruntime-activity-provider"]
+sdkruntimeBackcompat = ["sdkruntime-backcompat-core", "sdkruntime-backcompat-client", "sdkruntime-backcompat-provider"]

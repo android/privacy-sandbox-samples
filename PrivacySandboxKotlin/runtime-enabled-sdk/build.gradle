@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 plugins {
     id "androidx.privacysandbox.library"
     id "org.jetbrains.kotlin.android"
@@ -47,25 +48,16 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.activity:activity-ktx:1.9.0'
-    ksp 'androidx.annotation:annotation:1.6.0'
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10'
-    implementation "androidx.lifecycle:lifecycle-common:2.7.0"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
-
-    implementation "androidx.privacysandbox.activity:activity-client:$privacy_sandbox_activity_version"
-    implementation "androidx.privacysandbox.activity:activity-core:$privacy_sandbox_activity_version"
-    implementation "androidx.privacysandbox.activity:activity-provider:$privacy_sandbox_activity_version"
-
-    implementation "androidx.privacysandbox.ui:ui-core:$privacy_sandbox_ui_version"
-    implementation "androidx.privacysandbox.ui:ui-provider:$privacy_sandbox_ui_version"
-    implementation "androidx.privacysandbox.ui:ui-client:$privacy_sandbox_ui_version"
-
-    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-core:$privacy_sandbox_sdk_runtime_version"
-    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-client:$privacy_sandbox_sdk_runtime_version"
-    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-provider:$privacy_sandbox_sdk_runtime_version"
-
-    ksp "androidx.privacysandbox.tools:tools-apicompiler:$privacy_sandbox_tools_version"
-    implementation "androidx.privacysandbox.tools:tools:$privacy_sandbox_tools_version"
+    implementation libs.androidx.activity.ktx
+    implementation libs.kotlin.stdlib.jdk8
+    implementation libs.androidx.lifecycle.common
+    implementation libs.bundles.coroutines
+    //Since this RE SDK does mediation, it needs both client and provider libraries
+    //Otherwise, it should be enough just with the sdkruntimeRESDK bundle
+    implementation libs.bundles.sdkruntimeActivity
+    implementation libs.bundles.sdkruntimeBackcompat
+    implementation libs.bundles.sdkruntimeUI
+    implementation libs.sdkruntime.tools.tools
+    ksp libs.androidx.annotation
+    ksp libs.sdkruntime.tools.apicompiler
 }

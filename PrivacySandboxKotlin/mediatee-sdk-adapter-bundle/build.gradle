@@ -24,14 +24,16 @@ android {
     minSdk 21
 
     bundle {
-        // This package name is used to load this SDK in the Privacy Sandbox later on.
+        // The package name is used to load this SDK in the SDK Runtime.
         packageName = "com.mediateeadapter.sdk"
-
         setVersion(1, 0, 0)
-        // SDK provider defined in the SDK Runtime library. This is an important part of the
-        // future backwards compatibility support, so most SDKs won't need to change it.
+
+        // Standard SDK Provider definition
         sdkProviderClassName = "androidx.privacysandbox.sdkruntime.provider.SandboxedSdkProviderAdapter"
-        // SDK provider defined by the mediatee-adapter-sdk itself.
+
+        // This is your custom implementation of this specific SDK's provider,
+        // an implementation of based on your definition of @PrivacySandboxService,
+        // which defines your entry-point.
         compatSdkProviderClassName = "com.mediateeadapter.implementation.SdkProvider"
     }
 }
