@@ -13,6 +13,9 @@
 # limitations under the License.
 
 [versions]
+# If you update your kotlin, coroutines,
+# or SDK Runtime Jetpack library versions (Shim tools, Backcompat sdkrt, ui, activity),
+# make sure to also update the dependencies specified in `gradle.properties`.
 kotlin = "1.9.10"
 ksp = "1.9.10-1.0.13"
 agp = "8.7.2"
