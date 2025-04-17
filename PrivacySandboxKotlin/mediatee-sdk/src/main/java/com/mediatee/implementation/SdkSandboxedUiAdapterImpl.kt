@@ -23,6 +23,7 @@ import android.view.View
 import android.webkit.WebView
 import android.widget.TextView
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
+import androidx.privacysandbox.ui.core.SessionConstants
 import androidx.privacysandbox.ui.core.SessionObserverFactory
 import com.mediatee.api.SdkBannerRequest
 import com.mediatee.api.SdkSandboxedUiAdapter
@@ -37,9 +38,22 @@ class SdkSandboxedUiAdapterImpl(
     private val sdkContext: Context,
     private val request: SdkBannerRequest
 ) : SdkSandboxedUiAdapter {
+    /**
+     * Opens a new session to display remote UI.
+     * The session will handle notifications from and to the client.
+     * We consider the client the owner of the SandboxedSdkView.
+     *
+     @param context The client's context.
+     * @param sessionConstants Constants related to the session, such as the presentation id.
+     * @param initialWidth The initial width of the adapter's view.
+     * @param initialHeight The initial height of the adapter's view.
+     * @param isZOrderOnTop Whether the session's view should be drawn on top of other views.
+     * @param clientExecutor The executor to use for client callbacks.
+     * @param client A UI adapter representing the client of this single session.
+     */
     override fun openSession(
         context: Context,
-        windowInputToken: IBinder,
+        sessionConstants: SessionConstants,
         initialWidth: Int,
         initialHeight: Int,
         isZOrderOnTop: Boolean,
@@ -50,16 +64,6 @@ class SdkSandboxedUiAdapterImpl(
         clientExecutor.execute {
             client.onSessionOpened(session)
         }
-    }
-
-    override fun addObserverFactory(sessionObserverFactory: SessionObserverFactory) {
-        // Adds a [SessionObserverFactory] with a [SandboxedUiAdapter] for tracking UI presentation
-        // state across UI sessions. This has no effect on already open sessions.
-    }
-
-    override fun removeObserverFactory(sessionObserverFactory: SessionObserverFactory) {
-        // Removes a [SessionObserverFactory] from a [SandboxedUiAdapter], if it has been
-        // previously added with [addObserverFactory].
     }
 }
 

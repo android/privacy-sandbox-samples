@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 plugins {
     id "androidx.privacysandbox.library"
     id "org.jetbrains.kotlin.android"
@@ -46,19 +47,20 @@ android {
 }
 
 dependencies {
+    // Note that here we depend on the bundle modules, not the sdk modules.
+    // While the libraries contain the SDK's logic, they lack the shim generated classes,
+    // and apps won't compile using its full classpath.
+    // Instead, the bundle contains information the SDK's API,
+    // and the AGP Plugin used to generate sources and compile the app.
     debugImplementation project(':runtime-enabled-sdk-bundle')
     implementation project(':inapp-mediatee-sdk')
 
-    implementation 'androidx.activity:activity-ktx:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10'
-    implementation "androidx.lifecycle:lifecycle-common:2.7.0"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1"
+    implementation libs.androidx.activity.ktx
+    implementation libs.androidx.appcompat
+    implementation libs.kotlin.stdlib.jdk8
+    implementation libs.androidx.lifecycle.common
+    implementation libs.bundles.coroutines
 
-    implementation "androidx.privacysandbox.ui:ui-core:$privacy_sandbox_ui_version"
-    implementation "androidx.privacysandbox.ui:ui-provider:$privacy_sandbox_ui_version"
-
-    implementation "androidx.privacysandbox.activity:activity-core:$privacy_sandbox_activity_version"
-    implementation "androidx.privacysandbox.activity:activity-provider:$privacy_sandbox_activity_version"
+    // As an adapter for an in-app mediatee, this library needs to behave as an RE SDK
+    implementation libs.bundles.sdkruntimeRESDK
 }

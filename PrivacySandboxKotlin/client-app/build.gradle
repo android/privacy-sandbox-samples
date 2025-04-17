@@ -15,11 +15,10 @@
  */
 plugins {
     id "com.android.application"
+    id "org.jetbrains.kotlin.android"
 }
-apply plugin: "kotlin-android"
 
 android {
-
     privacySandbox {
         enable = true
     }
@@ -52,10 +51,8 @@ android {
 }
 
 dependencies {
-    // Depend on the SDK library that will run inside the app.
     implementation project(':runtime-aware-sdk')
 
-    implementation "androidx.appcompat:appcompat:1.6.1"
-    implementation "com.google.android.material:material:1.9.0"
-    implementation "androidx.privacysandbox.sdkruntime:sdkruntime-client:$privacy_sandbox_sdk_runtime_version"
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.material
 }

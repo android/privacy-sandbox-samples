@@ -6,8 +6,8 @@ import android.os.Bundle
 import android.os.IBinder
 import android.view.View
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
+import androidx.privacysandbox.ui.core.SessionConstants
 import androidx.privacysandbox.ui.provider.AbstractSandboxedUiAdapter
-import com.runtimeenabled.api.SdkSandboxedUiAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -21,10 +21,23 @@ import java.util.concurrent.Executor
  * when app requests for winning ad.
  */
 class InAppAdViewSandboxedUiAdapter(private val mediateeAdView: View):
-    AbstractSandboxedUiAdapter(), SdkSandboxedUiAdapter {
+    AbstractSandboxedUiAdapter(), SandboxedUiAdapter {
+    /**
+     * Opens a new session to display remote UI.
+     * The session will handle notifications from and to the client.
+     * We consider the client the owner of the SandboxedSdkView.
+     *
+     @param context The client's context.
+     * @param sessionConstants Constants related to the session, such as the presentation id.
+     * @param initialWidth The initial width of the adapter's view.
+     * @param initialHeight The initial height of the adapter's view.
+     * @param isZOrderOnTop Whether the session's view should be drawn on top of other views.
+     * @param clientExecutor The executor to use for client callbacks.
+     * @param client A UI adapter representing the client of this single session.
+     */
     override fun openSession(
         context: Context,
-        windowInputToken: IBinder,
+        sessionConstants: SessionConstants,
         initialWidth: Int,
         initialHeight: Int,
         isZOrderOnTop: Boolean,
