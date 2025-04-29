@@ -60,6 +60,7 @@ dependencies {
     implementation libs.androidx.lifecycle.common
     implementation libs.bundles.coroutines
     implementation libs.bundles.sdkruntimeRESDK
+    implementation libs.sdkruntime.ui.client
     ksp libs.androidx.annotation
     ksp libs.sdkruntime.tools.apicompiler
 }

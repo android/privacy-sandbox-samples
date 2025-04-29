@@ -29,7 +29,7 @@ import androidx.privacysandbox.sdkruntime.core.controller.SdkSandboxControllerCo
 import androidx.privacysandbox.ui.client.view.SandboxedSdkView
 import androidx.privacysandbox.ui.core.DelegatingSandboxedUiAdapter
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
-import androidx.privacysandbox.ui.core.SessionConstants
+import androidx.privacysandbox.ui.core.SessionData
 import androidx.privacysandbox.ui.provider.AbstractSandboxedUiAdapter
 import com.runtimeenabled.R
 import com.runtimeenabled.api.SdkBannerRequest
@@ -63,7 +63,7 @@ class SdkSandboxedUiAdapterImpl(
      * We consider the client the owner of the SandboxedSdkView.
      *
      @param context The client's context.
-     * @param sessionConstants Constants related to the session, such as the presentation id.
+     * @param sessionData Constants related to the session, such as the presentation id.
      * @param initialWidth The initial width of the adapter's view.
      * @param initialHeight The initial height of the adapter's view.
      * @param isZOrderOnTop Whether the session's view should be drawn on top of other views.
@@ -72,7 +72,7 @@ class SdkSandboxedUiAdapterImpl(
      */
     override fun openSession(
         context: Context,
-        sessionConstants: SessionConstants,
+        sessionData: SessionData,
         initialWidth: Int,
         initialHeight: Int,
         isZOrderOnTop: Boolean,
