@@ -16,22 +16,22 @@
 # If you update your kotlin, coroutines,
 # or SDK Runtime Jetpack library versions (Shim tools, Backcompat sdkrt, ui, activity),
 # make sure to also update the dependencies specified in `gradle.properties`.
-kotlin = "1.9.10"
-ksp = "1.9.10-1.0.13"
-agp = "8.7.2"
+kotlin = "2.1.20"
+ksp = "2.1.20-1.0.31"
+agp = "8.9.2"
 privacySandboxBuildPlugin = "1.0.0-alpha02"
 sdkRuntimeBackcompat = "1.0.0-alpha17"
 sdkRuntimeShim = "1.0.0-alpha13"
 sdkRuntimeUi = "1.0.0-alpha15"
 sdkRuntimeActivity = "1.0.0-alpha02"
 appcompat = "1.7.0"
-material = "1.9.0"
-activityKtx = "1.9.0"
-lifecycleCommon = "2.7.0"
-coroutines = "1.7.1"
-annotation = "1.6.0"
-kotlinStdlibJdk8 = "1.9.10"
-androidxTestRunner = "1.5.2"
+material = "1.12.0"
+activityKtx = "1.10.1"
+lifecycleCommon = "2.8.7"
+coroutines = "1.7.3"
+annotation = "1.9.1"
+kotlinStdlibJdk8 = "2.1.10"
+androidxTestRunner = "1.6.2"
 
 [libraries]
 # Plugins
