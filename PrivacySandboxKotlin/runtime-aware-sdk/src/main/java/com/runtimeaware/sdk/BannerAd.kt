@@ -21,7 +21,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.privacysandbox.activity.client.createSdkActivityLauncher
+import androidx.privacysandbox.activity.client.createManagedSdkActivityLauncher
 import androidx.privacysandbox.ui.client.SandboxedUiAdapterFactory
 import androidx.privacysandbox.ui.client.view.SandboxedSdkView
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
@@ -68,7 +68,7 @@ class BannerAd(context: Context, attrs: AttributeSet) : LinearLayout(context, at
             return null
         }
 
-        val launcher = baseActivity.createSdkActivityLauncher(allowSdkActivityLaunch)
+        val launcher = baseActivity.createManagedSdkActivityLauncher(allowSdkActivityLaunch)
         val request = SdkBannerRequest(message, launcher, shouldLoadWebView)
         // Get the SandboxedUiAdapter from the Bundle.
         return SandboxedUiAdapterFactory.createFromCoreLibInfo(

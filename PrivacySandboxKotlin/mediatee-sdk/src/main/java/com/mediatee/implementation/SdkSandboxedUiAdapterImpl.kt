@@ -18,13 +18,11 @@ package com.mediatee.implementation
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
-import android.os.IBinder
 import android.view.View
 import android.webkit.WebView
 import android.widget.TextView
 import androidx.privacysandbox.ui.core.SandboxedUiAdapter
-import androidx.privacysandbox.ui.core.SessionConstants
-import androidx.privacysandbox.ui.core.SessionObserverFactory
+import androidx.privacysandbox.ui.core.SessionData
 import com.mediatee.api.SdkBannerRequest
 import com.mediatee.api.SdkSandboxedUiAdapter
 import kotlinx.coroutines.CoroutineScope
@@ -44,7 +42,7 @@ class SdkSandboxedUiAdapterImpl(
      * We consider the client the owner of the SandboxedSdkView.
      *
      @param context The client's context.
-     * @param sessionConstants Constants related to the session, such as the presentation id.
+     * @param sessionData Constants related to the session, such as the presentation id.
      * @param initialWidth The initial width of the adapter's view.
      * @param initialHeight The initial height of the adapter's view.
      * @param isZOrderOnTop Whether the session's view should be drawn on top of other views.
@@ -53,7 +51,7 @@ class SdkSandboxedUiAdapterImpl(
      */
     override fun openSession(
         context: Context,
-        sessionConstants: SessionConstants,
+        sessionData: SessionData,
         initialWidth: Int,
         initialHeight: Int,
         isZOrderOnTop: Boolean,
@@ -109,6 +107,10 @@ private class SdkUiSession(
 
     override fun notifyResized(width: Int, height: Int) {
         // Notifies that the size of the presentation area in the app has changed.
+    }
+
+    override fun notifySessionRendered(supportedSignalOptions: Set<String>) {
+        TODO("Not yet implemented")
     }
 
     override fun notifyUiChanged(uiContainerInfo: Bundle) {
