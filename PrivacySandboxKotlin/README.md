@@ -7,7 +7,7 @@ This project provides an example of how privacy-preserving SDKs are built and co
 - [Run the sample](#run-the-sample)
 - [Debug the sample](#debug-the-sample)
 
-## Key concepts {: #key-concepts}
+## Key concepts
 
 For each app, there is one SDK Runtime process with a defined set of permissions and restrictions.
 
@@ -24,7 +24,7 @@ This sample illustrates an advertising use case, consisting of a [mediation plat
 
 The project has the following modules:
 
-![sdkrt-sample-diagram.png]
+![Project structure diagram](https://github.com/notmariazoe/privacy-sandbox-samples/blob/SDKRTsample-readme-update/PrivacySandboxKotlin/sdkrt-sample-diagram.png?raw=true)
 
 - **client-app**: An app that uses the `runtime-aware-sdk` to communicate with the `runtime-enabled-sdk`.
 - **runtime-enabled-sdk**: An SDK made to run in the SDK Runtime environment, also known as a Runtime Enabled (RE) SDK. In this example this RE SDK emulates the use case of a mediation SDK, with calls to other RE SDKs and statically-linked SDKs.
